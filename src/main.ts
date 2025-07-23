@@ -1,7 +1,8 @@
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { AppModule } from './app/app.module';
+// src/main.ts
+import { bootstrapApplication } from '@angular/platform-browser';
+import { appConfig } from './app/app.config';
+import { LoginComponent } from './app/auth/components/login/login.component';
 
-// Inicia solo el módulo sin componente
-platformBrowserDynamic()
-  .bootstrapModule(AppModule)
-  .catch((err: Error) => console.error('Error:', err));
+bootstrapApplication(LoginComponent, appConfig).catch((err) =>
+  console.error(err)
+);

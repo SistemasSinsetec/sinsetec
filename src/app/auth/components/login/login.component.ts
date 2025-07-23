@@ -1,16 +1,45 @@
 import { Component, inject } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-root',
+  selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  imports: [CommonModule, ReactiveFormsModule],
+  standalone: true, // Solo si estás usando componentes standalone
 })
 export class LoginComponent {
-  private fb = inject(FormBuilder); // Inyección moderna
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
+    username: ['', Validators.required],
     password: ['', Validators.required],
+    rememberMe: [false],
   });
+
+  onLogin() {
+    if (this.loginForm.invalid) return;
+
+    const username = this.loginForm.value.username ?? '';
+    const password = this.loginForm.value.password ?? '';
+
+    if (this.authService.login({ username, password })) {
+      this.router.navigate(['/home']);
+    } else {
+      // Mostrar error de autenticación
+    }
+  }
+
+  goToRegister() {
+    this.router.navigate(['/register']);
+  }
+
+  goToForgotPassword() {
+    this.router.navigate(['/forgot-password']);
+  }
 }

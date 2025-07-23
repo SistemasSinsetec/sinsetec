@@ -1,50 +1,62 @@
-<div class="login-container">
-  <div class="login-card">
-    <div class="login-header">
-      <h2>Ingresar a su Cuenta</h2>
+<!-- login.component.html -->
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2>USER LOGIN</h2>
     </div>
 
-    <form class="login-form">
+    <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="onLogin()">
       <div class="form-group">
-        <label for="email">Correo Electrónico</label>
+        <label for="username">Username</label>
         <input
-          type="email"
-          id="email"
+          type="text"
+          id="username"
+          formControlName="username"
           autocomplete="username"
-          placeholder="Ingresa tu correo electrónico"
+          placeholder="Enter your username"
         />
+        <div
+          *ngIf="loginForm.get('username')?.errors?.['required'] && loginForm.get('username')?.touched"
+          class="error-message"
+        >
+          Username is required
+        </div>
       </div>
 
       <div class="form-group">
-        <label for="password">Contraseña</label>
+        <label for="password">Password</label>
         <input
           type="password"
           id="password"
+          formControlName="password"
           autocomplete="current-password"
-          placeholder="Ingresa tu contraseña"
+          placeholder="Enter your password"
         />
+        <div
+          *ngIf="loginForm.get('password')?.errors?.['required'] && loginForm.get('password')?.touched"
+          class="error-message"
+        >
+          Password is required
+        </div>
       </div>
 
-      <div class="form-actions">
-        <button type="submit" class="login-button">Entrar</button>
+      <div class="form-options">
+        <div class="remember-me">
+          <input type="checkbox" id="remember" formControlName="rememberMe" />
+          <label for="remember">Remember me</label>
+        </div>
+        <a class="forgot-password" (click)="goToForgotPassword()"
+          >Forgot Password?</a
+        >
+      </div>
+
+      <button type="submit" class="auth-button" [disabled]="loginForm.invalid">
+        LOGIN
+      </button>
+
+      <div class="auth-footer">
+        Don't have an account? <a (click)="goToRegister()">Sign up</a>
       </div>
     </form>
-
-    <div class="login-footer">
-      <div class="checkbox-item">
-        <input type="checkbox" id="remember" checked />
-        <label for="remember">Discoverer</label>
-      </div>
-
-      <div class="checkbox-item">
-        <input type="checkbox" id="home" />
-        <label for="home">Home LLC</label>
-      </div>
-
-      <div class="checkbox-item">
-        <input type="checkbox" id="seminars" />
-        <label for="seminars">Seminars</label>
-      </div>
-    </div>
   </div>
 </div>
