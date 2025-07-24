@@ -5,11 +5,11 @@ import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-login',  // ← Debe coincidir con lo usado en main.ts
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  imports: [CommonModule, ReactiveFormsModule],
-  standalone: true, // Solo si estás usando componentes standalone
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule]
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);

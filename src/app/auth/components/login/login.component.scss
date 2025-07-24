@@ -8,6 +8,13 @@
   padding: 20px;
 }
 
+:host {
+  display: block;
+  height: 100%;
+  min-height: 100vh; /* Asegura que ocupe toda la altura */
+  width: 100%;
+}
+
 .auth-card {
   background: white;
   border-radius: 10px;
