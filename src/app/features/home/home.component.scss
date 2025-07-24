@@ -1,5 +1,7 @@
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css");
+
 .home-container {
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
@@ -35,6 +37,7 @@
 
 .main-nav li {
   margin: 0 15px;
+  position: relative;
 }
 
 .main-nav a {
@@ -42,24 +45,46 @@
   color: #34495e;
   font-weight: 500;
   transition: color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .main-nav a:hover {
   color: #3498db;
 }
 
-.contact-button {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+/* Dropdown styles */
+.dropdown {
+  position: relative;
+  display: inline-block;
 }
 
-.contact-button:hover {
-  background-color: #2980b9;
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  border-radius: 4px;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+  color: #3498db;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
 }
 
 .main-content {
@@ -101,7 +126,7 @@
   border: 1px solid #eee;
   border-radius: 8px;
   padding: 25px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .profile-card h3 {

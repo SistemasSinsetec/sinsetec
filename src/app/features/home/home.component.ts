@@ -1,22 +1,25 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
-
 
 @Component({
   selector: 'app-home',
-  standalone: true,
+  standalone: true, // Esto es importante
   imports: [CommonModule, RouterModule],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
   constructor(private authService: AuthService, private router: Router) {}
 
   logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    try {
+      this.authService.logout();
+      this.router.navigate(['/login']);
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      this.router.navigate(['/login']);
+    }
   }
 }
