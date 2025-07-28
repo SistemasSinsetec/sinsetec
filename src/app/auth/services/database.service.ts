@@ -1,27 +1,35 @@
-// src/server/services/database.service.ts
 import mysql from 'mysql2/promise';
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  password: string;
-  activo: number;
-  intentos_fallidos: number;
-  bloqueado_until: Date | null;
-  created_at: Date;
-  updated_at: Date;
-}
-
 class DatabaseService {
+  async updateLoginAttempts(
+    userId: number,
+    attempts: number,
+    blockUntil: Date | null
+  ): Promise<void> {
+    await this.query(
+      `UPDATE usuarios 
+     SET intentos_fallidos = ?, bloqueado_until = ? 
+     WHERE id = ?`,
+      [attempts, blockUntil, userId]
+    );
+  }
+
+  async resetLoginAttempts(userId: number): Promise<void> {
+    await this.query(
+      `UPDATE usuarios 
+     SET intentos_fallidos = 0, bloqueado_until = NULL 
+     WHERE id = ?`,
+      [userId]
+    );
+  }
   private pool: mysql.Pool;
 
   constructor() {
     this.pool = mysql.createPool({
-      host: 'localhost',
-      user: 'tu_usuario',
-      password: 'tu_contraseña',
-      database: 'sinsetec_dev_sstservicios',
+      host: process.env['DB_HOST'] || 'localhost',
+      user: process.env['DB_USER'] || 'root',
+      password: process.env['DB_PASSWORD'] || '',
+      database: process.env['DB_NAME'] || 'sinsetec_dev_sstservicios',
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
@@ -35,42 +43,12 @@ class DatabaseService {
     return rows;
   }
 
-  async getUserByEmail(email: string): Promise<User | null> {
+  async getUserByEmail(email: string): Promise<any | null> {
     const [users] = await this.query<mysql.RowDataPacket[]>(
-      `SELECT id, username, email, password, activo, 
-       intentos_fallidos, bloqueado_until 
-       FROM usuarios WHERE email = ? AND activo = 1`,
+      'SELECT * FROM usuarios WHERE email = ?',
       [email]
     );
-    return (users[0] as User) || null;
-  }
-
-  async updateLoginAttempts(
-    userId: number,
-    attempts: number,
-    blockUntil: Date | null = null
-  ): Promise<void> {
-    let query = 'UPDATE usuarios SET intentos_fallidos = ?';
-    const params: any[] = [attempts];
-
-    if (blockUntil) {
-      query += ', bloqueado_until = ?';
-      params.push(blockUntil);
-    }
-
-    query += ' WHERE id = ?';
-    params.push(userId);
-
-    await this.query<mysql.ResultSetHeader>(query, params);
-  }
-
-  async resetLoginAttempts(userId: number): Promise<void> {
-    await this.query<mysql.ResultSetHeader>(
-      `UPDATE usuarios 
-       SET intentos_fallidos = 0, bloqueado_until = NULL 
-       WHERE id = ?`,
-      [userId]
-    );
+    return users[0] || null;
   }
 
   async createUser(
@@ -81,7 +59,7 @@ class DatabaseService {
     const result = await this.query<mysql.ResultSetHeader>(
       `INSERT INTO usuarios 
        (username, email, password, activo, intentos_fallidos, created_at, updated_at) 
-       VALUES (?, ?, ?, 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+       VALUES (?, ?, ?, 1, 0, NOW(), NOW())`,
       [username, email, password]
     );
     return result.insertId;
@@ -89,3 +67,5 @@ class DatabaseService {
 }
 
 export default new DatabaseService();
+
+export const isMainModule = (id: string) => id === import.meta.url;
