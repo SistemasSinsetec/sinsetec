@@ -5,46 +5,78 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import authRoutes from './app/auth/routes/auth.routes';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+// Interfaz extendida para compatibilidad
+interface AngularResponse {
+  status?: number;
+  statusText?: string;
+  headers: Map<string, string>;
+  body?: string;
+  ok?: boolean;
+  redirected?: boolean;
+  type?: ResponseType;
+  url?: string;
+}
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const browserDistFolder = join(__dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
-// Serve static files from /browser
-app.use(
-  express.static(browserDistFolder, {
-    maxAge: '1y',
-    index: false,
-    redirect: false,
-  })
-);
+// Configuración de timeout (eliminada la importación conflictiva de rxjs)
+const timeoutDelay = 1000; // Tiempo en milisegundos
+setTimeout(() => {
+  console.log('Timeout ejecutado');
+}, timeoutDelay);
 
-// Handle all other requests
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use('/api/auth', authRoutes);
+app.use(express.static(browserDistFolder));
+
 app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
+
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next()
-    )
+    .then((response: unknown) => {
+      if (response) {
+        const angularResponse: AngularResponse = {
+          status: 200,
+          statusText: 'OK',
+          headers: new Map(),
+          body: '',
+          ok: true,
+          redirected: false,
+          type: 'default',
+          ...(response as object),
+        };
+        writeResponseToNodeResponse(
+          angularResponse as unknown as Response,
+          res
+        );
+      } else {
+        next();
+      }
+    })
     .catch(next);
 });
 
-// Start the server
 if (isMainModule(import.meta.url)) {
   const port = process.env['PORT'] || 4000;
-  app
-    .listen(port)
-    .on('listening', () => {
-      console.log(`Node Express server listening on http://localhost:${port}`);
-    })
-    .on('error', (error: Error) => {
-      console.error('Server error:', error);
-      process.exit(1);
-    });
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+  });
 }
 
 export const reqHandler = createNodeRequestHandler(app);
+export default app;

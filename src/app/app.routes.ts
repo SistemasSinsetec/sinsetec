@@ -10,7 +10,9 @@ export const APP_ROUTES: Routes = [
   {
     path: 'login',
     loadComponent: () =>
-      import('./auth/components/login/login.component').then((m) => m.LoginComponent),
+      import('./auth/components/login/login.component').then(
+        (m) => m.LoginComponent
+      ),
   },
   {
     path: 'register',
@@ -30,7 +32,7 @@ export const APP_ROUTES: Routes = [
     path: 'home',
     loadComponent: () =>
       import('./features/home/home.component').then((m) => m.HomeComponent),
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
   },
   { path: '**', redirectTo: 'login' },
 ];

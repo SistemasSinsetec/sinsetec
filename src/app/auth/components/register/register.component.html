@@ -1,15 +1,10 @@
-<!-- register.component.html -->
 <div class="auth-container">
   <div class="auth-card">
     <div class="auth-header">
       <h2>CREATE ACCOUNT</h2>
     </div>
 
-    <form
-      class="auth-form"
-      [formGroup]="registerForm"
-      (ngSubmit)="onRegister()"
-    >
+    <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label for="username">Username</label>
         <input
@@ -95,7 +90,7 @@
       </button>
 
       <div class="auth-footer">
-        Already have an account? <a (click)="goToLogin()">Sign in</a>
+        Already have an account? <a (click)="navigateToLogin()">Sign in</a>
       </div>
     </form>
   </div>

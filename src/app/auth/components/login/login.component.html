@@ -1,11 +1,38 @@
-<!-- login.component.html -->
 <div class="auth-container">
   <div class="auth-card">
     <div class="auth-header">
       <h2>USER LOGIN</h2>
     </div>
 
-    <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="onLogin()">
+    <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <!-- ELIGE UNA DE LAS DOS OPCIONES SEGÚN TU COMPONENTE -->
+
+      <!-- OPCIÓN 1: Usar EMAIL (recomendado) -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          autocomplete="email"
+          placeholder="Enter your email"
+        />
+        <div
+          *ngIf="loginForm.get('email')?.errors?.['required'] && loginForm.get('email')?.touched"
+          class="error-message"
+        >
+          Email is required
+        </div>
+        <div
+          *ngIf="loginForm.get('email')?.errors?.['email'] && loginForm.get('email')?.touched"
+          class="error-message"
+        >
+          Please enter a valid email
+        </div>
+      </div>
+
+      <!-- OPCIÓN 2: Usar USERNAME -->
+      <!--
       <div class="form-group">
         <label for="username">Username</label>
         <input
@@ -15,13 +42,11 @@
           autocomplete="username"
           placeholder="Enter your username"
         />
-        <div
-          *ngIf="loginForm.get('username')?.errors?.['required'] && loginForm.get('username')?.touched"
-          class="error-message"
-        >
+        <div *ngIf="loginForm.get('username')?.errors?.['required'] && loginForm.get('username')?.touched" class="error-message">
           Username is required
         </div>
       </div>
+      -->
 
       <div class="form-group">
         <label for="password">Password</label>
@@ -45,7 +70,7 @@
           <input type="checkbox" id="remember" formControlName="rememberMe" />
           <label for="remember">Remember me</label>
         </div>
-        <a class="forgot-password" (click)="goToForgotPassword()"
+        <a class="forgot-password" (click)="navigateToForgotPassword()"
           >Forgot Password?</a
         >
       </div>
@@ -55,7 +80,7 @@
       </button>
 
       <div class="auth-footer">
-        Don't have an account? <a (click)="goToRegister()">Sign up</a>
+        Don't have an account? <a (click)="navigateToRegister()">Sign up</a>
       </div>
     </form>
   </div>
