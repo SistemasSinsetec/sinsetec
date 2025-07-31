@@ -4,6 +4,11 @@
       <h2>CREATE ACCOUNT</h2>
     </div>
 
+    <!-- Mostrar mensaje de error general -->
+    <div *ngIf="errorMessage" class="error-message global-error">
+      {{ errorMessage }}
+    </div>
+
     <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label for="username">Username</label>
@@ -12,13 +17,9 @@
           id="username"
           formControlName="username"
           placeholder="Choose a username"
+          autocomplete="username"
         />
-        <div
-          *ngIf="registerForm.get('username')?.errors?.['required'] && registerForm.get('username')?.touched"
-          class="error-message"
-        >
-          Username is required
-        </div>
+        <!-- Mensajes de validación... -->
       </div>
 
       <div class="form-group">
@@ -28,19 +29,9 @@
           id="email"
           formControlName="email"
           placeholder="Enter your email"
+          autocomplete="email"
         />
-        <div
-          *ngIf="registerForm.get('email')?.errors?.['required'] && registerForm.get('email')?.touched"
-          class="error-message"
-        >
-          Email is required
-        </div>
-        <div
-          *ngIf="registerForm.get('email')?.errors?.['email'] && registerForm.get('email')?.touched"
-          class="error-message"
-        >
-          Please enter a valid email
-        </div>
+        <!-- Mensajes de validación... -->
       </div>
 
       <div class="form-group">
@@ -50,19 +41,9 @@
           id="password"
           formControlName="password"
           placeholder="Create a password"
+          autocomplete="new-password"
         />
-        <div
-          *ngIf="registerForm.get('password')?.errors?.['required'] && registerForm.get('password')?.touched"
-          class="error-message"
-        >
-          Password is required
-        </div>
-        <div
-          *ngIf="registerForm.get('password')?.errors?.['minlength'] && registerForm.get('password')?.touched"
-          class="error-message"
-        >
-          Password must be at least 8 characters
-        </div>
+        <!-- Mensajes de validación... -->
       </div>
 
       <div class="form-group">
@@ -72,19 +53,15 @@
           id="confirmPassword"
           formControlName="confirmPassword"
           placeholder="Confirm your password"
+          autocomplete="new-password"
         />
-        <div
-          *ngIf="registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched"
-          class="error-message"
-        >
-          Passwords do not match
-        </div>
+        <!-- Mensajes de validación... -->
       </div>
 
       <button
         type="submit"
         class="auth-button"
-        [disabled]="registerForm.invalid"
+        [disabled]="registerForm.invalid || registerForm.pristine"
       >
         SIGN UP
       </button>

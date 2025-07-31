@@ -26,6 +26,7 @@ export class RegisterComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   private toastr = inject(ToastrService);
+  errorMessage: any;
 
   constructor() {
     this.registerForm = this.fb.group(
@@ -48,45 +49,82 @@ export class RegisterComponent {
 
   onSubmit(): void {
     if (this.registerForm.invalid) {
+      this.markFormGroupTouched(this.registerForm);
+
       if (this.registerForm.hasError('passwordMismatch')) {
         this.toastr.error('Las contraseñas no coinciden');
       } else {
+        const invalidFields = this.getInvalidFields();
         this.toastr.warning(
-          'Por favor complete todos los campos correctamente'
+          `Complete correctamente: ${invalidFields.join(', ')}`
         );
       }
       return;
     }
 
-    const { username, email, password, confirmPassword } =
-      this.registerForm.value;
+    const { confirmPassword, ...userData } = this.registerForm.value;
 
-    this.authService
-      .register({
-        username,
-        email,
-        password,
-        confirmPassword,
-      })
-      .subscribe({
-        next: (response) => {
-          if (response.success) {
-            this.toastr.success(`Registro exitoso. Bienvenido ${username}`);
-            this.router.navigate(['/login']);
-          } else {
-            this.toastr.error(response.message || 'Error al registrarse');
-          }
-        },
-        error: (err) => {
-          let errorMessage = 'Error de conexión';
-          if (err.error?.message) {
-            errorMessage = err.error.message;
-          } else if (err.message) {
-            errorMessage = err.message;
-          }
-          this.toastr.error(errorMessage);
-        },
-      });
+    this.authService.register(userData).subscribe({
+      next: (response) => {
+        if (response?.success) {
+          this.toastr.success(
+            `Registro exitoso. Bienvenido ${userData.username}`
+          );
+          this.router.navigate(['/auth/login']);
+        } else {
+          this.toastr.error(
+            response?.message || 'Error al procesar el registro'
+          );
+        }
+      },
+      error: (err) => {
+        const errorMessage =
+          err?.message ||
+          err?.error?.message ||
+          'Error desconocido al intentar registrar';
+        this.toastr.error(errorMessage);
+
+        // Debug: Mostrar error completo en consola
+        console.error('Error detallado:', err);
+      },
+    });
+  }
+
+  // Método auxiliar para marcar todos los campos como touched
+  private markFormGroupTouched(formGroup: FormGroup) {
+    Object.values(formGroup.controls).forEach((control) => {
+      control.markAsTouched();
+
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+    });
+  }
+
+  // Método auxiliar para obtener campos inválidos
+  private getInvalidFields(): string[] {
+    const invalidFields: string[] = [];
+
+    Object.keys(this.registerForm.controls).forEach((key) => {
+      const control = this.registerForm.get(key);
+      if (control?.invalid) {
+        invalidFields.push(this.getFieldName(key));
+      }
+    });
+
+    return invalidFields;
+  }
+
+  // Método auxiliar para nombres descriptivos de campos
+  private getFieldName(key: string): string {
+    const fieldNames: { [key: string]: string } = {
+      username: 'usuario',
+      email: 'correo electrónico',
+      password: 'contraseña',
+      confirmPassword: 'confirmación de contraseña',
+    };
+
+    return fieldNames[key] || key;
   }
 
   navigateToLogin(): void {

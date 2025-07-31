@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost/sinsetec-php', // Asegúrate que esta ruta es correcta
+  apiUrl: 'http://localhost/sinsetec-php', // Verifica que esta ruta sea correcta
 };
 /*
  * For easier debugging in development mode, you can import the following file

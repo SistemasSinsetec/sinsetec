@@ -77,17 +77,37 @@ export class AuthService {
   }
 
   register(userData: any): Observable<any> {
+    // Eliminar confirmPassword y preparar datos
+    const { confirmPassword, ...cleanData } = userData;
+
     return this.http
-      .post(`${environment.apiUrl}/insert_usuario.php`, userData, {
+      .post(`${environment.apiUrl}/insert_usuario.php`, cleanData, {
         headers: new HttpHeaders({
           'Content-Type': 'application/json',
+          Accept: 'application/json',
         }),
-        withCredentials: true, // Solo si usas cookies/sesión
+        withCredentials: false, // Cambiar a true solo si usas cookies/sesión
       })
       .pipe(
-        catchError((error) => {
-          console.error('Error en registro:', error);
-          return throwError(() => error);
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error completo:', error);
+
+          let errorMsg = 'Error en el servidor';
+          if (error.status === 0) {
+            errorMsg =
+              'No se pudo conectar al servidor. Verifica tu conexión o que el servidor esté funcionando.';
+          } else if (error.error instanceof ErrorEvent) {
+            errorMsg = `Error del cliente: ${error.error.message}`;
+          } else if (error.error?.message) {
+            errorMsg = error.error.message;
+          } else if (error.message) {
+            errorMsg = error.message;
+          }
+
+          return throwError(() => ({
+            message: errorMsg,
+            details: error,
+          }));
         })
       );
   }
