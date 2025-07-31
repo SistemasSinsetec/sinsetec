@@ -6,14 +6,8 @@ import {
   HttpHeaders,
 } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import {
-  BehaviorSubject,
-  catchError,
-  map,
-  Observable,
-  tap,
-  throwError,
-} from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
 interface User {
   id: number;
@@ -29,12 +23,9 @@ interface LoginResponse {
   message?: string;
 }
 
-interface RegisterResponse {
-  success: boolean;
-  message?: string;
-}
-
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser = this.currentUserSubject.asObservable();
@@ -48,7 +39,12 @@ export class AuthService {
     const token = localStorage.getItem('token');
 
     if (userData && token) {
-      this.currentUserSubject.next(JSON.parse(userData));
+      try {
+        const user = JSON.parse(userData);
+        this.currentUserSubject.next(user);
+      } catch (e) {
+        this.clearAuthData();
+      }
     }
   }
 
@@ -56,23 +52,21 @@ export class AuthService {
     email: string;
     password: string;
   }): Observable<LoginResponse> {
+    console.log('Datos enviados al backend:', credentials); // <-- Agrega esto
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    });
+
+    const body = JSON.stringify(credentials);
+    console.log('Cuerpo de la solicitud:', body); // <-- Agrega esto
+
     return this.http
-      .post<LoginResponse>(
-        `${environment.apiUrl}/login.php`, // Cambiado a ruta correcta
-        credentials
-      )
+      .post<LoginResponse>(`${environment.apiUrl}/login.php`, body, { headers })
       .pipe(
-        tap((response) => {
-          if (response.success && response.token && response.user) {
-            localStorage.setItem('token', response.token);
-            localStorage.setItem('currentUser', JSON.stringify(response.user));
-            this.currentUserSubject.next(response.user);
-          }
-        }),
-        catchError((error) => {
-          console.error('Login error:', error);
-          return throwError(() => error);
-        })
+        tap((response) => console.log('Respuesta del backend:', response)) // <-- Agrega esto
+        // ... resto del código
       );
   }
 
@@ -112,31 +106,51 @@ export class AuthService {
       );
   }
 
-  private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'Ocurrió un error';
-    if (error.error instanceof ErrorEvent) {
-      // Error del lado del cliente
-      errorMessage = `Error: ${error.error.message}`;
-    } else {
-      // Error del lado del servidor
-      errorMessage = `Código: ${error.status}\nMensaje: ${error.message}`;
+  private setAuthData(token: string, user: User): void {
+    localStorage.setItem('token', token);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    this.currentUserSubject.next(user);
+  }
+
+  private clearAuthData(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    this.currentUserSubject.next(null);
+  }
+
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'Ocurrió un error durante el inicio de sesión';
+
+    if (error.status === 0) {
+      errorMessage = 'Error de conexión: No se pudo contactar al servidor';
+    } else if (error.status === 400) {
+      errorMessage = 'Datos inválidos proporcionados';
+    } else if (error.status === 401) {
+      errorMessage = 'Credenciales incorrectas';
+    } else if (error.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error.message) {
+      errorMessage = error.message;
     }
-    console.error(errorMessage);
+
+    console.error('Error en AuthService:', error);
     return throwError(() => new Error(errorMessage));
+  }
+
+  logout(): void {
+    this.clearAuthData();
+    this.router.navigate(['/login']);
   }
 
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
   }
 
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(null);
-    this.router.navigate(['/login']);
-  }
-
   get currentUserValue(): User | null {
     return this.currentUserSubject.value;
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
   }
 }

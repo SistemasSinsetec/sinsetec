@@ -3,6 +3,7 @@
     "target": "http://localhost/sinsetec-php",
     "secure": false,
     "changeOrigin": true,
+    "logLevel": "debug",
     "pathRewrite": {
       "^/api": ""
     }
