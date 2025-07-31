@@ -68,7 +68,8 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "port": 2898,
-            "buildTarget": "sinsetec:build:development"
+            "buildTarget": "sinsetec:build:development",
+            "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
             "production": {

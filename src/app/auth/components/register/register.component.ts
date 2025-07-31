@@ -12,18 +12,6 @@ import { AuthService } from '../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 
-interface RegisterResponse {
-  success: boolean;
-  message?: string;
-}
-
-interface ApiError {
-  error?: {
-    message?: string;
-  };
-  message?: string;
-}
-
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
@@ -32,12 +20,6 @@ interface ApiError {
   imports: [CommonModule, ReactiveFormsModule],
 })
 export class RegisterComponent {
-  onRegister() {
-    throw new Error('Method not implemented.');
-  }
-  goToLogin() {
-    throw new Error('Method not implemented.');
-  }
   registerForm: FormGroup;
 
   private fb = inject(FormBuilder);
@@ -76,28 +58,33 @@ export class RegisterComponent {
       return;
     }
 
-    const { username, email, password } = this.registerForm.value;
+    const { username, email, password, confirmPassword } =
+      this.registerForm.value;
 
     this.authService
       .register({
-        username: username as string,
-        email: email as string,
-        password: password as string,
+        username,
+        email,
+        password,
+        confirmPassword,
       })
       .subscribe({
-        next: (response: RegisterResponse) => {
+        next: (response) => {
           if (response.success) {
-            this.router.navigate(['/home']);
             this.toastr.success(`Registro exitoso. Bienvenido ${username}`);
+            this.router.navigate(['/login']);
           } else {
             this.toastr.error(response.message || 'Error al registrarse');
           }
         },
-        error: (err: ApiError) => {
-          console.error('Register error:', err);
-          this.toastr.error(
-            err.error?.message || err.message || 'Error de conexión'
-          );
+        error: (err) => {
+          let errorMessage = 'Error de conexión';
+          if (err.error?.message) {
+            errorMessage = err.error.message;
+          } else if (err.message) {
+            errorMessage = err.message;
+          }
+          this.toastr.error(errorMessage);
         },
       });
   }

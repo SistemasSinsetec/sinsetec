@@ -9,8 +9,9 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import authRoutes from './app/auth/routes/auth.routes';
 import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+import database from './app/auth/services/database.service';
 
 // Configura variables de entorno
 dotenv.config();
@@ -25,15 +26,46 @@ const angularApp = new AngularNodeAppEngine();
 // Middlewares
 app.use(
   cors({
-    origin: 'http://localhost:4200', // Ajusta según tu frontend
+    origin: 'http://localhost:4200',
     credentials: true,
   })
 );
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Rutas de API
-app.use('/api/auth', authRoutes); // Esta línea debe estar presente
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'Campos requeridos faltantes' });
+    }
+
+    const userExists = await database.getUserByEmail(email);
+    if (userExists) {
+      return res.status(400).json({ error: 'Email ya registrado' });
+    }
+
+    const userId = await database.createUser(username, email, password);
+    const token = jwt.sign(
+      { id: userId },
+      process.env['JWT_SECRET'] || 'secreto_temporal',
+      { expiresIn: '1h' }
+    );
+
+    return res.status(201).json({
+      success: true,
+      user: { id: userId, username, email },
+      token,
+    });
+  } catch (error) {
+    console.error('Error en registro:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ... (resto del archivo permanece igual)
 
 // Archivos estáticos
 app.use(express.static(browserDistFolder));

@@ -1,0 +1,13 @@
+// Usa @use en lugar de @import (recomendado para Sass moderno)
+@use "ngx-toastr/toastr";
+
+/* Estilos globales */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Estilos para toastr (opcional) */
+.toast-container {
+  font-size: 14px;
+}

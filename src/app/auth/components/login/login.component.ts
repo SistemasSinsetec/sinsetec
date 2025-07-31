@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service'; // Asegúrate que la ruta sea correcta
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 
@@ -21,6 +21,7 @@ interface ApiError {
     message?: string;
   };
   message?: string;
+  status?: number;
 }
 
 @Component({
@@ -28,7 +29,7 @@ interface ApiError {
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
@@ -36,23 +37,11 @@ export class LoginComponent {
   private router = inject(Router);
   private toastr = inject(ToastrService);
 
-  // FORMULARIO ACTUALIZADO (elige UNA de las dos opciones)
-
-  // OPCIÓN 1: Usar EMAIL como campo principal (recomendado)
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
     rememberMe: [false],
   });
-
-  // OPCIÓN 2: Usar USERNAME como campo principal (si prefieres username)
-  /*
-  loginForm = this.fb.group({
-    username: ['', Validators.required],
-    password: ['', Validators.required],
-    rememberMe: [false]
-  });
-  */
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
@@ -60,13 +49,11 @@ export class LoginComponent {
       return;
     }
 
-    // Actualiza según la opción elegida
     const credentials = this.loginForm.value;
 
     this.authService
       .login({
-        email: credentials.email as string, // Usar esto si elegiste Opción 1
-        // username: credentials.username as string,  // Usar esto si elegiste Opción 2
+        email: credentials.email as string,
         password: credentials.password as string,
       })
       .subscribe({
@@ -88,10 +75,10 @@ export class LoginComponent {
   }
 
   navigateToForgotPassword(): void {
-    this.router.navigate(['/auth/forgot-password']);
+    this.router.navigate(['/forgot-password']);
   }
 
   navigateToRegister(): void {
-    this.router.navigate(['/auth/register']);
+    this.router.navigate(['/register']);
   }
 }
