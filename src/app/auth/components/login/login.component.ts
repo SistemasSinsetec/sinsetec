@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../services/auth.service'; // Asegúrate que la ruta sea correcta
+import { AuthService } from '../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 
@@ -14,14 +14,6 @@ interface LoginResponse {
     id: number;
   };
   token?: string;
-}
-
-interface ApiError {
-  error?: {
-    message?: string;
-  };
-  message?: string;
-  status?: number;
 }
 
 @Component({
@@ -49,27 +41,25 @@ export class LoginComponent {
       return;
     }
 
-    const credentials = this.loginForm.value;
+    const { email, password } = this.loginForm.value;
 
     this.authService
       .login({
-        email: credentials.email as string,
-        password: credentials.password as string,
+        email: email as string,
+        password: password as string,
       })
       .subscribe({
-        next: (response: LoginResponse) => {
-          if (response.success && response.token) {
-            this.router.navigate(['/home']);
+        next: (response) => {
+          if (response.success) {
             this.toastr.success(`Bienvenido ${response.user?.username}`);
+            this.router.navigate(['/home']);
           } else {
             this.toastr.error(response.message || 'Error al iniciar sesión');
           }
         },
-        error: (err: ApiError) => {
-          console.error('Login error:', err);
-          this.toastr.error(
-            err.error?.message || err.message || 'Error de conexión'
-          );
+        error: (err) => {
+          this.toastr.error(err.message || 'Error de conexión');
+          console.error('Error en login:', err);
         },
       });
   }

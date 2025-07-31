@@ -52,21 +52,23 @@ export class AuthService {
     email: string;
     password: string;
   }): Observable<LoginResponse> {
-    console.log('Datos enviados al backend:', credentials); // <-- Agrega esto
-
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       Accept: 'application/json',
     });
 
-    const body = JSON.stringify(credentials);
-    console.log('Cuerpo de la solicitud:', body); // <-- Agrega esto
-
     return this.http
-      .post<LoginResponse>(`${environment.apiUrl}/login.php`, body, { headers })
+      .post<LoginResponse>(`${environment.apiUrl}/login.php`, credentials, {
+        headers,
+      })
       .pipe(
-        tap((response) => console.log('Respuesta del backend:', response)) // <-- Agrega esto
-        // ... resto del código
+        tap((response) => {
+          console.log('Respuesta del servidor:', response);
+          if (response.success && response.token && response.user) {
+            this.setAuthData(response.token, response.user);
+          }
+        }),
+        catchError(this.handleError)
       );
   }
 
