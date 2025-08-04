@@ -1,0 +1,207 @@
+// src/app/features/register-solicitudes/register-solicitudes.component.scss
+@use "../../shared/styles/toolbar" as toolbar;
+
+.solicitud-container {
+  max-width: 800px;
+  margin: 1rem auto 2rem;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
+  .solicitud-header {
+    margin-bottom: 2rem;
+    text-align: center;
+
+    h1 {
+      color: toolbar.$primary-color;
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .icon {
+      font-size: 1.5em;
+    }
+  }
+
+  .progress-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 1.5rem 0;
+
+    .progress-step {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #e9ecef;
+      color: #6c757d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      transition: all 0.3s ease;
+
+      &.active {
+        background: toolbar.$primary-color;
+        color: white;
+      }
+    }
+
+    .progress-line {
+      width: 60px;
+      height: 3px;
+      background: #e9ecef;
+      transition: all 0.3s ease;
+
+      &.active {
+        background: toolbar.$primary-color;
+      }
+    }
+  }
+
+  .form-section {
+    padding: 1.5rem;
+    background: toolbar.$light-color;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    animation: fadeIn 0.3s ease-out;
+
+    h2 {
+      color: toolbar.$secondary-color;
+      font-size: 1.3rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid rgba(toolbar.$primary-color, 0.2);
+    }
+  }
+
+  .form-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+
+  .form-group {
+    flex: 1;
+    margin-bottom: 1rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: toolbar.$dark-color;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+
+      &:focus {
+        outline: none;
+        border-color: toolbar.$primary-color;
+        box-shadow: 0 0 0 3px rgba(toolbar.$primary-color, 0.2);
+      }
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+  }
+
+  .required {
+    color: toolbar.$warning-color;
+    font-weight: bold;
+  }
+
+  .partida-badge {
+    display: inline-block;
+    background: rgba(toolbar.$primary-color, 0.1);
+    color: toolbar.$primary-color;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    margin: 0.5rem 0;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-prev {
+      background: #e9ecef;
+      color: toolbar.$dark-color;
+
+      &:hover {
+        background: #dee2e6;
+      }
+    }
+
+    .btn-next,
+    .btn-submit {
+      background: toolbar.$primary-color;
+      color: white;
+
+      &:hover {
+        background: toolbar.$secondary-color;
+      }
+    }
+
+    .btn-submit {
+      background: toolbar.$success-color;
+
+      &:hover {
+        background: darken(toolbar.$success-color, 10%);
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .solicitud-container {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+}

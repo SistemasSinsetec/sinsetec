@@ -1,0 +1,191 @@
+<!-- src/app/features/register-solicitudes/register-solicitudes.component.html -->
+<div class="app-container">
+  <!-- Barra de navegación -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <a class="toolbar-title" routerLink="/home">Inicio</a>
+      <a class="toolbar-title" routerLink="/register-solicitudes"
+        >Registro de Solicitudes</a
+      >
+      <a class="toolbar-title" routerLink="/solicitudes">Solicitudes</a>
+
+      <a class="toolbar-title" routerLink="/control-refacciones"
+        >Control de Refacciones</a
+      >
+      <a class="toolbar-title" routerLink="/accesos-permisos"
+        >Accesos/Permisos</a
+      >
+    </div>
+    <div class="toolbar-right">
+      <div class="dropdown">
+        <span class="profile">
+          <i class="fas fa-user"></i> Perfil
+          <i class="fa fa-caret-down"></i>
+        </span>
+        <div class="dropdown-content">
+          <a (click)="logout()">Cerrar sesión</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="solicitud-container">
+    <div class="solicitud-header">
+      <h1>
+        <span class="icon">📋</span>
+        Solicitud de documento por servicio
+      </h1>
+      <div class="progress-bar">
+        <div class="progress-step" [class.active]="currentStep >= 1">1</div>
+        <div class="progress-line" [class.active]="currentStep >= 2"></div>
+        <div class="progress-step" [class.active]="currentStep >= 2">2</div>
+        <div class="progress-line" [class.active]="currentStep >= 3"></div>
+        <div class="progress-step" [class.active]="currentStep >= 3">3</div>
+      </div>
+    </div>
+
+    <!-- Paso 1: Información básica -->
+    <div class="form-section" *ngIf="currentStep === 1">
+      <h2>Información básica</h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cliente <span class="required">*</span></label>
+          <input
+            type="text"
+            [(ngModel)]="solicitud.cliente"
+            name="cliente"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Solicitante <span class="required">*</span></label>
+          <input
+            type="text"
+            [(ngModel)]="solicitud.solicitante"
+            name="solicitante"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="partida-badge">
+        <span>Partida #{{ solicitud.partida }}</span>
+      </div>
+    </div>
+
+    <!-- Paso 2: Datos principales -->
+    <div class="form-section" *ngIf="currentStep === 2">
+      <h2>Datos principales</h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo de trabajo <span class="required">*</span></label>
+          <select
+            [(ngModel)]="solicitud.tipoTrabajo"
+            name="tipoTrabajo"
+            required
+          >
+            <option value="" disabled selected>Seleccione una opción</option>
+            <option *ngFor="let tipo of tiposTrabajo" [value]="tipo.value">
+              {{ tipo.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Naturaleza del trabajo <span class="required">*</span></label>
+          <select
+            [(ngModel)]="solicitud.naturalezaTrabajo"
+            name="naturalezaTrabajo"
+            required
+          >
+            <option value="" disabled selected>Seleccione una opción</option>
+            <option *ngFor="let nat of naturalezasTrabajo" [value]="nat.value">
+              {{ nat.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Tipo de máquina <span class="required">*</span></label>
+        <select [(ngModel)]="solicitud.tipoMaquina" name="tipoMaquina" required>
+          <option value="" disabled selected>Seleccione una opción</option>
+          <option *ngFor="let tipo of tiposMaquina" [value]="tipo.value">
+            {{ tipo.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Paso 3: Descripción del servicio -->
+    <div class="form-section" *ngIf="currentStep === 3">
+      <h2>Descripción del servicio</h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>ID máquina <span class="required">*</span></label>
+          <input
+            type="text"
+            [(ngModel)]="solicitud.idMaquina"
+            name="idMaquina"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Modelo máquina <span class="required">*</span></label>
+          <input
+            type="text"
+            [(ngModel)]="solicitud.modeloMaquina"
+            name="modeloMaquina"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Número de serie <span class="required">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="solicitud.numeroSerie"
+          name="numeroSerie"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Descripción adicional</label>
+        <textarea
+          [(ngModel)]="solicitud.descripcionServicio"
+          name="descripcionServicio"
+          rows="4"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button *ngIf="currentStep > 1" (click)="prevStep()" class="btn-prev">
+        ← Anterior
+      </button>
+
+      <button
+        *ngIf="currentStep < totalSteps"
+        (click)="nextStep()"
+        class="btn-next"
+      >
+        Siguiente →
+      </button>
+
+      <button
+        *ngIf="currentStep === totalSteps"
+        (click)="onSubmit()"
+        class="btn-submit"
+      >
+        Guardar Solicitud
+      </button>
+    </div>
+  </div>
+</div>

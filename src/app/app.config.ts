@@ -4,6 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideToastr } from 'ngx-toastr';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { APP_ROUTES } from './app.routes';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async'; // <-- Añadir si no está
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,5 +16,6 @@ export const appConfig: ApplicationConfig = {
       preventDuplicates: true,
     }),
     provideAnimations(),
+    provideAnimationsAsync(), // <-- Añadir si no está
   ],
 };

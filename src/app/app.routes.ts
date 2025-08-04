@@ -1,3 +1,4 @@
+// src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { AuthGuard } from './auth/guards/auth.guard';
 
@@ -34,5 +35,22 @@ export const APP_ROUTES: Routes = [
       import('./features/home/home.component').then((m) => m.HomeComponent),
     canActivate: [AuthGuard],
   },
+  {
+    path: 'solicitudes',
+    loadComponent: () =>
+      import('./features/solicitudes/solicitudes.component').then(
+        (m) => m.SolicitudesComponent
+      ),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'register-solicitudes',
+    loadComponent: () =>
+      import(
+        './features/register-solicitudes/register-solicitudes.component'
+      ).then((m) => m.RegisterSolicitudesComponent),
+    canActivate: [AuthGuard],
+  },
+
   { path: '**', redirectTo: 'login' },
 ];

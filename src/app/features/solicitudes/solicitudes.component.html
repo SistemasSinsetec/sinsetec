@@ -1,288 +1,434 @@
-<div class="solicitudes-container">
-  <header class="header">
-    <div class="logo">
-      <h1>BizBud</h1>
-      <p>Gestión de solicitudes</p>
+<div class="app-container">
+  <!-- Barra de navegación -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <a class="toolbar-title" routerLink="/home">Inicio</a>
+      <a class="toolbar-title" routerLink="/register-solicitudes"
+        >Registro de Solicitudes</a
+      >
+      <a class="toolbar-title active" routerLink="/solicitudes">Solicitudes</a>
+      <a class="toolbar-title" routerLink="/control-refacciones"
+        >Control de Refacciones</a
+      >
+      <a class="toolbar-title" routerLink="/accesos-permisos"
+        >Accesos/Permisos</a
+      >
+    </div>
+    <div class="toolbar-right">
+      <div class="dropdown">
+        <span class="profile">
+          <i class="fas fa-user"></i> Perfil
+          <i class="fa fa-caret-down"></i>
+        </span>
+        <div class="dropdown-content">
+          <a (click)="logout()">Cerrar sesión</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="solicitudes-container">
+    <div class="header">
+      <div class="logo">
+        <h1>Sinsetec</h1>
+        <p>Gestión de solicitudes</p>
+      </div>
     </div>
 
-    <nav class="main-nav">
-      <ul>
-        <li>
-          <a routerLink="/home"><i class="fas fa-home"></i> Inicio</a>
-        </li>
-        <li class="active">
-          <a routerLink="/solicitudes"
-            ><i class="fas fa-list"></i> Solicitudes</a
+    <main class="main-content">
+      <section class="actions-section">
+        <div class="action-buttons">
+          <button
+            class="action-button primary"
+            (click)="mostrarFormularioFactura()"
           >
-        </li>
-        <li>
-          <a routerLink="/control-refacciones"
-            ><i class="fas fa-cogs"></i> Control de Refacciones</a
+            <i class="fas fa-file-invoice-dollar"></i> Facturar
+          </button>
+          <button
+            class="action-button success"
+            (click)="mostrarFormularioEnterado()"
           >
-        </li>
-        <li>
-          <a routerLink="/accesos-permisos"
-            ><i class="fas fa-user-shield"></i> Accesos/Permisos</a
-          >
-        </li>
-        <li class="dropdown">
-          <a href="javascript:void(0)">
-            <i class="fas fa-user"></i> Perfil <i class="fa fa-caret-down"></i>
-          </a>
-          <div class="dropdown-content">
-            <a (click)="logout()">Cerrar sesión</a>
+            <i class="fas fa-check-circle"></i> Enterado
+          </button>
+          <button class="action-button info" (click)="nuevaSolicitud()">
+            <i class="fas fa-plus"></i> Nueva Solicitud
+          </button>
+        </div>
+
+        <div class="filters">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input
+              type="text"
+              [(ngModel)]="terminoBusqueda"
+              (input)="filtrarSolicitudes()"
+              placeholder="Buscar por cliente, solicitante o creado por"
+            />
           </div>
-        </li>
-      </ul>
-    </nav>
-  </header>
-
-  <main class="main-content">
-    <section class="actions-section">
-      <div class="action-dropdown">
-        <button class="action-button" (click)="mostrarFormularioFactura()">
-          <i class="fas fa-file-invoice-dollar"></i> Facturar
-        </button>
-      </div>
-
-      <div class="action-dropdown">
-        <button class="action-button" (click)="mostrarFormularioEnterado()">
-          <i class="fas fa-check-circle"></i> Enterado
-        </button>
-      </div>
-
-      <div class="filters">
-        <div class="filter-group">
-          <label for="busqueda">Buscar:</label>
-          <input
-            type="text"
-            id="busqueda"
-            [(ngModel)]="terminoBusqueda"
-            (input)="filtrarSolicitudes()"
-            placeholder="Cliente, solicitante o creado por"
-          />
-        </div>
-      </div>
-    </section>
-
-    <section class="table-section">
-      <div class="table-responsive">
-        <table class="solicitudes-table">
-          <thead>
-            <tr>
-              <th width="40px"></th>
-              <!-- Columna para checkbox -->
-              <th>ID</th>
-              <th>Tipo</th>
-              <th>Cliente</th>
-              <th>Solicitante</th>
-              <th>Fecha creación</th>
-              <th>Creado por</th>
-              <th>Fecha autorizado</th>
-              <th>Autorizado por</th>
-              <th>Fecha proceso</th>
-              <th>Procesado por</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              *ngFor="let solicitud of solicitudesFiltradas()"
-              [class.selected]="solicitudSeleccionada?.id === solicitud.id"
-              (click)="seleccionarSolicitud(solicitud)"
+          <div class="filter-group">
+            <label for="filter-status">Estado:</label>
+            <select
+              id="filter-status"
+              [(ngModel)]="filtroEstado"
+              (change)="filtrarSolicitudes()"
             >
-              <td>
-                <input
-                  type="checkbox"
-                  (click)="$event.stopPropagation()"
-                  [(ngModel)]="solicitud.seleccionada"
-                  class="select-checkbox"
-                />
-              </td>
-              <td>{{ solicitud.id }}</td>
-              <td>{{ solicitud.tipo }}</td>
-              <td>{{ solicitud.cliente }}</td>
-              <td>{{ solicitud.solicitante }}</td>
-              <td>{{ solicitud.fechaCreacion | date : "medium" }}</td>
-              <td>{{ solicitud.creadoPor }}</td>
-              <td>{{ solicitud.fechaAutorizado | date : "medium" }}</td>
-              <td>{{ solicitud.autorizadoPor }}</td>
-              <td>{{ solicitud.fechaProceso | date : "medium" }}</td>
-              <td>{{ solicitud.procesadoPor }}</td>
-              <td>
-                <span
-                  class="estado-badge"
-                  [class]="'estado-' + solicitud.estado.toLowerCase()"
-                >
-                  {{ solicitud.estado }}
-                </span>
-              </td>
-              <td class="acciones">
-                <!-- Botón de Orden -->
-                <button
-                  class="accion-btn orden-btn"
-                  title="Generar orden"
-                  (click)="generarOrden(solicitud.id); $event.stopPropagation()"
-                >
-                  <i class="fas fa-file-alt"></i>
-                </button>
-
-                <!-- Botón de Editar -->
-                <button
-                  class="accion-btn"
-                  title="Editar"
-                  (click)="
-                    editarSolicitud(solicitud.id); $event.stopPropagation()
-                  "
-                >
-                  <i class="fas fa-edit"></i>
-                </button>
-
-                <!-- Botón de Eliminar -->
-                <button
-                  class="accion-btn"
-                  title="Eliminar"
-                  (click)="
-                    eliminarSolicitud(solicitud.id); $event.stopPropagation()
-                  "
-                >
-                  <i class="fas fa-trash-alt"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="table-footer">
-        <div class="pagination-controls">
-          <button
-            class="page-btn"
-            [disabled]="paginaActual === 1"
-            (click)="paginaAnterior()"
-          >
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button
-            class="page-btn"
-            [disabled]="paginaActual === totalPaginas"
-            (click)="paginaSiguiente()"
-          >
-            <i class="fas fa-chevron-right"></i>
-          </button>
+              <option value="">Todos</option>
+              <option *ngFor="let estado of estados" [value]="estado">
+                {{ estado }}
+              </option>
+            </select>
+          </div>
         </div>
-        <div class="total-registros">
-          Total de registros: {{ solicitudes.length }}
+      </section>
+
+      <section class="table-section">
+        <div class="table-responsive">
+          <table class="solicitudes-table">
+            <thead>
+              <tr>
+                <th width="40px"></th>
+                <th (click)="ordenarPor('id')">
+                  ID
+                  <i
+                    class="fas"
+                    [class.fa-sort-up]="
+                      ordenCampo === 'id' && ordenDireccion === 'asc'
+                    "
+                    [class.fa-sort-down]="
+                      ordenCampo === 'id' && ordenDireccion === 'desc'
+                    "
+                    [class.fa-sort]="ordenCampo !== 'id'"
+                  ></i>
+                </th>
+                <th (click)="ordenarPor('tipo')">
+                  Tipo
+                  <i
+                    class="fas"
+                    [class.fa-sort-up]="
+                      ordenCampo === 'tipo' && ordenDireccion === 'asc'
+                    "
+                    [class.fa-sort-down]="
+                      ordenCampo === 'tipo' && ordenDireccion === 'desc'
+                    "
+                    [class.fa-sort]="ordenCampo !== 'tipo'"
+                  ></i>
+                </th>
+                <th (click)="ordenarPor('cliente')">
+                  Cliente
+                  <i
+                    class="fas"
+                    [class.fa-sort-up]="
+                      ordenCampo === 'cliente' && ordenDireccion === 'asc'
+                    "
+                    [class.fa-sort-down]="
+                      ordenCampo === 'cliente' && ordenDireccion === 'desc'
+                    "
+                    [class.fa-sort]="ordenCampo !== 'cliente'"
+                  ></i>
+                </th>
+                <th (click)="ordenarPor('fechaCreacion')">
+                  Fecha
+                  <i
+                    class="fas"
+                    [class.fa-sort-up]="
+                      ordenCampo === 'fechaCreacion' && ordenDireccion === 'asc'
+                    "
+                    [class.fa-sort-down]="
+                      ordenCampo === 'fechaCreacion' &&
+                      ordenDireccion === 'desc'
+                    "
+                    [class.fa-sort]="ordenCampo !== 'fechaCreacion'"
+                  ></i>
+                </th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let solicitud of solicitudesFiltradas()"
+                [class.selected]="solicitudSeleccionada?.id === solicitud.id"
+                (click)="seleccionarSolicitud(solicitud)"
+              >
+                <td>
+                  <input
+                    type="checkbox"
+                    (click)="$event.stopPropagation()"
+                    [(ngModel)]="solicitud.seleccionada"
+                    class="select-checkbox"
+                  />
+                </td>
+                <td>{{ solicitud.id }}</td>
+                <td>{{ solicitud.tipo }}</td>
+                <td>{{ solicitud.cliente }}</td>
+                <td>{{ solicitud.fechaCreacion | date : "dd/MM/yyyy" }}</td>
+                <td>
+                  <span
+                    class="estado-badge"
+                    [class]="'estado-' + solicitud.estado.toLowerCase()"
+                  >
+                    {{ solicitud.estado }}
+                  </span>
+                </td>
+                <td class="acciones">
+                  <button
+                    class="accion-btn view-btn"
+                    title="Ver detalles"
+                    (click)="
+                      verDetalles(solicitud.id); $event.stopPropagation()
+                    "
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    class="accion-btn edit-btn"
+                    title="Editar"
+                    (click)="
+                      editarSolicitud(solicitud.id); $event.stopPropagation()
+                    "
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button
+                    class="accion-btn delete-btn"
+                    title="Eliminar"
+                    (click)="
+                      confirmarEliminacion(solicitud); $event.stopPropagation()
+                    "
+                  >
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="solicitudesFiltradas().length === 0">
+                <td colspan="7" class="no-results">
+                  No se encontraron solicitudes que coincidan con los filtros
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <div class="pagination-info">
+            Mostrando {{ indiceInicioPagina() }} a {{ indiceFinPagina() }} de
+            {{ solicitudesFiltradas().length }} registros
+          </div>
+          <div class="pagination-controls">
+            <button
+              class="page-btn"
+              [disabled]="paginaActual === 1"
+              (click)="irAPagina(1)"
+            >
+              <i class="fas fa-angle-double-left"></i>
+            </button>
+            <button
+              class="page-btn"
+              [disabled]="paginaActual === 1"
+              (click)="paginaAnterior()"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <span
+              *ngFor="let pagina of paginasVisibles()"
+              [class.active]="pagina === paginaActual"
+              (click)="irAPagina(pagina)"
+              class="page-number"
+            >
+              {{ pagina }}
+            </span>
+            <button
+              class="page-btn"
+              [disabled]="paginaActual === totalPaginas"
+              (click)="paginaSiguiente()"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </button>
+            <button
+              class="page-btn"
+              [disabled]="paginaActual === totalPaginas"
+              (click)="irAPagina(totalPaginas)"
+            >
+              <i class="fas fa-angle-double-right"></i>
+            </button>
+          </div>
+          <div class="page-size-selector">
+            <label>Registros por página:</label>
+            <select
+              [(ngModel)]="registrosPorPagina"
+              (change)="cambiarTamanoPagina()"
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal Factura -->
+    <div
+      class="modal-overlay"
+      *ngIf="showFacturaForm"
+      (click)="cancelarFactura()"
+    ></div>
+    <div class="modal" *ngIf="showFacturaForm" [@modalAnimation]>
+      <div class="modal-header">
+        <h3>Facturar - Solicitud {{ solicitudSeleccionada?.id }}</h3>
+        <button class="modal-close" (click)="cancelarFactura()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="checkbox-container">
+            <input
+              type="checkbox"
+              [(ngModel)]="esCotizacion"
+              (change)="toggleCotizacion()"
+            />
+            <span class="checkmark"></span>
+            Es cotización
+          </label>
+          <label class="checkbox-container">
+            <input
+              type="checkbox"
+              [(ngModel)]="esFactura"
+              (change)="toggleFactura()"
+            />
+            <span class="checkmark"></span>
+            Es factura
+          </label>
+        </div>
+
+        <div *ngIf="esFactura" class="form-grid">
+          <div class="form-group">
+            <label for="tipoEntrega">Tipo de entrega</label>
+            <input
+              type="text"
+              id="tipoEntrega"
+              [(ngModel)]="tipoEntrega"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="garantia">Garantía</label>
+            <input
+              type="text"
+              id="garantia"
+              [(ngModel)]="garantia"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cantidad">Cantidad</label>
+              <input
+                type="number"
+                id="cantidad"
+                [(ngModel)]="cantidad"
+                min="1"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="precioSinIVA">Precio sin IVA</label>
+              <input
+                type="number"
+                id="precioSinIVA"
+                [(ngModel)]="precioSinIVA"
+                min="0"
+                step="0.01"
+                class="form-input"
+              />
+            </div>
+          </div>
         </div>
       </div>
-    </section>
-  </main>
-
-  <!-- Formulario para facturar -->
-  <div class="factura-form" *ngIf="showFacturaForm">
-    <h3>Facturar - Solicitud {{ solicitudSeleccionada?.id }}</h3>
-
-    <div class="form-group">
-      <label>
-        <input type="checkbox" [(ngModel)]="esFactura" /> Es factura
-      </label>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cancelarFactura()">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" (click)="confirmarFactura()">
+          Confirmar
+        </button>
+      </div>
     </div>
 
-    <div *ngIf="esFactura">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="tipoEntrega">T. entrega:</label>
-          <input type="text" id="tipoEntrega" [(ngModel)]="tipoEntrega" />
-        </div>
+    <!-- Modal Enterado - SOLUCIÓN IMPLEMENTADA -->
+    <div
+      class="modal-overlay"
+      *ngIf="showEnteradoForm"
+      (click)="cancelarEnterado()"
+    ></div>
+    <div class="modal" *ngIf="showEnteradoForm" [@modalAnimation]>
+      <div class="modal-header">
+        <h3>Enterado - Solicitud {{ solicitudSeleccionada?.id }}</h3>
+        <button class="modal-close" (click)="cancelarEnterado()">
+          &times;
+        </button>
       </div>
-
-      <div class="form-row">
+      <div class="modal-body">
         <div class="form-group">
-          <label for="garantia">Garantía:</label>
-          <input type="text" id="garantia" [(ngModel)]="garantia" />
-        </div>
-
-        <div class="form-group">
-          <label for="cantidad">Cantidad:</label>
-          <input type="number" id="cantidad" [(ngModel)]="cantidad" min="1" />
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="precioSinIVA">Precio sin IVA:</label>
+          <label for="fechaEnterado">Fecha:</label>
           <input
-            type="number"
-            id="precioSinIVA"
-            [(ngModel)]="precioSinIVA"
-            min="0"
-            step="0.01"
+            type="date"
+            id="fechaEnterado"
+            [(ngModel)]="fechaEnterado"
+            class="form-input"
           />
         </div>
+        <div class="form-group">
+          <label for="observacionesEnterado">Observaciones:</label>
+          <textarea
+            id="observacionesEnterado"
+            [(ngModel)]="observacionesEnterado"
+            class="form-input"
+            rows="3"
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cancelarEnterado()">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" (click)="confirmarEnterado()">
+          Confirmar
+        </button>
       </div>
     </div>
 
-    <div class="form-actions">
-      <button class="btn-cancel" (click)="cancelarFactura()">Cancelar</button>
-      <button class="btn-confirm" (click)="confirmarFactura()">
-        Confirmar
-      </button>
-    </div>
-  </div>
-
-  <!-- Formulario para marcar como enterado -->
-  <div class="enterado-form" *ngIf="showEnteradoForm">
-    <h3>Marcar como enterado - Solicitud {{ solicitudSeleccionada?.id }}</h3>
-
-    <div class="form-group">
-      <label for="observacionesEnterado">Observaciones:</label>
-      <textarea
-        id="observacionesEnterado"
-        [(ngModel)]="observacionesEnterado"
-        rows="3"
-        placeholder="Ingrese observaciones si es necesario"
-      ></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="fechaEnterado">Fecha:</label>
-      <input type="date" id="fechaEnterado" [(ngModel)]="fechaEnterado" />
-    </div>
-
-    <div class="form-actions">
-      <button class="btn-cancel" (click)="cancelarEnterado()">Cancelar</button>
-      <button class="btn-confirm" (click)="confirmarEnterado()">
-        Confirmar
-      </button>
-    </div>
-  </div>
-
-  <!-- Formulario para generar orden -->
-  <div class="orden-form" *ngIf="showOrdenForm">
-    <h3>Generar Orden - Solicitud {{ solicitudSeleccionada?.id }}</h3>
-
-    <div class="form-group">
-      <label for="observacionesOrden">Observaciones:</label>
-      <textarea
-        id="observacionesOrden"
-        [(ngModel)]="observacionesOrden"
-        rows="3"
-        placeholder="Detalles de la orden..."
-      ></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="fechaOrden">Fecha:</label>
-      <input type="date" id="fechaOrden" [(ngModel)]="fechaOrden" />
-    </div>
-
-    <div class="form-actions">
-      <button class="btn-cancel" (click)="cancelarOrden()">Cancelar</button>
-      <button class="btn-confirm" (click)="confirmarOrden()">
-        Generar Orden
-      </button>
+    <!-- Modal Eliminar -->
+    <div
+      class="modal-overlay"
+      *ngIf="showDeleteModal"
+      (click)="cancelarEliminacion()"
+    ></div>
+    <div class="modal modal-sm" *ngIf="showDeleteModal" [@modalAnimation]>
+      <div class="modal-header">
+        <h3>Confirmar eliminación</h3>
+        <button class="modal-close" (click)="cancelarEliminacion()">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          ¿Estás seguro que deseas eliminar la solicitud
+          {{ solicitudAEliminar?.id }}?
+        </p>
+        <p class="text-warning">Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cancelarEliminacion()">
+          Cancelar
+        </button>
+        <button class="btn btn-danger" (click)="eliminarSolicitud()">
+          Eliminar
+        </button>
+      </div>
     </div>
   </div>
 </div>

@@ -1,61 +1,70 @@
-<div class="home-container">
-  <header class="header">
+<!-- src/app/features/home/home.component.html -->
+<div class="app-container">
+  <!-- Barra de navegación -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <a class="toolbar-title active" routerLink="/home">Inicio</a>
+      <a class="toolbar-title" routerLink="/register-solicitudes"
+        >Registro de Solicitudes</a
+      >
+      <a class="toolbar-title" routerLink="/solicitudes">Solicitudes</a>
+
+      <a class="toolbar-title" routerLink="/control-refacciones"
+        >Control de Refacciones</a
+      >
+      <a class="toolbar-title" routerLink="/accesos-permisos"
+        >Accesos/Permisos</a
+      >
+    </div>
+    <div class="toolbar-right">
+      <div class="dropdown">
+        <span class="profile">
+          <i class="fas fa-user"></i> Perfil
+          <i class="fa fa-caret-down"></i>
+        </span>
+        <div class="dropdown-content">
+          <a (click)="logout()">Cerrar sesión</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="home-container">
     <div class="logo">
       <h1>Sinsetec</h1>
       <p>Sinergia de Servicios Tecnologicos</p>
     </div>
 
-    <nav class="main-nav">
-      <ul>
-        <li>
-          <a routerLink="/home"> <i class="fas fa-home"></i> Inicio </a>
-        </li>
-        <li><a routerLink="/solicitudes">Solicitudes</a></li>
-        <li><a routerLink="/control-refacciones">Control de Refacciones</a></li>
-        <li><a routerLink="/accesos-permisos">Accesos/Permisos</a></li>
-        <li class="dropdown">
-          <a href="javascript:void(0)">
-            <i class="fas fa-user"></i> Perfil
-            <i class="fa fa-caret-down"></i>
-          </a>
-          <div class="dropdown-content">
-            <a (click)="logout()">Cerrar sesión</a>
-            <!-- Cambiado de testLogout() a logout() -->
+    <main class="main-content">
+      <section class="welcome-section">
+        <h2>Bienvenido a Sinsetec</h2>
+        <p>
+          Nuestra meta es ser la mejor opción en servicios de reparación y
+          mantenimiento para maquinaria y equipo industrial en General.
+        </p>
+        <button class="info-button">Más información</button>
+      </section>
+
+      <section class="profile-section">
+        <div class="profile-card">
+          <h3>Sofía Cederío</h3>
+          <p><strong>Teléfono:</strong> 152-33-12345678</p>
+          <p><strong>Email:</strong> info&#64;example.com</p>
+
+          <div class="profile-description">
+            <p>
+              Párrafo. Haz clic para editar y agregar tu propio texto. Es fácil.
+              Haz clic en "Editar Inicio" o doble clic aquí para agregar tu
+              contenido y cambiar la fuente.
+            </p>
+            <p>
+              Puedes arrastrar y soltar este texto donde quieras en tu página.
+              En este espacio puedes contar tu historia y permitir a los
+              usuarios saber más sobre ti.
+            </p>
           </div>
-        </li>
-      </ul>
-    </nav>
-  </header>
-
-  <main class="main-content">
-    <section class="welcome-section">
-      <h2>Bienvenido a Sinsetec</h2>
-      <p>
-        Nuestra meta es ser la mejor opción en servicios de reparación y
-        mantenimiento para maquinaria y equipo industrial en General.
-      </p>
-      <button class="info-button">Más información</button>
-    </section>
-
-    <section class="profile-section">
-      <div class="profile-card">
-        <h3>Sofía Cederío</h3>
-        <p><strong>Teléfono:</strong> 152-33-12345678</p>
-        <p><strong>Email:</strong> info&#64;example.com</p>
-
-        <div class="profile-description">
-          <p>
-            Párrafo. Haz clic para editar y agregar tu propio texto. Es fácil.
-            Haz clic en "Editar Inicio" o doble clic aquí para agregar tu
-            contenido y cambiar la fuente.
-          </p>
-          <p>
-            Puedes arrastrar y soltar este texto donde quieras en tu página. En
-            este espacio puedes contar tu historia y permitir a los usuarios
-            saber más sobre ti.
-          </p>
         </div>
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
+  </div>
 </div>
