@@ -1,0 +1,26 @@
+<div class="toolbar">
+  <div class="toolbar-left">
+    <a class="toolbar-title" routerLink="/home">Inicio</a>
+    <a class="toolbar-title" routerLink="/register-solicitudes"
+      >Registro de Solicitudes</a
+    >
+    <a class="toolbar-title" routerLink="/solicitudes">Solicitudes</a>
+    <a class="toolbar-title active" routerLink="/control-refacciones"
+      >Control de Refacciones</a
+    >
+    <a class="toolbar-title" routerLink="/accesos-permisos">Accesos/Permisos</a>
+  </div>
+  <div class="toolbar-right">
+    <div class="dropdown">
+      <span class="profile">
+        <i class="fas fa-user"></i> Perfil
+        <i class="fa fa-caret-down"></i>
+      </span>
+      <div class="dropdown-content">
+        <a (click)="logout()">Cerrar sesión</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<router-outlet></router-outlet>
