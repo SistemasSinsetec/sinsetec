@@ -23,4 +23,140 @@
   </div>
 </div>
 
+<div class="refacciones-container">
+  <div class="header">
+    <div class="logo">
+      <h1>Control de Refacciones</h1>
+      <p>Administración de inventario de refacciones</p>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="actions-section">
+      <div class="action-buttons">
+        <button class="action-button primary" (click)="nuevoArticulo()">
+          <i class="fas fa-plus"></i> Nuevo Artículo
+        </button>
+        <button class="action-button success" (click)="guardarArticulo()">
+          <i class="fas fa-save"></i> Guardar
+        </button>
+        <button class="action-button info" (click)="buscarArticulo()">
+          <i class="fas fa-search"></i> Buscar
+        </button>
+      </div>
+    </div>
+
+    <div class="article-section">
+      <div class="article-header">
+        <h2>Artículo:</h2>
+        <div class="article-key">
+          <label>Clave:</label>
+          <input
+            type="text"
+            placeholder="Nuevo de parte o tipo"
+            [(ngModel)]="articulo.clave"
+          />
+        </div>
+      </div>
+
+      <div class="article-details-grid">
+        <!-- Primera fila - 4 columnas -->
+        <div class="detail-group">
+          <label>Clave Interna</label>
+          <input type="text" [(ngModel)]="articulo.claveInterna" />
+        </div>
+        <div class="detail-group">
+          <label>Cantidad</label>
+          <input type="number" [(ngModel)]="articulo.cantidad" />
+        </div>
+        <div class="detail-group">
+          <label>Disponible</label>
+          <input type="number" [(ngModel)]="articulo.disponible" />
+        </div>
+        <div class="detail-group">
+          <label>Unidad de medida</label>
+          <input type="text" [(ngModel)]="articulo.unidadMedida" />
+        </div>
+
+        <!-- Segunda fila - Descripción completa -->
+        <div class="detail-group full-width">
+          <label>Descripción</label>
+          <textarea
+            placeholder="Descripción del artículo"
+            [(ngModel)]="articulo.descripcion"
+          ></textarea>
+        </div>
+
+        <!-- Tercera fila - Condición y costo -->
+        <div class="detail-group">
+          <label>Condición</label>
+          <input
+            type="text"
+            placeholder="Estado del artículo"
+            [(ngModel)]="articulo.condicion"
+          />
+        </div>
+        <div class="detail-group">
+          <label>Costo de compra</label>
+          <input type="number" step="0.01" [(ngModel)]="articulo.costoCompra" />
+        </div>
+        <div class="detail-group">
+          <label>Rack</label>
+          <input type="text" [(ngModel)]="articulo.rack" />
+        </div>
+        <div class="detail-group">
+          <label>Cajón</label>
+          <input type="text" [(ngModel)]="articulo.cajon" />
+        </div>
+
+        <!-- Cuarta fila - Apartado y categorías -->
+        <div class="detail-group">
+          <label>Apartado</label>
+          <input type="text" [(ngModel)]="articulo.apartado" />
+        </div>
+        <div class="detail-group">
+          <label>Categoría 1</label>
+          <input
+            type="text"
+            placeholder="Categoría"
+            [(ngModel)]="articulo.categoria1"
+          />
+        </div>
+        <div class="detail-group">
+          <label>Categoría 2</label>
+          <input
+            type="text"
+            placeholder="Categoría"
+            [(ngModel)]="articulo.categoria2"
+          />
+        </div>
+        <div class="detail-group">
+          <label>Categoría 3</label>
+          <input
+            type="text"
+            placeholder="Categoría"
+            [(ngModel)]="articulo.categoria3"
+          />
+        </div>
+
+        <!-- Quinta fila - Archivo -->
+        <div class="detail-group file-upload-group full-width">
+          <label>Archivo</label>
+          <div class="file-upload-container">
+            <label class="file-upload-label">
+              <input
+                type="file"
+                (change)="onFileSelected($event)"
+                style="display: none"
+              />
+              <i class="fas fa-file-upload"></i>
+              <span>{{ archivoNombre }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <router-outlet></router-outlet>
