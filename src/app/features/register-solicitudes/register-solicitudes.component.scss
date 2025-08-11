@@ -1,207 +1,645 @@
-// src/app/features/register-solicitudes/register-solicitudes.component.scss
 @use "../../shared/styles/toolbar" as toolbar;
 
-.solicitud-container {
-  max-width: 800px;
-  margin: 1rem auto 2rem;
-  padding: 2rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+/* Estilos base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-  .solicitud-header {
-    margin-bottom: 2rem;
-    text-align: center;
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
 
-    h1 {
-      color: toolbar.$primary-color;
-      font-size: 1.8rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
+/* Toolbar styles */
+.toolbar {
+  background-color: toolbar.$primary-color;
+  color: white;
+  padding: 0 2rem;
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
-    .icon {
-      font-size: 1.5em;
+  .toolbar-left {
+    display: flex;
+    gap: 2rem;
+
+    .toolbar-title {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.5rem 0;
+      position: relative;
+
+      &.active {
+        font-weight: 600;
+        &::after {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 3px;
+          background-color: white;
+        }
+      }
+
+      &:hover {
+        opacity: 0.9;
+      }
     }
   }
 
-  .progress-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 1.5rem 0;
+  .toolbar-right {
+    .dropdown {
+      position: relative;
+      display: inline-block;
 
-    .progress-step {
-      width: 30px;
-      height: 30px;
+      .profile {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+        border-radius: 4px;
+
+        a {
+          color: #333;
+          padding: 12px 16px;
+          text-decoration: none;
+          display: block;
+
+          &:hover {
+            background-color: #f1f1f1;
+          }
+        }
+      }
+
+      &:hover .dropdown-content {
+        display: block;
+      }
+    }
+  }
+}
+
+/* Contenido principal */
+.process-container {
+  flex: 1;
+  padding: 2rem;
+  background: #f8fafc;
+
+  .process-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    padding: 2rem;
+  }
+}
+
+/* Header */
+.process-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+
+  .header-info {
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+
+      .document-badge {
+        background: #e2e8f0;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #475569;
+      }
+    }
+
+    p {
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+  }
+}
+
+/* Barra de progreso */
+.process-steps {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin-top: 1.5rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 16px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #e2e8f0;
+    z-index: 1;
+  }
+
+  .step-indicator {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    flex: 1;
+
+    .step-number {
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      background: #e9ecef;
-      color: #6c757d;
+      background: #e2e8f0;
+      color: #64748b;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
+      margin: 0 auto 0.5rem;
+      font-weight: 600;
+      border: 2px solid white;
       transition: all 0.3s ease;
+    }
 
-      &.active {
+    .step-label {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    &.active {
+      .step-number {
         background: toolbar.$primary-color;
+        color: white;
+        transform: scale(1.1);
+      }
+      .step-label {
+        color: toolbar.$primary-color;
+        font-weight: 600;
+      }
+    }
+
+    &.completed {
+      .step-number {
+        background: #10b981;
         color: white;
       }
     }
+  }
+}
 
-    .progress-line {
-      width: 60px;
-      height: 3px;
-      background: #e9ecef;
-      transition: all 0.3s ease;
+/* Contenido principal */
+.process-content {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  min-height: 500px;
 
-      &.active {
-        background: toolbar.$primary-color;
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sidebar */
+.process-sidebar {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  height: fit-content;
+
+  .sidebar-section {
+    margin-bottom: 2rem;
+
+    h3 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      svg {
+        width: 16px;
+        height: 16px;
+        stroke-width: 2;
+      }
+    }
+
+    .info-item {
+      margin-bottom: 1rem;
+
+      .info-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-bottom: 0.3rem;
+      }
+
+      .info-value {
+        font-size: 0.95rem;
+        color: #1e293b;
+        font-weight: 500;
+        padding: 0.3rem 0;
+        border-bottom: 1px dashed #e2e8f0;
       }
     }
   }
+}
 
-  .form-section {
-    padding: 1.5rem;
-    background: toolbar.$light-color;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    animation: fadeIn 0.3s ease-out;
+/* Área principal del formulario */
+.process-main {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
 
-    h2 {
-      color: toolbar.$secondary-color;
-      font-size: 1.3rem;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid rgba(toolbar.$primary-color, 0.2);
+/* Contenido de cada paso */
+.step-content {
+  display: none;
+
+  &.active {
+    display: block;
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
-  .form-row {
+  h2 {
+    font-size: 1.4rem;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
     display: flex;
-    gap: 1.5rem;
-    margin-bottom: 1rem;
+    align-items: center;
+    gap: 0.8rem;
 
-    @media (max-width: 600px) {
-      flex-direction: column;
+    svg {
+      color: toolbar.$primary-color;
+      width: 24px;
+      height: 24px;
+      stroke-width: 2;
+    }
+  }
+}
+
+/* Tarjetas de input */
+.input-card {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    font-size: 0.9rem;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+
+    .required {
+      color: #ef4444;
+    }
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    background: #f8fafc;
+    font-family: "Inter", sans-serif;
+
+    &:focus {
+      outline: none;
+      border-color: toolbar.$primary-color;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(toolbar.$primary-color, 0.1);
+    }
+  }
+
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+  }
+
+  textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  &.invalid {
+    input,
+    select,
+    textarea {
+      border-color: #ef4444;
+      background: #fff5f5;
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+  }
+}
+
+/* Grid de tarjetas */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Control de partida */
+.partida-control {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+
+  .partida-badge {
+    background: #f1f5f9;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #475569;
+
+    button {
+      background: #e2e8f0;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #cbd5e1;
+      }
+    }
+  }
+}
+
+/* Acciones del formulario */
+.process-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+
+  button {
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+    font-family: "Inter", sans-serif;
+  }
+
+  .btn-prev {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+
+    &:hover {
+      background: #e2e8f0;
+    }
+  }
+
+  .btn-next,
+  .btn-submit {
+    background: toolbar.$primary-color;
+    color: white;
+    border: 1px solid toolbar.$primary-color;
+
+    &:hover {
+      background: darken(toolbar.$primary-color, 10%);
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .process-container {
+    padding: 1rem;
+  }
+
+  .process-wrapper {
+    padding: 1.5rem;
+  }
+
+  .toolbar {
+    padding: 0 1rem;
+
+    .toolbar-left {
       gap: 1rem;
     }
   }
 
-  .form-group {
-    flex: 1;
-    margin-bottom: 1rem;
+  // Añade esto al final de tu archivo register-solicitudes.component.scss
 
+  /* Botón de descarga */
+  .btn-download {
+    background: #4f46e5 !important;
+    color: white !important;
+    border: 1px solid #4f46e5 !important;
+
+    &:hover {
+      background: darken(#4f46e5, 10%) !important;
+    }
+  }
+
+  /* Mejoras para los botones de acción */
+  .process-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    button {
+      i {
+        margin-right: 0.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 0.5rem;
+
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+
+  /* Estilos para los iconos */
+  .fas,
+  .fa {
+    font-size: 0.9rem;
+  }
+
+  /* Mejoras para el textarea */
+  textarea {
+    min-height: 150px;
+    padding: 1rem !important;
+    line-height: 1.6;
+    border-radius: 8px !important;
+    transition: all 0.3s ease;
+
+    &:focus {
+      border-color: #4f46e5 !important;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
+    }
+  }
+
+  /* Estilos para el documento badge */
+  .document-badge {
+    background: #e0e7ff !important;
+    color: #4f46e5 !important;
+    font-weight: 600 !important;
+    padding: 0.4rem 1rem !important;
+  }
+
+  /* Efectos hover para las cards */
+  .input-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  /* Estilos para los pasos completados */
+  .step-indicator.completed {
+    .step-number {
+      background: #10b981 !important;
+      color: white !important;
+    }
+
+    .step-label {
+      color: #10b981 !important;
+    }
+  }
+
+  /* Estilos para los inputs inválidos */
+  .invalid {
     label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: toolbar.$dark-color;
+      color: #ef4444 !important;
     }
 
     input,
     select,
     textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ced4da;
-      border-radius: 6px;
-      font-size: 1rem;
-      transition: border-color 0.3s;
+      border-color: #ef4444 !important;
+      background-color: #fff5f5 !important;
 
       &:focus {
-        outline: none;
-        border-color: toolbar.$primary-color;
-        box-shadow: 0 0 0 3px rgba(toolbar.$primary-color, 0.2);
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
       }
     }
-
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
   }
 
-  .required {
-    color: toolbar.$warning-color;
-    font-weight: bold;
-  }
-
-  .partida-badge {
-    display: inline-block;
-    background: rgba(toolbar.$primary-color, 0.1);
-    color: toolbar.$primary-color;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: 600;
-    margin: 0.5rem 0;
-  }
-
-  .form-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 1.5rem;
-
-    button {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-prev {
-      background: #e9ecef;
-      color: toolbar.$dark-color;
+  /* Estilos para el dropdown */
+  .dropdown-content {
+    a {
+      transition: background-color 0.2s ease;
+      color: #1e293b !important;
 
       &:hover {
-        background: #dee2e6;
-      }
-    }
-
-    .btn-next,
-    .btn-submit {
-      background: toolbar.$primary-color;
-      color: white;
-
-      &:hover {
-        background: toolbar.$secondary-color;
-      }
-    }
-
-    .btn-submit {
-      background: toolbar.$success-color;
-
-      &:hover {
-        background: darken(toolbar.$success-color, 10%);
+        background-color: #f1f5f9 !important;
       }
     }
   }
-}
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+  /* Mejoras de responsive */
+  @media (max-width: 640px) {
+    .process-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
 
-@media (max-width: 768px) {
-  .solicitud-container {
-    padding: 1.5rem;
-    margin: 1rem;
+    .process-steps {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.5rem;
+
+      &::before {
+        display: none;
+      }
+
+      .step-indicator {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .step-number {
+          margin: 0;
+        }
+      }
+    }
   }
 }

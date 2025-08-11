@@ -100,32 +100,7 @@ export class SolicitudesComponent {
     'Cotizado',
   ];
 
-  solicitudes: Solicitud[] = [
-    {
-      id: 434,
-      tipo: 'cotización',
-      cliente: 'FCDM',
-      solicitante: 'Octavio',
-      fechaCreacion: new Date('2025-07-17T12:55:01'),
-      creadoPor: 'reinsetec',
-      estado: 'Capturado',
-      descripcion: 'Trabajo de limpieza',
-      seleccionada: false,
-    },
-    {
-      id: 432,
-      tipo: 'cotización',
-      cliente: 'Motores Eléctricos FCDM',
-      solicitante: 'Octavio Montoy',
-      fechaCreacion: new Date('2025-06-27T13:13:05'),
-      creadoPor: 'Lobofrán',
-      estado: 'Capturado',
-      descripcion:
-        'Se tomó respaldo del disco mecánico de la máquina TOR-163 para cargar el respaldo en un emulador de Compact Flash para reemplazar el disco',
-      seleccionada: false,
-    },
-    // ... (agrega más solicitudes de ejemplo si es necesario)
-  ];
+  solicitudes: Solicitud[] = [];
 
   constructor(private authService: AuthService, private router: Router) {
     this.calcularPaginas();
