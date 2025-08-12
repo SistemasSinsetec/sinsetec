@@ -20,6 +20,18 @@ interface Solicitud {
   fecha_solicitud: string;
   estado: string;
   seleccionada?: boolean;
+  factura?: {
+    numero: string;
+    fecha: string;
+    monto: number;
+    descripcion: string;
+  };
+  cotizacion?: {
+    numero: string;
+    fecha: string;
+    monto: number;
+    descripcion: string;
+  };
 }
 
 @Component({
@@ -30,12 +42,6 @@ interface Solicitud {
   styleUrls: ['./solicitudes.component.scss'],
 })
 export class SolicitudesComponent implements OnInit {
-  mostrarFormularioEnterado() {
-    throw new Error('Method not implemented.');
-  }
-  mostrarFormularioFactura() {
-    throw new Error('Method not implemented.');
-  }
   // Exponer Math al template
   Math = Math;
 
@@ -43,6 +49,7 @@ export class SolicitudesComponent implements OnInit {
   solicitudesFiltradas: Solicitud[] = [];
   solicitudSeleccionada: Solicitud | null = null;
   solicitudAEliminar: Solicitud | null = null;
+  solicitudDetalle: Solicitud | null = null;
 
   // Filtros y paginación
   terminoBusqueda: string = '';
@@ -63,8 +70,22 @@ export class SolicitudesComponent implements OnInit {
 
   // Variables para modales
   showDeleteModal: boolean = false;
+  showViewModal: boolean = false;
+  showEditModal: boolean = false;
+  showFacturaModal: boolean = false;
+  showEnteradoModal: boolean = false;
   isLoading: boolean = false;
   errorMessage: string = '';
+
+  // Variables para Factura/Cotización
+  esCotizacion: boolean = false;
+  numeroDocumento: string = '';
+  fechaDocumento: string = new Date().toISOString().split('T')[0];
+  monto: number = 0;
+  descripcionDocumento: string = '';
+
+  // Variables para Enterado
+  comentarioEnterado: string = '';
 
   constructor(
     private solicitudesService: SolicitudesService,
@@ -151,21 +172,55 @@ export class SolicitudesComponent implements OnInit {
   }
 
   editarSolicitud(id: number): void {
-    this.router.navigate(['/register-solicitudes', id]);
+    this.solicitudesService.getSolicitud(id).subscribe({
+      next: (data: Solicitud) => {
+        this.solicitudDetalle = {
+          ...data,
+          fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
+        };
+        this.showEditModal = true;
+      },
+      error: (err: any) => {
+        console.error('Error al cargar para editar:', err);
+        this.errorMessage = 'Error al cargar la solicitud para editar';
+      },
+    });
   }
 
   verDetalles(id: number): void {
     this.solicitudesService.getSolicitud(id).subscribe({
-      next: (data: { id: any; cliente: any; estado: any }) => {
-        alert(
-          `Detalles de la solicitud:\nID: ${data.id}\nCliente: ${data.cliente}\nEstado: ${data.estado}`
-        );
+      next: (data: Solicitud) => {
+        this.solicitudDetalle = {
+          ...data,
+          fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
+        };
+        this.showViewModal = true;
       },
       error: (err: any) => {
         console.error('Error al obtener detalles:', err);
-        alert('Error al cargar los detalles de la solicitud');
+        this.errorMessage = 'Error al cargar los detalles de la solicitud';
       },
     });
+  }
+
+  guardarEdicion(): void {
+    if (this.solicitudDetalle) {
+      this.isLoading = true;
+      this.solicitudesService
+        .actualizarSolicitud(this.solicitudDetalle.id, this.solicitudDetalle)
+        .subscribe({
+          next: () => {
+            this.cargarSolicitudes();
+            this.showEditModal = false;
+            this.isLoading = false;
+          },
+          error: (err: any) => {
+            console.error('Error al actualizar:', err);
+            this.errorMessage = 'Error al actualizar la solicitud';
+            this.isLoading = false;
+          },
+        });
+    }
   }
 
   confirmarEliminacion(solicitud: Solicitud): void {
@@ -185,11 +240,10 @@ export class SolicitudesComponent implements OnInit {
             this.filtrarSolicitudes();
             this.showDeleteModal = false;
             this.solicitudAEliminar = null;
-            alert('Solicitud eliminada correctamente');
           },
           error: (err: any) => {
             console.error('Error al eliminar:', err);
-            alert('Error al eliminar la solicitud');
+            this.errorMessage = 'Error al eliminar la solicitud';
           },
         });
     }
@@ -201,21 +255,18 @@ export class SolicitudesComponent implements OnInit {
   }
 
   logout(): void {
-    // Aquí deberías implementar la lógica de logout
-    console.log('Usuario cerró sesión');
-    // Ejemplo: limpiar localStorage y redirigir
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.router.navigate(['/login']);
   }
 
   cambiarTamanoPagina(): void {
-    this.paginaActual = 1; // Resetear a la primera página
-    this.calcularPaginas(); // Recalcular paginación
+    this.paginaActual = 1;
+    this.calcularPaginas();
   }
 
   getPaginasVisibles(): number[] {
-    const paginasVisibles = 5; // Número máximo de páginas a mostrar
+    const paginasVisibles = 5;
     const paginas: number[] = [];
 
     let inicio = Math.max(
@@ -224,7 +275,6 @@ export class SolicitudesComponent implements OnInit {
     );
     const fin = Math.min(this.totalPaginas, inicio + paginasVisibles - 1);
 
-    // Ajustar inicio si estamos cerca del final
     inicio = Math.max(1, fin - paginasVisibles + 1);
 
     for (let i = inicio; i <= fin; i++) {
@@ -236,11 +286,107 @@ export class SolicitudesComponent implements OnInit {
 
   exportarAExcel(): void {
     console.log('Exportando a Excel...');
-    // Implementación real para exportar a Excel
+    // Implementación real iría aquí
   }
 
-  exportarAPDF(): void {
-    console.log('Exportando a PDF...');
-    // Implementación real para exportar a PDF
+  mostrarFormularioFactura(): void {
+    if (!this.solicitudSeleccionada) {
+      alert('Por favor seleccione una solicitud primero');
+      return;
+    }
+
+    // Resetear valores del formulario
+    this.esCotizacion = false;
+    this.numeroDocumento = '';
+    this.fechaDocumento = new Date().toISOString().split('T')[0];
+    this.monto = 0;
+    this.descripcionDocumento = '';
+
+    // Cargar datos de la solicitud
+    this.solicitudesService
+      .getSolicitud(this.solicitudSeleccionada.id)
+      .subscribe({
+        next: (data: Solicitud) => {
+          this.solicitudDetalle = data;
+          this.showFacturaModal = true;
+        },
+        error: (err: any) => {
+          console.error('Error al cargar solicitud:', err);
+          this.errorMessage = 'Error al cargar la solicitud';
+        },
+      });
+  }
+
+  guardarFactura(): void {
+    if (!this.solicitudSeleccionada) return;
+
+    this.isLoading = true;
+
+    const documento = {
+      tipo: this.esCotizacion ? 'cotizacion' : 'factura',
+      numero: this.numeroDocumento,
+      fecha: this.fechaDocumento,
+      monto: this.monto,
+      descripcion: this.descripcionDocumento,
+    };
+
+    this.solicitudesService
+      .registrarDocumento(this.solicitudSeleccionada.id, documento)
+      .subscribe({
+        next: () => {
+          this.cargarSolicitudes();
+          this.showFacturaModal = false;
+          this.isLoading = false;
+          alert(
+            `${
+              this.esCotizacion ? 'Cotización' : 'Factura'
+            } registrada correctamente`
+          );
+        },
+        error: (err: any) => {
+          console.error('Error al guardar documento:', err);
+          this.errorMessage = `Error al registrar ${
+            this.esCotizacion ? 'cotización' : 'factura'
+          }`;
+          this.isLoading = false;
+        },
+      });
+  }
+
+  mostrarFormularioEnterado(): void {
+    if (!this.solicitudSeleccionada) {
+      alert('Por favor seleccione una solicitud primero');
+      return;
+    }
+
+    this.comentarioEnterado = '';
+    this.showEnteradoModal = true;
+  }
+
+  confirmarEnterado(): void {
+    if (!this.solicitudSeleccionada) return;
+
+    this.isLoading = true;
+
+    const datosEnterado = {
+      estado: 'Enterado',
+      comentario: this.comentarioEnterado,
+    };
+
+    this.solicitudesService
+      .actualizarEstado(this.solicitudSeleccionada.id, datosEnterado)
+      .subscribe({
+        next: () => {
+          this.cargarSolicitudes();
+          this.showEnteradoModal = false;
+          this.isLoading = false;
+          alert('Solicitud marcada como ENTERADA');
+        },
+        error: (err: any) => {
+          console.error('Error al marcar como enterado:', err);
+          this.errorMessage = 'Error al marcar como enterado';
+          this.isLoading = false;
+        },
+      });
   }
 }

@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import {
+  HttpClient,
+  HttpHeaders,
+  HttpErrorResponse,
+} from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -10,6 +15,7 @@ export class SolicitudesService {
   private apiUrl = environment.apiUrl;
   private headers = new HttpHeaders({
     'Content-Type': 'application/json',
+    Accept: 'application/json',
   });
 
   constructor(private http: HttpClient) {}
@@ -30,25 +36,17 @@ export class SolicitudesService {
 
   crearSolicitud(solicitud: any): Observable<any> {
     return this.http
-      .post(
-        `${this.apiUrl}/registro_solicitud.php`,
-        JSON.stringify(solicitud),
-        {
-          headers: this.headers,
-        }
-      )
+      .post(`${this.apiUrl}/registro_solicitud.php`, solicitud, {
+        headers: this.headers,
+      })
       .pipe(catchError(this.handleError));
   }
 
   actualizarSolicitud(id: number, solicitud: any): Observable<any> {
     return this.http
-      .put(
-        `${this.apiUrl}/solicitudes.php?id=${id}`,
-        JSON.stringify(solicitud),
-        {
-          headers: this.headers,
-        }
-      )
+      .put(`${this.apiUrl}/solicitudes.php?id=${id}`, solicitud, {
+        headers: this.headers,
+      })
       .pipe(catchError(this.handleError));
   }
 
@@ -60,14 +58,36 @@ export class SolicitudesService {
       .pipe(catchError(this.handleError));
   }
 
-  private handleError(error: any) {
-    console.error('Ocurrió un error:', error);
-    return throwError(
-      () =>
-        new Error(
-          error.message ||
-            'Error en el servicio de solicitudes; por favor intente nuevamente.'
-        )
-    );
+  registrarDocumento(id: number, documento: any): Observable<any> {
+    return this.http
+      .post(
+        `${this.apiUrl}/registrar_documento.php`,
+        { id, ...documento },
+        { headers: this.headers }
+      )
+      .pipe(catchError(this.handleError));
+  }
+
+  actualizarEstado(id: number, datos: any): Observable<any> {
+    return this.http
+      .post(
+        `${this.apiUrl}/actualizar_estado.php`,
+        { id, ...datos },
+        { headers: this.headers }
+      )
+      .pipe(catchError(this.handleError));
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    let errorMessage = 'Error desconocido';
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Error del cliente: ${error.error.message}`;
+    } else {
+      errorMessage = `Código: ${error.status}\nMensaje: ${
+        error.message
+      }\nDetalles: ${error.error?.message || 'Sin detalles'}`;
+    }
+    console.error(errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }

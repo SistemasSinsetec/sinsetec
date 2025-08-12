@@ -1,4 +1,5 @@
 @use "../../shared/styles/toolbar" as toolbar;
+@use "sass:color";
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css");
 
 /* Variables */
@@ -30,7 +31,7 @@ $border-color: #dee2e6;
     }
 
     .logo p {
-      color: lighten($dark-color, 20%);
+      color: color.adjust($dark-color, $lightness: 20%);
       margin: 5px 0 0 0;
       font-size: 14px;
     }
@@ -57,7 +58,7 @@ $border-color: #dee2e6;
 
 .loading-message {
   background-color: rgba($info-color, 0.1);
-  color: darken($info-color, 10%);
+  color: color.adjust($info-color, $lightness: -10%);
 }
 
 .error-message {
@@ -100,7 +101,16 @@ $border-color: #dee2e6;
         color: white;
 
         &:hover {
-          background-color: darken($primary-color, 10%);
+          background-color: color.adjust($primary-color, $lightness: -10%);
+        }
+      }
+
+      &.success {
+        background-color: $success-color;
+        color: white;
+
+        &:hover {
+          background-color: color.adjust($success-color, $lightness: -10%);
         }
       }
 
@@ -109,7 +119,7 @@ $border-color: #dee2e6;
         color: white;
 
         &:hover {
-          background-color: darken($info-color, 10%);
+          background-color: color.adjust($info-color, $lightness: -10%);
         }
       }
     }
@@ -129,7 +139,7 @@ $border-color: #dee2e6;
       i {
         position: absolute;
         left: 10px;
-        color: lighten($dark-color, 40%);
+        color: color.adjust($dark-color, $lightness: 40%);
       }
 
       input {
@@ -206,7 +216,7 @@ $border-color: #dee2e6;
       transition: background-color 0.2s;
 
       &:hover {
-        background-color: darken($light-color, 2%);
+        background-color: color.adjust($light-color, $lightness: -2%);
       }
     }
 
@@ -225,7 +235,7 @@ $border-color: #dee2e6;
     .no-results {
       text-align: center;
       padding: 20px;
-      color: lighten($dark-color, 30%);
+      color: color.adjust($dark-color, $lightness: 30%);
       font-style: italic;
     }
 
@@ -240,27 +250,27 @@ $border-color: #dee2e6;
 
       &.estado-pendiente {
         background-color: rgba($info-color, 0.1);
-        color: darken($info-color, 10%);
+        color: color.adjust($info-color, $lightness: -10%);
       }
       &.estado-enproceso {
         background-color: rgba($warning-color, 0.1);
-        color: darken($warning-color, 20%);
+        color: color.adjust($warning-color, $lightness: -20%);
       }
       &.estado-completado {
         background-color: rgba($success-color, 0.1);
-        color: darken($success-color, 10%);
+        color: color.adjust($success-color, $lightness: -10%);
       }
       &.estado-cancelado {
         background-color: rgba($danger-color, 0.1);
-        color: darken($danger-color, 10%);
+        color: color.adjust($danger-color, $lightness: -10%);
       }
       &.estado-facturado {
         background-color: rgba($primary-color, 0.1);
-        color: darken($primary-color, 10%);
+        color: color.adjust($primary-color, $lightness: -10%);
       }
       &.estado-enterado {
         background-color: rgba($secondary-color, 0.1);
-        color: darken($secondary-color, 10%);
+        color: color.adjust($secondary-color, $lightness: -10%);
       }
     }
 
@@ -321,7 +331,7 @@ $border-color: #dee2e6;
     font-size: 14px;
 
     .pagination-info {
-      color: lighten($dark-color, 20%);
+      color: color.adjust($dark-color, $lightness: 20%);
     }
 
     .pagination-controls {
@@ -346,7 +356,7 @@ $border-color: #dee2e6;
 
         &:hover:not(.active):not([disabled]) {
           background-color: $light-color;
-          border-color: darken($border-color, 10%);
+          border-color: color.adjust($border-color, $lightness: -10%);
         }
 
         &[disabled] {
@@ -369,7 +379,7 @@ $border-color: #dee2e6;
       gap: 8px;
 
       label {
-        color: lighten($dark-color, 20%);
+        color: color.adjust($dark-color, $lightness: 20%);
         font-size: 13px;
       }
 
@@ -421,6 +431,10 @@ $border-color: #dee2e6;
     width: 400px;
   }
 
+  &.modal-lg {
+    width: 700px;
+  }
+
   .modal-header {
     padding: 15px 20px;
     border-bottom: 1px solid $border-color;
@@ -438,7 +452,7 @@ $border-color: #dee2e6;
       border: none;
       font-size: 24px;
       cursor: pointer;
-      color: lighten($dark-color, 30%);
+      color: color.adjust($dark-color, $lightness: 30%);
       transition: color 0.2s;
       line-height: 1;
 
@@ -456,6 +470,81 @@ $border-color: #dee2e6;
     .text-warning {
       color: $warning-color;
       font-weight: 500;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .detail-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: color.adjust($dark-color, $lightness: 20%);
+      font-size: 13px;
+      margin-bottom: 3px;
+    }
+
+    .detail-value {
+      padding: 8px;
+      background-color: rgba($light-color, 0.5);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+
+      label {
+        font-weight: 600;
+        color: color.adjust($dark-color, $lightness: 20%);
+        font-size: 13px;
+        margin-bottom: 5px;
+      }
+
+      input,
+      textarea,
+      select {
+        padding: 8px 12px;
+        border: 1px solid $border-color;
+        border-radius: 4px;
+        font-size: 14px;
+        transition: all 0.2s;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+        }
+
+        &[readonly] {
+          background-color: $light-color;
+          cursor: not-allowed;
+        }
+      }
+
+      textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+    }
+
+    .full-width {
+      grid-column: span 2;
     }
   }
 
@@ -490,7 +579,7 @@ $border-color: #dee2e6;
         color: white;
 
         &:hover {
-          background-color: darken($primary-color, 5%);
+          background-color: color.adjust($primary-color, $lightness: -5%);
         }
       }
 
@@ -500,10 +589,88 @@ $border-color: #dee2e6;
         color: white;
 
         &:hover {
-          background-color: darken($danger-color, 5%);
+          background-color: color.adjust($danger-color, $lightness: -5%);
+        }
+      }
+
+      &.btn-success {
+        background-color: $success-color;
+        border: 1px solid $success-color;
+        color: white;
+
+        &:hover {
+          background-color: color.adjust($success-color, $lightness: -10%);
         }
       }
     }
+  }
+}
+
+/* Estilos para el toggle switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 200px;
+  height: 34px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + label {
+      background-color: $primary-color;
+
+      .toggle-option:first-child {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .toggle-option:last-child {
+        color: white;
+      }
+    }
+  }
+
+  label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 34px;
+    cursor: pointer;
+    transition: 0.4s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+
+    .toggle-option {
+      color: rgba(0, 0, 0, 0.5);
+      font-weight: 500;
+      transition: 0.3s;
+      z-index: 1;
+
+      &.active {
+        color: white;
+      }
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      width: 50%;
+      height: 100%;
+      background-color: $primary-color;
+      border-radius: 34px;
+      transition: 0.4s;
+      left: 0;
+    }
+  }
+
+  input:checked + label::after {
+    left: 50%;
   }
 }
 
@@ -558,6 +725,11 @@ $border-color: #dee2e6;
 
     .modal {
       width: 95%;
+    }
+
+    .detail-grid,
+    .form-grid {
+      grid-template-columns: 1fr !important;
     }
   }
 }
