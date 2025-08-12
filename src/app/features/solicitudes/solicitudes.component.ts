@@ -1,279 +1,173 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../auth/services/auth.service';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { SolicitudesService } from './solicitudes.service';
+import { HttpClientModule } from '@angular/common/http';
 
 interface Solicitud {
   id: number;
-  tipo: string;
   cliente: string;
   solicitante: string;
-  fechaCreacion: Date;
-  creadoPor: string;
-  fechaAutorizado?: Date;
-  autorizadoPor?: string;
-  fechaProceso?: Date;
-  procesadoPor?: string;
+  partida: string;
+  tipo_trabajo: string;
+  naturaleza_trabajo: string;
+  tipo_maquina: string;
+  id_maquina: string;
+  modelo_maquina: string;
+  numero_serie: string;
+  descripcion_adicional: string;
+  fecha_solicitud: string;
   estado: string;
-  descripcion?: string;
   seleccionada?: boolean;
-  enterado?: {
-    fecha: Date;
-    observaciones: string;
-  };
-  factura?: {
-    esFactura: boolean;
-    tipoEntrega?: string;
-    garantia?: string;
-    cantidad?: number;
-    precioSinIVA?: number;
-    observaciones?: string;
-    fecha?: Date;
-  };
-  orden?: {
-    fecha: Date;
-    observaciones: string;
-  };
 }
 
 @Component({
   selector: 'app-solicitudes',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, HttpClientModule],
   templateUrl: './solicitudes.component.html',
   styleUrls: ['./solicitudes.component.scss'],
-  animations: [
-    trigger('modalAnimation', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translate(-50%, -60%)' }),
-        animate(
-          '200ms ease-out',
-          style({ opacity: 1, transform: 'translate(-50%, -50%)' })
-        ),
-      ]),
-      transition(':leave', [
-        animate(
-          '150ms ease-in',
-          style({ opacity: 0, transform: 'translate(-50%, -60%)' })
-        ),
-      ]),
-    ]),
-  ],
 })
-export class SolicitudesComponent {
+export class SolicitudesComponent implements OnInit {
+  mostrarFormularioEnterado() {
+    throw new Error('Method not implemented.');
+  }
+  mostrarFormularioFactura() {
+    throw new Error('Method not implemented.');
+  }
+  // Exponer Math al template
+  Math = Math;
+
+  solicitudes: Solicitud[] = [];
+  solicitudesFiltradas: Solicitud[] = [];
+  solicitudSeleccionada: Solicitud | null = null;
+  solicitudAEliminar: Solicitud | null = null;
+
+  // Filtros y paginación
   terminoBusqueda: string = '';
   filtroEstado: string = '';
   paginaActual: number = 1;
   registrosPorPagina: number = 10;
-  ordenCampo: string = 'fechaCreacion';
-  ordenDireccion: string = 'desc';
   totalPaginas: number = 1;
-  paginasVisiblesArray: number[] = [];
 
-  showEnteradoForm: boolean = false;
-  showFacturaForm: boolean = false;
-  showDeleteModal: boolean = false;
-
-  esCotizacion: boolean = false;
-  esFactura: boolean = true;
-  tipoEntrega: string = '';
-  garantia: string = '';
-  cantidad: number = 1;
-  precioSinIVA: number = 0;
-  observacionesFactura: string = '';
-  fechaFactura: string = new Date().toISOString().split('T')[0];
-
-  observacionesEnterado: string = '';
-  fechaEnterado: string = new Date().toISOString().split('T')[0];
-
-  solicitudSeleccionada: Solicitud | null = null;
-  solicitudAEliminar: Solicitud | null = null;
-
+  // Estados posibles
   estados: string[] = [
-    'Capturado',
-    'Autorizado',
-    'Procesado',
+    'Pendiente',
+    'En Proceso',
+    'Completado',
+    'Cancelado',
     'Facturado',
     'Enterado',
-    'Cotizado',
   ];
 
-  solicitudes: Solicitud[] = [];
+  // Variables para modales
+  showDeleteModal: boolean = false;
+  isLoading: boolean = false;
+  errorMessage: string = '';
 
-  constructor(private authService: AuthService, private router: Router) {
-    this.calcularPaginas();
+  constructor(
+    private solicitudesService: SolicitudesService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.cargarSolicitudes();
   }
 
-  // Métodos privados para filtrado y ordenación
-  private aplicarFiltros(solicitudes: Solicitud[]): Solicitud[] {
-    return solicitudes
-      .filter((solicitud) => {
-        if (this.terminoBusqueda) {
-          const termino = this.terminoBusqueda.toLowerCase();
-          return (
-            solicitud.cliente.toLowerCase().includes(termino) ||
-            solicitud.solicitante.toLowerCase().includes(termino) ||
-            solicitud.creadoPor.toLowerCase().includes(termino) ||
-            solicitud.id.toString().includes(termino)
-          );
-        }
-        return true;
-      })
-      .filter((solicitud) => {
-        if (this.filtroEstado) {
-          return solicitud.estado === this.filtroEstado;
-        }
-        return true;
-      });
-  }
+  cargarSolicitudes(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
 
-  private aplicarOrden(solicitudes: Solicitud[]): Solicitud[] {
-    return [...solicitudes].sort((a, b) => {
-      if (this.ordenCampo === 'fechaCreacion') {
-        return this.ordenDireccion === 'asc'
-          ? a.fechaCreacion.getTime() - b.fechaCreacion.getTime()
-          : b.fechaCreacion.getTime() - a.fechaCreacion.getTime();
-      } else {
-        const campoA = a[this.ordenCampo as keyof Solicitud];
-        const campoB = b[this.ordenCampo as keyof Solicitud];
-
-        if (typeof campoA === 'string' && typeof campoB === 'string') {
-          return this.ordenDireccion === 'asc'
-            ? campoA.localeCompare(campoB)
-            : campoB.localeCompare(campoA);
-        }
-        return 0;
-      }
+    this.solicitudesService.getSolicitudes().subscribe({
+      next: (data: any[]) => {
+        this.solicitudes = data.map((item: any) => ({
+          ...item,
+          seleccionada: false,
+          fecha_solicitud: new Date(item.fecha_solicitud).toLocaleString(),
+        }));
+        this.filtrarSolicitudes();
+        this.isLoading = false;
+      },
+      error: (err: any) => {
+        console.error('Error al cargar solicitudes:', err);
+        this.errorMessage =
+          'Error al cargar las solicitudes. Por favor, intente nuevamente.';
+        this.isLoading = false;
+      },
     });
   }
 
-  // Métodos públicos
-  solicitudesFiltradas(): Solicitud[] {
-    const filtradas = this.aplicarFiltros(this.solicitudes);
-    return this.aplicarOrden(filtradas);
+  filtrarSolicitudes(): void {
+    let resultado = this.solicitudes;
+
+    // Aplicar filtro de búsqueda
+    if (this.terminoBusqueda) {
+      const termino = this.terminoBusqueda.toLowerCase();
+      resultado = resultado.filter(
+        (s) =>
+          s.cliente.toLowerCase().includes(termino) ||
+          s.solicitante.toLowerCase().includes(termino) ||
+          s.id.toString().includes(termino)
+      );
+    }
+
+    // Aplicar filtro de estado
+    if (this.filtroEstado) {
+      resultado = resultado.filter((s) => s.estado === this.filtroEstado);
+    }
+
+    this.solicitudesFiltradas = resultado;
+    this.calcularPaginas();
   }
 
   calcularPaginas(): void {
-    const filtradas = this.aplicarFiltros(this.solicitudes);
-    this.totalPaginas = Math.ceil(filtradas.length / this.registrosPorPagina);
-    this.actualizarPaginasVisibles();
-  }
-
-  actualizarPaginasVisibles(): void {
-    const paginas: number[] = [];
-    const paginasAMostrar = 5;
-
-    let inicio = Math.max(
-      1,
-      this.paginaActual - Math.floor(paginasAMostrar / 2)
-    );
-    let fin = Math.min(this.totalPaginas, inicio + paginasAMostrar - 1);
-
-    if (fin - inicio + 1 < paginasAMostrar) {
-      inicio = Math.max(1, fin - paginasAMostrar + 1);
+    this.totalPaginas =
+      Math.ceil(this.solicitudesFiltradas.length / this.registrosPorPagina) ||
+      1;
+    if (this.paginaActual > this.totalPaginas) {
+      this.paginaActual = this.totalPaginas;
     }
+  }
 
-    for (let i = inicio; i <= fin; i++) {
-      paginas.push(i);
+  get solicitudesPaginadas(): Solicitud[] {
+    const inicio = (this.paginaActual - 1) * this.registrosPorPagina;
+    const fin = inicio + this.registrosPorPagina;
+    return this.solicitudesFiltradas.slice(inicio, fin);
+  }
+
+  cambiarPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginas) {
+      this.paginaActual = pagina;
     }
-
-    this.paginasVisiblesArray = paginas;
   }
 
-  // Métodos de autenticación
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  seleccionarSolicitud(solicitud: Solicitud): void {
+    this.solicitudSeleccionada = solicitud;
   }
 
-  // Métodos de navegación
   nuevaSolicitud(): void {
     this.router.navigate(['/register-solicitudes']);
-  }
-
-  verDetalles(id: number): void {
-    console.log('Ver detalles de solicitud:', id);
-    // Implementa la lógica para ver detalles aquí
   }
 
   editarSolicitud(id: number): void {
     this.router.navigate(['/register-solicitudes', id]);
   }
 
-  // Métodos de selección
-  seleccionarSolicitud(solicitud: Solicitud): void {
-    this.solicitudSeleccionada = solicitud;
+  verDetalles(id: number): void {
+    this.solicitudesService.getSolicitud(id).subscribe({
+      next: (data: { id: any; cliente: any; estado: any }) => {
+        alert(
+          `Detalles de la solicitud:\nID: ${data.id}\nCliente: ${data.cliente}\nEstado: ${data.estado}`
+        );
+      },
+      error: (err: any) => {
+        console.error('Error al obtener detalles:', err);
+        alert('Error al cargar los detalles de la solicitud');
+      },
+    });
   }
 
-  // Métodos de facturación
-  // Métodos de facturación
-  mostrarFormularioFactura(): void {
-    if (!this.solicitudSeleccionada) {
-      alert('Por favor, selecciona una solicitud de la tabla primero');
-      return;
-    }
-    this.esCotizacion = false;
-    this.esFactura = true;
-    this.tipoEntrega = '';
-    this.garantia = '';
-    this.cantidad = 1;
-    this.precioSinIVA = 0;
-    this.showFacturaForm = true;
-  }
-
-  confirmarFactura(): void {
-    if (this.solicitudSeleccionada) {
-      this.solicitudSeleccionada.estado = this.esCotizacion
-        ? 'Cotizado'
-        : 'Facturado';
-      this.solicitudSeleccionada.factura = {
-        esFactura: this.esFactura,
-        tipoEntrega: this.tipoEntrega,
-        garantia: this.garantia,
-        cantidad: this.cantidad,
-        precioSinIVA: this.precioSinIVA,
-        observaciones: this.observacionesFactura,
-        fecha: new Date(this.fechaFactura),
-      };
-      this.cancelarFactura();
-    }
-  }
-
-  cancelarFactura(): void {
-    this.showFacturaForm = false;
-  }
-
-  // Métodos para el botón Enterado
-  mostrarFormularioEnterado(): void {
-    if (!this.solicitudSeleccionada) {
-      alert('Por favor, selecciona una solicitud de la tabla primero');
-      return;
-    }
-    this.fechaEnterado = new Date().toISOString().split('T')[0];
-    this.observacionesEnterado = '';
-    this.showEnteradoForm = true;
-  }
-
-  confirmarEnterado(): void {
-    if (this.solicitudSeleccionada) {
-      this.solicitudSeleccionada.estado = 'Enterado';
-      this.solicitudSeleccionada.enterado = {
-        fecha: new Date(this.fechaEnterado),
-        observaciones: this.observacionesEnterado,
-      };
-      this.cancelarEnterado();
-    }
-  }
-
-  cancelarEnterado(): void {
-    this.showEnteradoForm = false;
-    this.observacionesEnterado = '';
-    this.fechaEnterado = new Date().toISOString().split('T')[0];
-  }
-
-  // Métodos de eliminación
   confirmarEliminacion(solicitud: Solicitud): void {
     this.solicitudAEliminar = solicitud;
     this.showDeleteModal = true;
@@ -281,11 +175,23 @@ export class SolicitudesComponent {
 
   eliminarSolicitud(): void {
     if (this.solicitudAEliminar) {
-      this.solicitudes = this.solicitudes.filter(
-        (s) => s.id !== this.solicitudAEliminar?.id
-      );
-      this.cancelarEliminacion();
-      this.calcularPaginas();
+      this.solicitudesService
+        .eliminarSolicitud(this.solicitudAEliminar.id)
+        .subscribe({
+          next: () => {
+            this.solicitudes = this.solicitudes.filter(
+              (s) => s.id !== this.solicitudAEliminar?.id
+            );
+            this.filtrarSolicitudes();
+            this.showDeleteModal = false;
+            this.solicitudAEliminar = null;
+            alert('Solicitud eliminada correctamente');
+          },
+          error: (err: any) => {
+            console.error('Error al eliminar:', err);
+            alert('Error al eliminar la solicitud');
+          },
+        });
     }
   }
 
@@ -294,75 +200,47 @@ export class SolicitudesComponent {
     this.solicitudAEliminar = null;
   }
 
-  // Métodos de ordenación
-  ordenarPor(campo: string): void {
-    if (this.ordenCampo === campo) {
-      this.ordenDireccion = this.ordenDireccion === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.ordenCampo = campo;
-      this.ordenDireccion = 'asc';
-    }
-    this.calcularPaginas();
+  logout(): void {
+    // Aquí deberías implementar la lógica de logout
+    console.log('Usuario cerró sesión');
+    // Ejemplo: limpiar localStorage y redirigir
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    this.router.navigate(['/login']);
   }
 
-  // Métodos de paginación
   cambiarTamanoPagina(): void {
-    this.paginaActual = 1;
-    this.calcularPaginas();
+    this.paginaActual = 1; // Resetear a la primera página
+    this.calcularPaginas(); // Recalcular paginación
   }
 
-  irAPagina(pagina: number): void {
-    if (pagina >= 1 && pagina <= this.totalPaginas) {
-      this.paginaActual = pagina;
-      this.actualizarPaginasVisibles();
-    }
-  }
+  getPaginasVisibles(): number[] {
+    const paginasVisibles = 5; // Número máximo de páginas a mostrar
+    const paginas: number[] = [];
 
-  paginaAnterior(): void {
-    if (this.paginaActual > 1) {
-      this.irAPagina(this.paginaActual - 1);
-    }
-  }
-
-  paginaSiguiente(): void {
-    if (this.paginaActual < this.totalPaginas) {
-      this.irAPagina(this.paginaActual + 1);
-    }
-  }
-
-  indiceInicioPagina(): number {
-    return (this.paginaActual - 1) * this.registrosPorPagina + 1;
-  }
-
-  indiceFinPagina(): number {
-    return Math.min(
-      this.paginaActual * this.registrosPorPagina,
-      this.aplicarFiltros(this.solicitudes).length
+    let inicio = Math.max(
+      1,
+      this.paginaActual - Math.floor(paginasVisibles / 2)
     );
-  }
+    const fin = Math.min(this.totalPaginas, inicio + paginasVisibles - 1);
 
-  paginasVisibles(): number[] {
-    return this.paginasVisiblesArray;
-  }
+    // Ajustar inicio si estamos cerca del final
+    inicio = Math.max(1, fin - paginasVisibles + 1);
 
-  // Métodos para checkboxes
-  toggleCotizacion(): void {
-    this.esCotizacion = !this.esCotizacion;
-    if (this.esCotizacion) {
-      this.esFactura = false;
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
     }
+
+    return paginas;
   }
 
-  toggleFactura(): void {
-    this.esFactura = !this.esFactura;
-    if (this.esFactura) {
-      this.esCotizacion = false;
-    }
+  exportarAExcel(): void {
+    console.log('Exportando a Excel...');
+    // Implementación real para exportar a Excel
   }
 
-  // Método para filtrar solicitudes cuando cambian los parámetros
-  filtrarSolicitudes(): void {
-    this.paginaActual = 1;
-    this.calcularPaginas();
+  exportarAPDF(): void {
+    console.log('Exportando a PDF...');
+    // Implementación real para exportar a PDF
   }
 }
