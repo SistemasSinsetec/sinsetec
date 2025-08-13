@@ -19,19 +19,11 @@ interface Solicitud {
   descripcion_adicional: string;
   fecha_solicitud: string;
   estado: string;
+  recibido_por?: string | null;
+  fecha_recibido?: string | null;
   seleccionada?: boolean;
-  factura?: {
-    numero: string;
-    fecha: string;
-    monto: number;
-    descripcion: string;
-  };
-  cotizacion?: {
-    numero: string;
-    fecha: string;
-    monto: number;
-    descripcion: string;
-  };
+  cotizaciones?: any[];
+  facturas?: any[];
 }
 
 @Component({
@@ -42,7 +34,6 @@ interface Solicitud {
   styleUrls: ['./solicitudes.component.scss'],
 })
 export class SolicitudesComponent implements OnInit {
-  // Exponer Math al template
   Math = Math;
 
   solicitudes: Solicitud[] = [];
@@ -51,41 +42,40 @@ export class SolicitudesComponent implements OnInit {
   solicitudAEliminar: Solicitud | null = null;
   solicitudDetalle: Solicitud | null = null;
 
-  // Filtros y paginación
   terminoBusqueda: string = '';
   filtroEstado: string = '';
   paginaActual: number = 1;
   registrosPorPagina: number = 10;
   totalPaginas: number = 1;
 
-  // Estados posibles
   estados: string[] = [
     'Pendiente',
     'En Proceso',
     'Completado',
     'Cancelado',
-    'Facturado',
-    'Enterado',
+    'Factura',
+    'Cotizado',
+    'Entregado',
   ];
 
-  // Variables para modales
   showDeleteModal: boolean = false;
   showViewModal: boolean = false;
   showEditModal: boolean = false;
   showFacturaModal: boolean = false;
-  showEnteradoModal: boolean = false;
+  showEntregaModal: boolean = false;
   isLoading: boolean = false;
   errorMessage: string = '';
 
-  // Variables para Factura/Cotización
-  esCotizacion: boolean = false;
-  numeroDocumento: string = '';
+  // Campos para factura
+  folioDocumento: string = '';
   fechaDocumento: string = new Date().toISOString().split('T')[0];
-  monto: number = 0;
+  tiempoEntrega: string = '';
+  garantia: string = '';
+  cantidad: number = 0;
+  iva: number = 0;
   descripcionDocumento: string = '';
 
-  // Variables para Enterado
-  comentarioEnterado: string = '';
+  recibidoPor: string = '';
 
   constructor(
     private solicitudesService: SolicitudesService,
@@ -102,19 +92,23 @@ export class SolicitudesComponent implements OnInit {
 
     this.solicitudesService.getSolicitudes().subscribe({
       next: (response: any) => {
-        // Verificar si la respuesta tiene el formato esperado
         if (response && Array.isArray(response)) {
           this.solicitudes = response.map((item: any) => ({
             ...item,
             seleccionada: false,
             fecha_solicitud: new Date(item.fecha_solicitud).toLocaleString(),
+            fecha_recibido: item.fecha_recibido
+              ? new Date(item.fecha_recibido).toLocaleString()
+              : null,
           }));
         } else if (response && response.data) {
-          // Formato de respuesta con estructura {success, data, error}
           this.solicitudes = response.data.map((item: any) => ({
             ...item,
             seleccionada: false,
             fecha_solicitud: new Date(item.fecha_solicitud).toLocaleString(),
+            fecha_recibido: item.fecha_recibido
+              ? new Date(item.fecha_recibido).toLocaleString()
+              : null,
           }));
         } else {
           throw new Error('Formato de respuesta inesperado');
@@ -126,7 +120,6 @@ export class SolicitudesComponent implements OnInit {
       error: (err: any) => {
         console.error('Error al cargar solicitudes:', err);
         this.errorMessage =
-          err.message ||
           'Error al cargar las solicitudes. Por favor, intente nuevamente.';
         this.isLoading = false;
       },
@@ -136,7 +129,6 @@ export class SolicitudesComponent implements OnInit {
   filtrarSolicitudes(): void {
     let resultado = this.solicitudes;
 
-    // Aplicar filtro de búsqueda
     if (this.terminoBusqueda) {
       const termino = this.terminoBusqueda.toLowerCase();
       resultado = resultado.filter(
@@ -147,7 +139,6 @@ export class SolicitudesComponent implements OnInit {
       );
     }
 
-    // Aplicar filtro de estado
     if (this.filtroEstado) {
       resultado = resultado.filter((s) => s.estado === this.filtroEstado);
     }
@@ -185,12 +176,35 @@ export class SolicitudesComponent implements OnInit {
     this.router.navigate(['/register-solicitudes']);
   }
 
+  verDetalles(id: number): void {
+    this.solicitudesService.getSolicitud(id).subscribe({
+      next: (data: Solicitud) => {
+        this.solicitudDetalle = {
+          ...data,
+          fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
+          fecha_recibido: data.fecha_recibido
+            ? new Date(data.fecha_recibido).toLocaleString()
+            : undefined,
+        };
+        this.cargarDocumentosRelacionados(id);
+        this.showViewModal = true;
+      },
+      error: (err: any) => {
+        console.error('Error al obtener detalles:', err);
+        this.errorMessage = 'Error al cargar los detalles de la solicitud';
+      },
+    });
+  }
+
   editarSolicitud(id: number): void {
     this.solicitudesService.getSolicitud(id).subscribe({
       next: (data: Solicitud) => {
         this.solicitudDetalle = {
           ...data,
           fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
+          fecha_recibido: data.fecha_recibido
+            ? new Date(data.fecha_recibido).toLocaleString()
+            : undefined,
         };
         this.showEditModal = true;
       },
@@ -201,19 +215,23 @@ export class SolicitudesComponent implements OnInit {
     });
   }
 
-  verDetalles(id: number): void {
-    this.solicitudesService.getSolicitud(id).subscribe({
-      next: (data: Solicitud) => {
-        this.solicitudDetalle = {
-          ...data,
-          fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
-        };
-        this.showViewModal = true;
+  cargarDocumentosRelacionados(solicitudId: number): void {
+    this.solicitudesService.getCotizaciones(solicitudId).subscribe({
+      next: (cotizaciones: any[]) => {
+        if (this.solicitudDetalle) {
+          this.solicitudDetalle.cotizaciones = cotizaciones;
+        }
       },
-      error: (err: any) => {
-        console.error('Error al obtener detalles:', err);
-        this.errorMessage = 'Error al cargar los detalles de la solicitud';
+      error: (err: any) => console.error('Error al cargar cotizaciones:', err),
+    });
+
+    this.solicitudesService.getFacturas(solicitudId).subscribe({
+      next: (facturas: any[]) => {
+        if (this.solicitudDetalle) {
+          this.solicitudDetalle.facturas = facturas;
+        }
       },
+      error: (err: any) => console.error('Error al cargar facturas:', err),
     });
   }
 
@@ -300,23 +318,53 @@ export class SolicitudesComponent implements OnInit {
 
   exportarAExcel(): void {
     console.log('Exportando a Excel...');
-    // Implementación real iría aquí
   }
 
+  // Método para cotización simple
+  crearCotizacionSimple(): void {
+    if (!this.solicitudSeleccionada) {
+      alert('Por favor seleccione una solicitud primero');
+      return;
+    }
+
+    if (confirm('¿Desea marcar esta solicitud como COTIZADA?')) {
+      this.isLoading = true;
+
+      this.solicitudesService
+        .actualizarSolicitud(this.solicitudSeleccionada.id, {
+          estado: 'Cotizado',
+        })
+        .subscribe({
+          next: () => {
+            this.cargarSolicitudes();
+            this.isLoading = false;
+            alert('Solicitud marcada como COTIZADA');
+          },
+          error: (err: any) => {
+            console.error('Error al actualizar estado:', err);
+            this.errorMessage = 'Error al marcar como cotizada';
+            this.isLoading = false;
+          },
+        });
+    }
+  }
+
+  // Método para mostrar formulario de factura
   mostrarFormularioFactura(): void {
     if (!this.solicitudSeleccionada) {
       alert('Por favor seleccione una solicitud primero');
       return;
     }
 
-    // Resetear valores del formulario
-    this.esCotizacion = false;
-    this.numeroDocumento = '';
+    // Resetear campos del formulario
+    this.folioDocumento = '';
     this.fechaDocumento = new Date().toISOString().split('T')[0];
-    this.monto = 0;
+    this.tiempoEntrega = '';
+    this.garantia = '';
+    this.cantidad = 0;
+    this.iva = 0;
     this.descripcionDocumento = '';
 
-    // Cargar datos de la solicitud
     this.solicitudesService
       .getSolicitud(this.solicitudSeleccionada.id)
       .subscribe({
@@ -331,74 +379,88 @@ export class SolicitudesComponent implements OnInit {
       });
   }
 
+  // Método para guardar factura
   guardarFactura(): void {
     if (!this.solicitudSeleccionada) return;
 
     this.isLoading = true;
 
-    const documento = {
-      tipo: this.esCotizacion ? 'cotizacion' : 'factura',
-      numero: this.numeroDocumento,
+    const factura = {
+      solicitud_id: this.solicitudSeleccionada.id,
+      folio: this.folioDocumento,
       fecha: this.fechaDocumento,
-      monto: this.monto,
+      tiempo_entrega: this.tiempoEntrega,
+      garantia: this.garantia,
+      cantidad: this.cantidad,
+      iva: this.iva,
       descripcion: this.descripcionDocumento,
     };
 
+    this.solicitudesService.crearFactura(factura).subscribe({
+      next: () => {
+        this.actualizarEstadoSolicitud('Factura');
+        this.showFacturaModal = false;
+        this.isLoading = false;
+        alert('Factura registrada correctamente');
+      },
+      error: (err: any) => {
+        console.error('Error al guardar factura:', err);
+        this.errorMessage = 'Error al registrar factura';
+        this.isLoading = false;
+      },
+    });
+  }
+
+  actualizarEstadoSolicitud(nuevoEstado: string): void {
+    if (!this.solicitudSeleccionada) return;
+
     this.solicitudesService
-      .registrarDocumento(this.solicitudSeleccionada.id, documento)
+      .actualizarSolicitud(this.solicitudSeleccionada.id, {
+        estado: nuevoEstado,
+      })
       .subscribe({
         next: () => {
           this.cargarSolicitudes();
-          this.showFacturaModal = false;
-          this.isLoading = false;
-          alert(
-            `${
-              this.esCotizacion ? 'Cotización' : 'Factura'
-            } registrada correctamente`
-          );
         },
-        error: (err: any) => {
-          console.error('Error al guardar documento:', err);
-          this.errorMessage = `Error al registrar ${
-            this.esCotizacion ? 'cotización' : 'factura'
-          }`;
-          this.isLoading = false;
+        error: (err) => {
+          console.error('Error al actualizar estado:', err);
         },
       });
   }
 
-  mostrarFormularioEnterado(): void {
+  mostrarFormularioEntrega(): void {
     if (!this.solicitudSeleccionada) {
       alert('Por favor seleccione una solicitud primero');
       return;
     }
 
-    this.comentarioEnterado = '';
-    this.showEnteradoModal = true;
+    this.recibidoPor = '';
+    this.showEntregaModal = true;
   }
 
-  confirmarEnterado(): void {
-    if (!this.solicitudSeleccionada) return;
+  confirmarEntrega(): void {
+    if (!this.solicitudSeleccionada || !this.recibidoPor) return;
 
     this.isLoading = true;
 
-    const datosEnterado = {
-      estado: 'Enterado',
-      comentario: this.comentarioEnterado,
+    const datosEntrega = {
+      estado: 'Entregado',
+      recibido_por: this.recibidoPor,
+      fecha_recibido: new Date().toISOString(),
     };
 
     this.solicitudesService
-      .actualizarEstado(this.solicitudSeleccionada.id, datosEnterado)
+      .actualizarSolicitud(this.solicitudSeleccionada.id, datosEntrega)
       .subscribe({
         next: () => {
           this.cargarSolicitudes();
-          this.showEnteradoModal = false;
+          this.showEntregaModal = false;
           this.isLoading = false;
-          alert('Solicitud marcada como ENTERADA');
+          alert('Solicitud marcada como ENTREGADA');
         },
         error: (err: any) => {
-          console.error('Error al marcar como enterado:', err);
-          this.errorMessage = 'Error al marcar como enterado';
+          console.error('Error al marcar como entregado:', err);
+          this.errorMessage = 'Error al marcar como entregado';
           this.isLoading = false;
         },
       });

@@ -264,13 +264,17 @@ $border-color: #dee2e6;
         background-color: rgba($danger-color, 0.1);
         color: color.adjust($danger-color, $lightness: -10%);
       }
-      &.estado-facturado {
+      &.estado-factura {
         background-color: rgba($primary-color, 0.1);
         color: color.adjust($primary-color, $lightness: -10%);
       }
-      &.estado-enterado {
+      &.estado-cotizado {
         background-color: rgba($secondary-color, 0.1);
         color: color.adjust($secondary-color, $lightness: -10%);
+      }
+      &.estado-entregado {
+        background-color: rgba($success-color, 0.1);
+        color: color.adjust($success-color, $lightness: -10%);
       }
     }
 
@@ -496,6 +500,33 @@ $border-color: #dee2e6;
       background-color: rgba($light-color, 0.5);
       border-radius: 4px;
       font-size: 14px;
+    }
+
+    .documentos-container {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .documento {
+      padding: 12px;
+      background-color: #f8f9fa;
+      border-radius: 6px;
+      border-left: 4px solid #007bff;
+
+      div {
+        margin-bottom: 5px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        strong {
+          color: #495057;
+          margin-right: 5px;
+        }
+      }
     }
 
     .form-grid {

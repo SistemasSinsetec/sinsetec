@@ -38,9 +38,48 @@ export class SolicitudesService {
       .pipe(catchError(this.handleError));
   }
 
+  getCotizaciones(solicitudId: number): Observable<any[]> {
+    return this.http
+      .get<any[]>(
+        `${this.apiUrl}/cotizaciones.php?solicitud_id=${solicitudId}`,
+        {
+          headers: this.headers,
+          responseType: 'json' as const,
+        }
+      )
+      .pipe(catchError(this.handleError));
+  }
+
+  getFacturas(solicitudId: number): Observable<any[]> {
+    return this.http
+      .get<any[]>(`${this.apiUrl}/facturas.php?solicitud_id=${solicitudId}`, {
+        headers: this.headers,
+        responseType: 'json' as const,
+      })
+      .pipe(catchError(this.handleError));
+  }
+
   crearSolicitud(solicitud: any): Observable<any> {
     return this.http
       .post(`${this.apiUrl}/registro_solicitud.php`, solicitud, {
+        headers: this.headers,
+        responseType: 'json' as const,
+      })
+      .pipe(catchError(this.handleError));
+  }
+
+  crearCotizacion(documento: any): Observable<any> {
+    return this.http
+      .post(`${this.apiUrl}/registrar_cotizacion.php`, documento, {
+        headers: this.headers,
+        responseType: 'json' as const,
+      })
+      .pipe(catchError(this.handleError));
+  }
+
+  crearFactura(documento: any): Observable<any> {
+    return this.http
+      .post(`${this.apiUrl}/registrar_factura.php`, documento, {
         headers: this.headers,
         responseType: 'json' as const,
       })
@@ -92,7 +131,6 @@ export class SolicitudesService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    // Primero intentamos parsear el error manualmente
     let errorDetails = 'Sin detalles';
 
     try {

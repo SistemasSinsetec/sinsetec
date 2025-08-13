@@ -47,17 +47,27 @@
 
       <section class="actions-section">
         <div class="action-buttons">
+          <!-- Botón de Cotización Simple -->
+          <button
+            class="action-button warning"
+            (click)="crearCotizacionSimple()"
+          >
+            <i class="fas fa-file-alt"></i> Cotizar
+          </button>
+
+          <!-- Botón de Factura con formulario completo -->
           <button
             class="action-button primary"
             (click)="mostrarFormularioFactura()"
           >
             <i class="fas fa-file-invoice-dollar"></i> Facturar
           </button>
+
           <button
             class="action-button success"
-            (click)="mostrarFormularioEnterado()"
+            (click)="mostrarFormularioEntrega()"
           >
-            <i class="fas fa-check-circle"></i> Enterado
+            <i class="fas fa-check-circle"></i> Entregado
           </button>
           <button class="action-button primary" (click)="exportarAExcel()">
             <i class="fas fa-file-excel"></i> Exportar a Excel
@@ -98,7 +108,6 @@
           <table class="solicitudes-table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Cliente</th>
                 <th>Solicitante</th>
                 <th>Fecha</th>
@@ -113,7 +122,6 @@
                 (click)="seleccionarSolicitud(solicitud)"
                 [class.selected]="solicitudSeleccionada?.id === solicitud.id"
               >
-                <td>{{ solicitud.id }}</td>
                 <td>{{ solicitud.cliente }}</td>
                 <td>{{ solicitud.solicitante }}</td>
                 <td>{{ solicitud.fecha_solicitud }}</td>
@@ -157,7 +165,7 @@
                 </td>
               </tr>
               <tr *ngIf="solicitudesFiltradas.length === 0 && !isLoading">
-                <td colspan="7" class="no-results">
+                <td colspan="6" class="no-results">
                   No se encontraron solicitudes que coincidan con los filtros
                 </td>
               </tr>
@@ -277,10 +285,6 @@
       <div class="modal-body">
         <div class="detail-grid" *ngIf="solicitudDetalle">
           <div class="detail-row">
-            <span class="detail-label">ID:</span>
-            <span class="detail-value">{{ solicitudDetalle.id }}</span>
-          </div>
-          <div class="detail-row">
             <span class="detail-label">Cliente:</span>
             <span class="detail-value">{{ solicitudDetalle.cliente }}</span>
           </div>
@@ -347,24 +351,76 @@
               {{ solicitudDetalle.estado }}
             </span>
           </div>
-          <!-- Mostrar información de factura/cotización si existe -->
-          <div class="detail-row" *ngIf="solicitudDetalle.factura">
-            <span class="detail-label">Factura:</span>
-            <span class="detail-value">
-              #{{ solicitudDetalle.factura.numero }} -
-              {{ solicitudDetalle.factura.fecha }} - ${{
-                solicitudDetalle.factura.monto
-              }}
-            </span>
+
+          <!-- Sección de Cotizaciones -->
+          <div
+            class="detail-row full-width"
+            *ngIf="solicitudDetalle.cotizaciones?.length"
+          >
+            <span class="detail-label">Cotizaciones:</span>
+            <div class="documentos-container">
+              <div
+                *ngFor="let cotizacion of solicitudDetalle.cotizaciones"
+                class="documento"
+              >
+                <div><strong>Número:</strong> {{ cotizacion.numero }}</div>
+                <div><strong>Fecha:</strong> {{ cotizacion.fecha | date }}</div>
+                <div>
+                  <strong>Monto:</strong> ${{ cotizacion.monto | number }}
+                </div>
+                <div *ngIf="cotizacion.descripcion">
+                  <strong>Descripción:</strong> {{ cotizacion.descripcion }}
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="detail-row" *ngIf="solicitudDetalle.cotizacion">
-            <span class="detail-label">Cotización:</span>
-            <span class="detail-value">
-              #{{ solicitudDetalle.cotizacion.numero }} -
-              {{ solicitudDetalle.cotizacion.fecha }} - ${{
-                solicitudDetalle.cotizacion.monto
-              }}
-            </span>
+
+          <!-- Sección de Facturas -->
+          <div
+            class="detail-row full-width"
+            *ngIf="solicitudDetalle.facturas?.length"
+          >
+            <span class="detail-label">Facturas:</span>
+            <div class="documentos-container">
+              <div
+                *ngFor="let factura of solicitudDetalle.facturas"
+                class="documento"
+              >
+                <div><strong>Folio:</strong> {{ factura.folio }}</div>
+                <div><strong>Fecha:</strong> {{ factura.fecha | date }}</div>
+                <div>
+                  <strong>Cantidad:</strong> ${{ factura.cantidad | number }}
+                </div>
+                <div *ngIf="factura.tiempo_entrega">
+                  <strong>Tiempo de Entrega:</strong>
+                  {{ factura.tiempo_entrega }}
+                </div>
+                <div *ngIf="factura.garantia">
+                  <strong>Garantía:</strong> {{ factura.garantia }}
+                </div>
+                <div *ngIf="factura.iva">
+                  <strong>IVA:</strong> ${{ factura.iva | number }}
+                </div>
+                <div *ngIf="factura.descripcion">
+                  <strong>Descripción:</strong> {{ factura.descripcion }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información de Entrega -->
+          <div class="detail-row" *ngIf="solicitudDetalle.recibido_por">
+            <span class="detail-label">Recibido por:</span>
+            <span class="detail-value">{{
+              solicitudDetalle.recibido_por
+            }}</span>
+          </div>
+
+          <div class="detail-row" *ngIf="solicitudDetalle.fecha_recibido">
+            <span class="detail-label">Fecha de entrega:</span>
+            <span class="detail-value">{{
+              solicitudDetalle.fecha_recibido
+            }}</span>
           </div>
         </div>
       </div>
@@ -391,7 +447,6 @@
       <div class="modal-body">
         <form *ngIf="solicitudDetalle" (ngSubmit)="guardarEdicion()">
           <div class="form-grid">
-            <!-- Campos no editables -->
             <div class="form-row">
               <label>ID:</label>
               <input type="text" [value]="solicitudDetalle.id" readonly />
@@ -421,7 +476,6 @@
               <input type="text" [value]="solicitudDetalle.estado" readonly />
             </div>
 
-            <!-- Campos editables -->
             <div class="form-row">
               <label for="edit-partida">Partida:</label>
               <input
@@ -532,7 +586,7 @@
       </div>
     </div>
 
-    <!-- Modal Factura/Cotización -->
+    <!-- Modal Factura -->
     <div
       class="modal-overlay"
       *ngIf="showFacturaModal"
@@ -540,7 +594,7 @@
     ></div>
     <div class="modal modal-lg" *ngIf="showFacturaModal">
       <div class="modal-header">
-        <h3>{{ esCotizacion ? "Cotización" : "Factura" }}</h3>
+        <h3>Factura</h3>
         <button class="modal-close" (click)="showFacturaModal = false">
           &times;
         </button>
@@ -549,32 +603,12 @@
         <form *ngIf="solicitudDetalle" (ngSubmit)="guardarFactura()">
           <div class="form-grid">
             <div class="form-row">
-              <label>Tipo:</label>
-              <div class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="tipo-documento"
-                  [(ngModel)]="esCotizacion"
-                  name="esCotizacion"
-                />
-                <label for="tipo-documento">
-                  <span class="toggle-option" [class.active]="!esCotizacion"
-                    >Factura</span
-                  >
-                  <span class="toggle-option" [class.active]="esCotizacion"
-                    >Cotización</span
-                  >
-                </label>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <label for="numero-documento">Número:</label>
+              <label for="folio">Folio:</label>
               <input
-                id="numero-documento"
+                id="folio"
                 type="text"
-                [(ngModel)]="numeroDocumento"
-                name="numeroDocumento"
+                [(ngModel)]="folioDocumento"
+                name="folioDocumento"
                 required
               />
             </div>
@@ -591,14 +625,45 @@
             </div>
 
             <div class="form-row">
-              <label for="monto">Monto:</label>
+              <label for="tiempo-entrega">Tiempo de Entrega:</label>
               <input
-                id="monto"
+                id="tiempo-entrega"
+                type="text"
+                [(ngModel)]="tiempoEntrega"
+                name="tiempoEntrega"
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="garantia">Garantía:</label>
+              <input
+                id="garantia"
+                type="text"
+                [(ngModel)]="garantia"
+                name="garantia"
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="cantidad">Cantidad:</label>
+              <input
+                id="cantidad"
                 type="number"
                 step="0.01"
-                [(ngModel)]="monto"
-                name="monto"
+                [(ngModel)]="cantidad"
+                name="cantidad"
                 required
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="iva">IVA:</label>
+              <input
+                id="iva"
+                type="number"
+                step="0.01"
+                [(ngModel)]="iva"
+                name="iva"
               />
             </div>
 
@@ -622,9 +687,7 @@
           (click)="guardarFactura()"
           [disabled]="isLoading"
         >
-          <span *ngIf="!isLoading"
-            >Guardar {{ esCotizacion ? "Cotización" : "Factura" }}</span
-          >
+          <span *ngIf="!isLoading">Guardar Factura</span>
           <span *ngIf="isLoading"
             ><i class="fas fa-spinner fa-spin"></i> Guardando...</span
           >
@@ -632,43 +695,46 @@
       </div>
     </div>
 
-    <!-- Modal Enterado -->
+    <!-- Modal Entregado -->
     <div
       class="modal-overlay"
-      *ngIf="showEnteradoModal"
-      (click)="showEnteradoModal = false"
+      *ngIf="showEntregaModal"
+      (click)="showEntregaModal = false"
     ></div>
-    <div class="modal modal-sm" *ngIf="showEnteradoModal">
+    <div class="modal modal-sm" *ngIf="showEntregaModal">
       <div class="modal-header">
-        <h3>Confirmar Enterado</h3>
-        <button class="modal-close" (click)="showEnteradoModal = false">
+        <h3>Confirmar Entrega</h3>
+        <button class="modal-close" (click)="showEntregaModal = false">
           &times;
         </button>
       </div>
       <div class="modal-body">
         <p>
-          ¿Estás seguro que deseas marcar como ENTERADO la solicitud
+          ¿Estás seguro que deseas marcar como ENTREGADA la solicitud
           {{ solicitudSeleccionada?.id }}?
         </p>
-        <div class="form-row" *ngIf="solicitudSeleccionada">
-          <label for="comentario-enterado">Comentario:</label>
-          <textarea
-            id="comentario-enterado"
-            [(ngModel)]="comentarioEnterado"
-            name="comentarioEnterado"
-          ></textarea>
+        <div class="form-row">
+          <label for="recibido-por">Recibido por:</label>
+          <input
+            id="recibido-por"
+            type="text"
+            [(ngModel)]="recibidoPor"
+            name="recibidoPor"
+            required
+            placeholder="Nombre de quien recibe"
+          />
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="showEnteradoModal = false">
+        <button class="btn btn-secondary" (click)="showEntregaModal = false">
           Cancelar
         </button>
         <button
           class="btn btn-success"
-          (click)="confirmarEnterado()"
-          [disabled]="isLoading"
+          (click)="confirmarEntrega()"
+          [disabled]="isLoading || !recibidoPor"
         >
-          <span *ngIf="!isLoading">Confirmar</span>
+          <span *ngIf="!isLoading">Confirmar Entrega</span>
           <span *ngIf="isLoading"
             ><i class="fas fa-spinner fa-spin"></i> Procesando...</span
           >
