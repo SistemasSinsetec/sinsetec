@@ -22,7 +22,10 @@ export class SolicitudesService {
 
   getSolicitudes(): Observable<any[]> {
     return this.http
-      .get<any[]>(`${this.apiUrl}/solicitudes.php`, { headers: this.headers })
+      .get<any[]>(`${this.apiUrl}/solicitudes.php`, {
+        headers: this.headers,
+        responseType: 'json' as const,
+      })
       .pipe(catchError(this.handleError));
   }
 
@@ -30,6 +33,7 @@ export class SolicitudesService {
     return this.http
       .get<any>(`${this.apiUrl}/solicitudes.php?id=${id}`, {
         headers: this.headers,
+        responseType: 'json' as const,
       })
       .pipe(catchError(this.handleError));
   }
@@ -38,6 +42,7 @@ export class SolicitudesService {
     return this.http
       .post(`${this.apiUrl}/registro_solicitud.php`, solicitud, {
         headers: this.headers,
+        responseType: 'json' as const,
       })
       .pipe(catchError(this.handleError));
   }
@@ -46,6 +51,7 @@ export class SolicitudesService {
     return this.http
       .put(`${this.apiUrl}/solicitudes.php?id=${id}`, solicitud, {
         headers: this.headers,
+        responseType: 'json' as const,
       })
       .pipe(catchError(this.handleError));
   }
@@ -54,6 +60,7 @@ export class SolicitudesService {
     return this.http
       .delete(`${this.apiUrl}/eliminar_solicitud.php?id=${id}`, {
         headers: this.headers,
+        responseType: 'json' as const,
       })
       .pipe(catchError(this.handleError));
   }
@@ -63,7 +70,10 @@ export class SolicitudesService {
       .post(
         `${this.apiUrl}/registrar_documento.php`,
         { id, ...documento },
-        { headers: this.headers }
+        {
+          headers: this.headers,
+          responseType: 'json' as const,
+        }
       )
       .pipe(catchError(this.handleError));
   }
@@ -73,21 +83,42 @@ export class SolicitudesService {
       .post(
         `${this.apiUrl}/actualizar_estado.php`,
         { id, ...datos },
-        { headers: this.headers }
+        {
+          headers: this.headers,
+          responseType: 'json' as const,
+        }
       )
       .pipe(catchError(this.handleError));
   }
 
   private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'Error desconocido';
-    if (error.error instanceof ErrorEvent) {
-      errorMessage = `Error del cliente: ${error.error.message}`;
-    } else {
-      errorMessage = `Código: ${error.status}\nMensaje: ${
-        error.message
-      }\nDetalles: ${error.error?.message || 'Sin detalles'}`;
+    // Primero intentamos parsear el error manualmente
+    let errorDetails = 'Sin detalles';
+
+    try {
+      if (error.error instanceof ProgressEvent) {
+        errorDetails =
+          'Error de conexión - posible problema CORS o servidor no disponible';
+      } else if (typeof error.error === 'string') {
+        const parsedError = JSON.parse(error.error);
+        errorDetails =
+          parsedError.message || parsedError.error || 'Error desconocido';
+      } else {
+        errorDetails =
+          error.error.message ||
+          error.error.error ||
+          JSON.stringify(error.error);
+      }
+    } catch (e) {
+      errorDetails =
+        error.message || 'Error al parsear la respuesta del servidor';
     }
-    console.error(errorMessage);
+
+    const errorMessage = `Código: ${error.status || 0}\nMensaje: ${
+      error.message
+    }\nDetalles: ${errorDetails}`;
+
+    console.error('Error en SolicitudesService:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
 }

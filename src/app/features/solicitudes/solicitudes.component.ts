@@ -101,18 +101,32 @@ export class SolicitudesComponent implements OnInit {
     this.errorMessage = '';
 
     this.solicitudesService.getSolicitudes().subscribe({
-      next: (data: any[]) => {
-        this.solicitudes = data.map((item: any) => ({
-          ...item,
-          seleccionada: false,
-          fecha_solicitud: new Date(item.fecha_solicitud).toLocaleString(),
-        }));
+      next: (response: any) => {
+        // Verificar si la respuesta tiene el formato esperado
+        if (response && Array.isArray(response)) {
+          this.solicitudes = response.map((item: any) => ({
+            ...item,
+            seleccionada: false,
+            fecha_solicitud: new Date(item.fecha_solicitud).toLocaleString(),
+          }));
+        } else if (response && response.data) {
+          // Formato de respuesta con estructura {success, data, error}
+          this.solicitudes = response.data.map((item: any) => ({
+            ...item,
+            seleccionada: false,
+            fecha_solicitud: new Date(item.fecha_solicitud).toLocaleString(),
+          }));
+        } else {
+          throw new Error('Formato de respuesta inesperado');
+        }
+
         this.filtrarSolicitudes();
         this.isLoading = false;
       },
       error: (err: any) => {
         console.error('Error al cargar solicitudes:', err);
         this.errorMessage =
+          err.message ||
           'Error al cargar las solicitudes. Por favor, intente nuevamente.';
         this.isLoading = false;
       },
