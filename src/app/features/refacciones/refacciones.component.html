@@ -1,0 +1,25 @@
+<!-- Cambia tu tabla en refacciones.component.html -->
+<table class="table">
+  <thead>
+    <tr>
+      <th>Clave Interna</th>
+      <th>Descripción</th>
+      <th>Cantidad</th>
+      <th>Fecha</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (refaccion of refacciones; track refaccion.id) {
+    <tr>
+      <td>{{ refaccion.clave_interna }}</td>
+      <td>{{ refaccion.descripcion }}</td>
+      <td>{{ refaccion.cantidad }}</td>
+      <td>{{ refaccion.fecha_registro | date : "dd/MM/yyyy" }}</td>
+      <td>
+        <button (click)="editar(refaccion)">Editar</button>
+      </td>
+    </tr>
+    }
+  </tbody>
+</table>

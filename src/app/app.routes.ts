@@ -58,5 +58,14 @@ export const APP_ROUTES: Routes = [
       ).then((m) => m.ControlRefaccionesComponent), // Nombre coincide con la clase exportada
     canActivate: [AuthGuard],
   },
+  {
+    path: 'refacciones',
+    loadComponent: () =>
+      import('./features/refacciones/refacciones.component').then(
+        (m) => m.RefaccionesComponent
+      ),
+    canActivate: [AuthGuard],
+  },
+
   { path: '**', redirectTo: 'login' },
 ];
