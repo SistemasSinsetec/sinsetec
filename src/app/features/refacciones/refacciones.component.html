@@ -1,25 +1,621 @@
-<!-- Cambia tu tabla en refacciones.component.html -->
-<table class="table">
-  <thead>
-    <tr>
-      <th>Clave Interna</th>
-      <th>Descripción</th>
-      <th>Cantidad</th>
-      <th>Fecha</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    @for (refaccion of refacciones; track refaccion.id) {
-    <tr>
-      <td>{{ refaccion.clave_interna }}</td>
-      <td>{{ refaccion.descripcion }}</td>
-      <td>{{ refaccion.cantidad }}</td>
-      <td>{{ refaccion.fecha_registro | date : "dd/MM/yyyy" }}</td>
-      <td>
-        <button (click)="editar(refaccion)">Editar</button>
-      </td>
-    </tr>
-    }
-  </tbody>
-</table>
+<div class="app-container">
+  <!-- Barra de navegación -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <a class="toolbar-title" routerLink="/home">Inicio</a>
+      <a class="toolbar-title" routerLink="/register-solicitudes"
+        >Registro de Solicitudes</a
+      >
+      <a class="toolbar-title" routerLink="/solicitudes">Solicitudes</a>
+      <a class="toolbar-title" routerLink="/control-refacciones"
+        >Registro de Refacciones</a
+      >
+      <a class="toolbar-title active" routerLink="/refacciones">Refacciones</a>
+      <a class="toolbar-title" routerLink="/accesos-permisos"
+        >Accesos/Permisos</a
+      >
+    </div>
+    <div class="toolbar-right">
+      <div class="dropdown">
+        <span class="profile">
+          <i class="fas fa-user"></i> Perfil
+          <i class="fa fa-caret-down"></i>
+        </span>
+        <div class="dropdown-content">
+          <a (click)="logout()">Cerrar sesión</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="refacciones-container">
+    <div class="header">
+      <div class="logo">
+        <h1>Sinsetec</h1>
+        <p>Gestión de refacciones</p>
+      </div>
+    </div>
+
+    <main class="main-content">
+      <!-- Mensajes de carga y error -->
+      <div *ngIf="isLoading" class="loading-message">
+        <i class="fas fa-spinner fa-spin"></i> Cargando refacciones...
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+      </div>
+
+      <section class="actions-section">
+        <div class="action-buttons">
+          <!-- Botón para agregar nueva refacción -->
+          <button class="action-button info" (click)="nuevaRefaccion()">
+            <i class="fas fa-plus"></i> Nueva Refacción
+          </button>
+
+          <button
+            class="action-button info"
+            (click)="abrirModalNuevaRefaccion()"
+          >
+            <i class="fas fa-trash"></i> Eliminar Refacción
+          </button>
+
+          <!-- Botón para registrar entrada de refacción -->
+          <button class="action-button success" (click)="mostrarEntregado()">
+            <i class="fas fa-arrow-down"></i> Registrar Entrada
+          </button>
+
+          <!-- Botón para registrar salida de refacción -->
+          <button class="action-button warning" (click)="registrarSalida()">
+            <i class="fas fa-arrow-up"></i> Registrar Salida
+          </button>
+        </div>
+
+        <div class="filters">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input
+              type="text"
+              [(ngModel)]="terminoBusqueda"
+              (input)="filtrarRefacciones()"
+              placeholder="Buscar por código, nombre o proveedor"
+            />
+          </div>
+          <div class="filter-group">
+            <label for="filter-status">Estado:</label>
+            <select
+              id="filter-status"
+              [(ngModel)]="filtroEstado"
+              (change)="filtrarRefacciones()"
+            >
+              <option value="">Todos</option>
+              <option *ngFor="let estado of estados" [value]="estado">
+                {{ estado }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="table-section">
+        <div class="table-responsive">
+          <!-- Contenedor de la tabla -->
+        </div>
+
+        <div class="table-footer">
+          <div class="pagination-info">
+            Mostrando {{ (paginaActual - 1) * registrosPorPagina + 1 }} a
+            {{
+              Math.min(
+                paginaActual * registrosPorPagina,
+                refaccionesFiltradas.length
+              )
+            }}
+            de {{ refaccionesFiltradas.length }} registros
+          </div>
+          <div class="pagination-controls">
+            <button
+              class="page-btn"
+              [disabled]="paginaActual === 1"
+              (click)="cambiarPagina(1)"
+            >
+              <i class="fas fa-angle-double-left"></i>
+            </button>
+            <button
+              class="page-btn"
+              [disabled]="paginaActual === 1"
+              (click)="cambiarPagina(paginaActual - 1)"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <span
+              *ngFor="let pagina of getPaginasVisibles()"
+              [class.active]="pagina === paginaActual"
+              (click)="cambiarPagina(pagina)"
+              class="page-number"
+            >
+              {{ pagina }}
+            </span>
+            <button
+              class="page-btn"
+              [disabled]="paginaActual === totalPaginas"
+              (click)="cambiarPagina(paginaActual + 1)"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </button>
+            <button
+              class="page-btn"
+              [disabled]="paginaActual === totalPaginas"
+              (click)="cambiarPagina(totalPaginas)"
+            >
+              <i class="fas fa-angle-double-right"></i>
+            </button>
+          </div>
+          <div class="page-size-selector">
+            <label>Registros por página:</label>
+            <select
+              [(ngModel)]="registrosPorPagina"
+              (change)="cambiarTamanoPagina()"
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal Eliminar -->
+    <div
+      class="modal-overlay"
+      *ngIf="showDeleteModal"
+      (click)="cancelarEliminacion()"
+    ></div>
+    <div class="modal modal-sm" *ngIf="showDeleteModal">
+      <div class="modal-header">
+        <h3>Confirmar eliminación</h3>
+        <button class="modal-close" (click)="cancelarEliminacion()">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          ¿Estás seguro que deseas eliminar la refacción
+          {{ refaccionAEliminar?.codigo }} - {{ refaccionAEliminar?.nombre }}?
+        </p>
+        <p class="text-warning">Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cancelarEliminacion()">
+          Cancelar
+        </button>
+        <button class="btn btn-danger" (click)="eliminarRefaccion()">
+          Eliminar
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Ver Detalles -->
+    <div
+      class="modal-overlay"
+      *ngIf="showViewModal"
+      (click)="showViewModal = false"
+    ></div>
+    <div class="modal modal-lg" *ngIf="showViewModal">
+      <div class="modal-header">
+        <h3>Detalles completos de la refacción</h3>
+        <button class="modal-close" (click)="showViewModal = false">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-grid" *ngIf="refaccionDetalle">
+          <div class="detail-row">
+            <span class="detail-label">Código:</span>
+            <span class="detail-value">{{ refaccionDetalle.codigo }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Nombre:</span>
+            <span class="detail-value">{{ refaccionDetalle.nombre }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Descripción:</span>
+            <span class="detail-value">{{ refaccionDetalle.descripcion }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Proveedor:</span>
+            <span class="detail-value">{{ refaccionDetalle.proveedor }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Stock actual:</span>
+            <span class="detail-value">{{ refaccionDetalle.stock }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Stock mínimo:</span>
+            <span class="detail-value">{{
+              refaccionDetalle.stock_minimo || "N/A"
+            }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Precio unitario:</span>
+            <span class="detail-value">{{
+              refaccionDetalle.precio | currency
+            }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Ubicación:</span>
+            <span class="detail-value">{{ refaccionDetalle.ubicacion }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Fecha de registro:</span>
+            <span class="detail-value">{{
+              refaccionDetalle.fecha_registro
+            }}</span>
+          </div>
+
+          <!-- Sección de Movimientos -->
+          <div
+            class="detail-row full-width"
+            *ngIf="refaccionDetalle.movimientos?.length"
+          >
+            <span class="detail-label">Últimos movimientos:</span>
+            <div class="documentos-container">
+              <table class="movimientos-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Cantidad</th>
+                    <th>Responsable</th>
+                    <th>Notas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let movimiento of refaccionDetalle.movimientos">
+                    <td>{{ movimiento.fecha | date }}</td>
+                    <td>{{ movimiento.tipo }}</td>
+                    <td>{{ movimiento.cantidad }}</td>
+                    <td>{{ movimiento.responsable }}</td>
+                    <td>{{ movimiento.notas || "N/A" }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showViewModal = false">
+          Cerrar
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Editar -->
+    <div
+      class="modal-overlay"
+      *ngIf="showEditModal"
+      (click)="showEditModal = false"
+    ></div>
+    <div class="modal modal-lg" *ngIf="showEditModal">
+      <div class="modal-header">
+        <h3>Editar Refacción</h3>
+        <button class="modal-close" (click)="showEditModal = false">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <form *ngIf="refaccionDetalle" (ngSubmit)="guardarEdicion()">
+          <div class="form-grid">
+            <div class="form-row">
+              <label>ID:</label>
+              <input type="text" [value]="refaccionDetalle.id" readonly />
+            </div>
+            <div class="form-row">
+              <label>Código:</label>
+              <input type="text" [value]="refaccionDetalle.codigo" readonly />
+            </div>
+
+            <div class="form-row">
+              <label for="edit-nombre">Nombre:</label>
+              <input
+                id="edit-nombre"
+                type="text"
+                [(ngModel)]="refaccionDetalle.nombre"
+                name="nombre"
+                required
+              />
+            </div>
+
+            <div class="form-row full-width">
+              <label for="edit-descripcion">Descripción:</label>
+              <textarea
+                id="edit-descripcion"
+                [(ngModel)]="refaccionDetalle.descripcion"
+                name="descripcion"
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <label for="edit-proveedor">Proveedor:</label>
+              <input
+                id="edit-proveedor"
+                type="text"
+                [(ngModel)]="refaccionDetalle.proveedor"
+                name="proveedor"
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="edit-stock">Stock actual:</label>
+              <input
+                id="edit-stock"
+                type="number"
+                [(ngModel)]="refaccionDetalle.stock"
+                name="stock"
+                min="0"
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="edit-stock-minimo">Stock mínimo:</label>
+              <input
+                id="edit-stock-minimo"
+                type="number"
+                [(ngModel)]="refaccionDetalle.stock_minimo"
+                name="stock_minimo"
+                min="0"
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="edit-precio">Precio unitario:</label>
+              <input
+                id="edit-precio"
+                type="number"
+                step="0.01"
+                [(ngModel)]="refaccionDetalle.precio"
+                name="precio"
+                min="0"
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="edit-ubicacion">Ubicación:</label>
+              <input
+                id="edit-ubicacion"
+                type="text"
+                [(ngModel)]="refaccionDetalle.ubicacion"
+                name="ubicacion"
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showEditModal = false">
+          Cancelar
+        </button>
+        <button
+          class="btn btn-primary"
+          (click)="guardarEdicion()"
+          [disabled]="isLoading"
+        >
+          <span *ngIf="!isLoading">Guardar Cambios</span>
+          <span *ngIf="isLoading"
+            ><i class="fas fa-spinner fa-spin"></i> Guardando...</span
+          >
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Entrada/Salida -->
+    <div
+      class="modal-overlay"
+      *ngIf="showMovimientoModal"
+      (click)="showMovimientoModal = false"
+    ></div>
+    <div class="modal modal-sm" *ngIf="showMovimientoModal">
+      <div class="modal-header">
+        <h3>
+          {{
+            movimientoTipo === "entrada"
+              ? "Registrar Entrada"
+              : "Registrar Salida"
+          }}
+        </h3>
+        <button class="modal-close" (click)="showMovimientoModal = false">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="confirmarMovimiento()">
+          <div class="form-row">
+            <label for="movimiento-cantidad">Cantidad:</label>
+            <input
+              id="movimiento-cantidad"
+              type="number"
+              [(ngModel)]="movimientoCantidad"
+              name="movimientoCantidad"
+              required
+              min="1"
+              [max]="
+                movimientoTipo === 'salida' ? refaccionSeleccionada.stock : ''
+              "
+            />
+          </div>
+
+          <div class="form-row">
+            <label for="movimiento-responsable">Responsable:</label>
+            <input
+              id="movimiento-responsable"
+              type="text"
+              [(ngModel)]="movimientoResponsable"
+              name="movimientoResponsable"
+              required
+              placeholder="Nombre del responsable"
+            />
+          </div>
+
+          <div class="form-row">
+            <label for="movimiento-notas">Notas:</label>
+            <textarea
+              id="movimiento-notas"
+              [(ngModel)]="movimientoNotas"
+              name="movimientoNotas"
+              placeholder="Observaciones del movimiento"
+            ></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showMovimientoModal = false">
+          Cancelar
+        </button>
+        <button
+          class="btn btn-success"
+          (click)="confirmarMovimiento()"
+          [disabled]="
+            isLoading || !movimientoCantidad || !movimientoResponsable
+          "
+        >
+          <span *ngIf="!isLoading"
+            >Confirmar
+            {{ movimientoTipo === "entrada" ? "Entrada" : "Salida" }}</span
+          >
+          <span *ngIf="isLoading"
+            ><i class="fas fa-spinner fa-spin"></i> Procesando...</span
+          >
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Nueva Refacción -->
+    <div
+      class="modal-overlay"
+      *ngIf="showNuevaRefaccionModal"
+      (click)="showNuevaRefaccionModal = false"
+    ></div>
+    <div class="modal modal-lg" *ngIf="showNuevaRefaccionModal">
+      <div class="modal-header">
+        <h3>Nueva Refacción</h3>
+        <button class="modal-close" (click)="showNuevaRefaccionModal = false">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="guardarNuevaRefaccion()">
+          <div class="form-grid">
+            <div class="form-row">
+              <label for="nueva-codigo">Código:</label>
+              <input
+                id="nueva-codigo"
+                type="text"
+                [(ngModel)]="nuevaRefaccion.codigo"
+                name="codigo"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="nueva-nombre">Nombre:</label>
+              <input
+                id="nueva-nombre"
+                type="text"
+                [(ngModel)]="nuevaRefaccion.nombre"
+                name="nombre"
+                required
+              />
+            </div>
+
+            <div class="form-row full-width">
+              <label for="nueva-descripcion">Descripción:</label>
+              <textarea
+                id="nueva-descripcion"
+                [(ngModel)]="nuevaRefaccion.descripcion"
+                name="descripcion"
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <label for="nueva-proveedor">Proveedor:</label>
+              <input
+                id="nueva-proveedor"
+                type="text"
+                [(ngModel)]="nuevaRefaccion.proveedor"
+                name="proveedor"
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="nueva-stock">Stock inicial:</label>
+              <input
+                id="nueva-stock"
+                type="number"
+                [(ngModel)]="nuevaRefaccion.stock"
+                name="stock"
+                min="0"
+                value="0"
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="nueva-stock-minimo">Stock mínimo:</label>
+              <input
+                id="nueva-stock-minimo"
+                type="number"
+                [(ngModel)]="nuevaRefaccion.stock_minimo"
+                name="stock_minimo"
+                min="0"
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="nueva-precio">Precio unitario:</label>
+              <input
+                id="nueva-precio"
+                type="number"
+                step="0.01"
+                [(ngModel)]="nuevaRefaccion.precio"
+                name="precio"
+                min="0"
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="nueva-ubicacion">Ubicación:</label>
+              <input
+                id="nueva-ubicacion"
+                type="text"
+                [(ngModel)]="nuevaRefaccion.ubicacion"
+                name="ubicacion"
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button
+          class="btn btn-secondary"
+          (click)="showNuevaRefaccionModal = false"
+        >
+          Cancelar
+        </button>
+        <button
+          class="btn btn-primary"
+          (click)="guardarNuevaRefaccion()"
+          [disabled]="
+            isLoading || !nuevaRefaccion.codigo || !nuevaRefaccion.nombre
+          "
+        >
+          <span *ngIf="!isLoading">Guardar Refacción</span>
+          <span *ngIf="isLoading"
+            ><i class="fas fa-spinner fa-spin"></i> Guardando...</span
+          >
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

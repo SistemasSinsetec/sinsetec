@@ -2,6 +2,7 @@
 @use "sass:color";
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css");
 
+//----MENU-----
 /* Variables */
 $primary-color: toolbar.$primary-color;
 $secondary-color: toolbar.$secondary-color;
@@ -12,6 +13,27 @@ $info-color: #17a2b8;
 $light-color: #f8f9fa;
 $dark-color: #343a40;
 $border-color: #dee2e6;
+$border-radius: 4px;
+$padding: 15px;
+$margin: 10px;
+
+/* Toolbar Styles */
+.toolbar {
+  background-color: white;
+  color: $dark-color;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); //no
+  border-bottom: 1px solid $border-color;
+
+  .toolbar-left {
+    display: flex;
+    gap: 20px;
+  }
+}
+//---FIN DEL MENU---
 
 /* Estructura principal */
 .solicitudes-container {
@@ -717,50 +739,59 @@ $border-color: #dee2e6;
   }
 }
 
-/* Responsive */
-@media (max-width: 992px) {
-  .solicitudes-container {
-    .actions-section {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 15px;
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .article-details-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
 
-      .filters {
-        width: 100%;
-
-        .search-box {
-          flex-grow: 1;
-
-          input {
-            width: 100%;
-          }
-        }
-      }
-    }
-
-    .table-footer {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 15px;
-
-      .pagination-controls {
-        justify-content: center;
-      }
+    .detail-group.full-width {
+      grid-column: span 3 !important;
     }
   }
 }
 
-@media (max-width: 768px) {
-  .solicitudes-container {
-    padding: 15px;
+@media (max-width: 900px) {
+  .article-details-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
 
-    .modal {
-      width: 95%;
+    .detail-group.full-width {
+      grid-column: span 2 !important;
     }
+  }
 
-    .detail-grid,
-    .form-grid {
-      grid-template-columns: 1fr !important;
+  .solicitud-details {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .search-control {
+    flex-direction: column;
+
+    input {
+      min-width: 100% !important;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .solicitud-details {
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal-body {
+    .form-row {
+      flex-direction: column;
+      gap: 15px;
+    }
+  }
+
+  .toolbar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+
+    .toolbar-left {
+      flex-wrap: wrap;
+      gap: 10px;
     }
   }
 }

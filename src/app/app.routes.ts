@@ -54,8 +54,8 @@ export const APP_ROUTES: Routes = [
     path: 'control-refacciones',
     loadComponent: () =>
       import(
-        './features/control-refacciones/control-refacciones.component'
-      ).then((m) => m.ControlRefaccionesComponent), // Nombre coincide con la clase exportada
+        './features/register-refacciones/register-refacciones.component'
+      ).then((m) => m.RegisterRefaccionesComponent), // Nombre coincide con la clase exportada
     canActivate: [AuthGuard],
   },
   {
@@ -63,6 +63,15 @@ export const APP_ROUTES: Routes = [
     loadComponent: () =>
       import('./features/refacciones/refacciones.component').then(
         (m) => m.RefaccionesComponent
+      ),
+    canActivate: [AuthGuard],
+  },
+
+  {
+    path: 'accesos-permisos',
+    loadComponent: () =>
+      import('./features/accesos-permisos/accesos-permisos.component').then(
+        (m) => m.AccesosPermisosComponent
       ),
     canActivate: [AuthGuard],
   },

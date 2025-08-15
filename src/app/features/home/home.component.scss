@@ -1,5 +1,39 @@
-// src/app/features/home/home.component.scss
 @use "../../shared/styles/toolbar" as toolbar;
+@use "sass:color";
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css");
+
+//----MENU-----
+/* Variables */
+$primary-color: toolbar.$primary-color;
+$secondary-color: toolbar.$secondary-color;
+$success-color: #28a745;
+$danger-color: #dc3545;
+$warning-color: #ffc107;
+$info-color: #17a2b8;
+$light-color: #f8f9fa;
+$dark-color: #343a40;
+$border-color: #dee2e6;
+$border-radius: 4px;
+$padding: 15px;
+$margin: 10px;
+
+/* Toolbar Styles */
+.toolbar {
+  background-color: white;
+  color: $dark-color;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); //no
+  border-bottom: 1px solid $border-color;
+
+  .toolbar-left {
+    display: flex;
+    gap: 20px;
+  }
+}
+//---FIN DEL MENU---
 
 .home-container {
   max-width: 1200px;
