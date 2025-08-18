@@ -265,15 +265,6 @@ export class RegisterRefaccionesComponent {
           layout: 'noBorders',
         },
 
-        { text: '3. COSTOS', style: 'sectionHeader' },
-        {
-          table: {
-            widths: ['30%', '70%'],
-            body: [['Precio:', `$${this.refaccion.precio.toFixed(2)}`]],
-          },
-          layout: 'noBorders',
-        },
-
         { text: '4. DESCRIPCIÓN', style: 'sectionHeader' },
         {
           text: this.refaccion.descripcion || 'Ninguna',
