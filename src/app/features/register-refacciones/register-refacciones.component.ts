@@ -48,7 +48,6 @@ export class RegisterRefaccionesComponent {
     categorias: [] as string[],
     descripcion: '',
     precio: 0,
-    costo: 0,
     fechaRegistro: new Date().toISOString().split('T')[0],
   };
 
@@ -270,10 +269,7 @@ export class RegisterRefaccionesComponent {
         {
           table: {
             widths: ['30%', '70%'],
-            body: [
-              ['Precio:', `$${this.refaccion.precio.toFixed(2)}`],
-              ['Costo:', `$${this.refaccion.costo.toFixed(2)}`],
-            ],
+            body: [['Precio:', `$${this.refaccion.precio.toFixed(2)}`]],
           },
           layout: 'noBorders',
         },
@@ -337,7 +333,6 @@ export class RegisterRefaccionesComponent {
       categorias: [],
       descripcion: '',
       precio: 0,
-      costo: 0,
       fechaRegistro: new Date().toISOString().split('T')[0],
     };
 
