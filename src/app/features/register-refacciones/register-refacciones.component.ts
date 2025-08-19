@@ -2,11 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import {
-  HttpClient,
-  HttpClientModule,
-  HttpHeaders,
-} from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../auth/services/auth.service';
 import { FileSizePipe } from './file-size.pipe';
 
@@ -33,7 +29,6 @@ export class RegisterRefaccionesComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  // Modelo para refacciones
   refaccion = {
     cliente: '',
     empresa: '',
@@ -51,7 +46,6 @@ export class RegisterRefaccionesComponent {
     fechaRegistro: new Date().toISOString().split('T')[0],
   };
 
-  // Opciones para selects
   opcionesDisponible = [
     { value: true, label: 'Sí' },
     { value: false, label: 'No' },
@@ -65,7 +59,6 @@ export class RegisterRefaccionesComponent {
     { value: 'Neumática', label: 'Neumática' },
   ];
 
-  // Control del formulario
   currentStep = 1;
   totalSteps = 3;
   submittedStep1 = false;
@@ -88,7 +81,6 @@ export class RegisterRefaccionesComponent {
       .padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
   }
 
-  // Navegación entre pasos
   nextStep() {
     if (this.currentStep === 1 && !this.validateStep1()) {
       this.submittedStep1 = true;
@@ -105,7 +97,6 @@ export class RegisterRefaccionesComponent {
     this.currentStep--;
   }
 
-  // Validaciones
   validateStep1(): boolean {
     return (
       !!this.refaccion.cliente &&
@@ -123,7 +114,6 @@ export class RegisterRefaccionesComponent {
     return this.validateStep1() && this.validateStep2();
   }
 
-  // Manejo de archivos
   onFileChange(event: any) {
     this.refaccion.archivos = [];
     this.refaccion.previews = [];
@@ -133,7 +123,6 @@ export class RegisterRefaccionesComponent {
         const file = event.target.files[i];
         this.refaccion.archivos.push(file);
 
-        // Generar previsualización para imágenes
         if (file.type.match('image.*')) {
           const reader = new FileReader();
           reader.onload = (e: any) => {
@@ -152,7 +141,6 @@ export class RegisterRefaccionesComponent {
     }
   }
 
-  // Manejo de categorías
   toggleCategoria(categoria: string) {
     const index = this.refaccion.categorias.indexOf(categoria);
     if (index >= 0) {
@@ -162,61 +150,72 @@ export class RegisterRefaccionesComponent {
     }
   }
 
-  // Envío del formulario
   onSubmit() {
-    this.submittedStep3 = true;
-
     if (!this.validateAllSteps()) {
-      alert('Por favor complete todos los campos requeridos');
+      alert('Complete todos los campos obligatorios');
       return;
     }
 
     this.isLoading = true;
 
     const formData = new FormData();
-    Object.keys(this.refaccion).forEach((key) => {
-      if (key !== 'archivos' && key !== 'previews') {
-        formData.append(key, (this.refaccion as any)[key]);
-      }
-    });
+    formData.append('empresa', this.refaccion.empresa);
+    formData.append('cliente', this.refaccion.cliente);
+    formData.append('claveInterna', this.refaccion.claveInterna);
+    formData.append('nombre', this.refaccion.nombre);
+    formData.append('modelo', this.refaccion.modelo || '');
+    formData.append('disponible', this.refaccion.disponible.toString());
+    formData.append('rack', this.refaccion.rack || '');
+    formData.append('cajon', this.refaccion.cajon || '');
+    formData.append('descripcion', this.refaccion.descripcion || '');
+    formData.append('precio', this.refaccion.precio.toString());
+    formData.append('categorias', JSON.stringify(this.refaccion.categorias));
+    formData.append('documentId', this.documentId);
 
-    // Agregar archivos
     this.refaccion.archivos.forEach((file) => {
-      formData.append('archivos', file);
+      formData.append('archivos[]', file, file.name);
     });
 
-    const headers = new HttpHeaders({
-      Accept: 'application/json',
-    });
+    const url = this.getBackendUrl('registro_refacciones.php');
 
-    const url = this.isDevelopment()
-      ? '/api/registro_refaccion.php'
-      : 'https://sinsetec.com.mx/api/registro_refaccion.php';
-
-    this.http.post(url, formData, { headers }).subscribe({
+    this.http.post(url, formData).subscribe({
       next: (response: any) => {
         this.isLoading = false;
         if (response.success) {
-          alert('✅ Refacción registrada exitosamente');
+          alert('✅ Refacción registrada correctamente');
           this.downloadPDF();
           this.resetForm();
         } else {
-          alert(`❌ ${response.message || 'Error al registrar la refacción'}`);
+          alert(`❌ Error: ${response.message || 'No se pudo registrar'}`);
         }
       },
       error: (err) => {
         this.isLoading = false;
-        alert('❌ Error en la conexión con el servidor');
-        console.error(err);
+        console.error('Error completo:', {
+          status: err.status,
+          urlIntentada: url,
+          errorDetails: err,
+          rutaFísicaRequerida:
+            'C:\\xampp\\htdocs\\sinsetec-php\\registro_refacciones.php',
+        });
+        alert(
+          `🚨 Error en la conexión (${err.status}):\n\nVerifica que:\n1. El archivo PHP existe en la ruta correcta\n2. El servidor está corriendo\n3. La URL es accesible: ${url}`
+        );
       },
     });
   }
 
-  private isDevelopment(): boolean {
-    return window.location.href.includes('localhost');
+  private getBackendUrl(endpoint: string): string {
+    const isLocalhost =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1';
+    const basePath = '/sinsetec-php'; // Nota: sin .php en el nombre del directorio
+
+    return isLocalhost
+      ? `http://localhost:2898${basePath}/${endpoint}`
+      : `https://tudominio.com${basePath}/${endpoint}`;
   }
 
-  // Generación de PDF
   downloadPDF() {
     if (typeof pdfMake === 'undefined') {
       console.error('pdfMake no está disponible');
@@ -235,7 +234,6 @@ export class RegisterRefaccionesComponent {
         { text: 'REGISTRO DE REFACCIÓN', style: 'header' },
         { text: `ID: ${this.documentId}`, style: 'subheader' },
         { text: `Fecha: ${this.refaccion.fechaRegistro}`, style: 'subheader' },
-
         { text: '1. INFORMACIÓN BÁSICA', style: 'sectionHeader' },
         {
           table: {
@@ -251,7 +249,6 @@ export class RegisterRefaccionesComponent {
           },
           layout: 'noBorders',
         },
-
         { text: '2. ALMACENAMIENTO Y CATEGORÍAS', style: 'sectionHeader' },
         {
           table: {
@@ -264,13 +261,16 @@ export class RegisterRefaccionesComponent {
           },
           layout: 'noBorders',
         },
-
-        { text: '4. DESCRIPCIÓN', style: 'sectionHeader' },
+        { text: '3. DESCRIPCIÓN', style: 'sectionHeader' },
         {
           text: this.refaccion.descripcion || 'Ninguna',
           margin: [0, 0, 0, 15],
         },
-
+        { text: '4. PRECIO', style: 'sectionHeader' },
+        {
+          text: `$${this.refaccion.precio.toFixed(2)}`,
+          margin: [0, 0, 0, 15],
+        },
         {
           text: `Archivos adjuntos: ${
             this.refaccion.archivos.length > 0
@@ -308,7 +308,6 @@ export class RegisterRefaccionesComponent {
     };
   }
 
-  // Resetear formulario
   resetForm() {
     this.refaccion = {
       cliente: '',
