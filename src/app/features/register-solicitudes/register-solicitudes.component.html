@@ -387,6 +387,74 @@
               Gestión de Partidas
             </h2>
 
+            <!-- NUEVA SECCIÓN: Información Adicional de Máquina -->
+            <div class="input-card">
+              <h3 class="section-subtitle">Información Adicional de Máquina</h3>
+              <div class="card-grid">
+                <div class="input-card">
+                  <label>Número de Línea</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="solicitud.lineNumber"
+                    min="1"
+                  />
+                </div>
+
+                <div class="input-card">
+                  <label>Tipo de Máquina</label>
+                  <input type="text" [(ngModel)]="solicitud.machineType" />
+                </div>
+
+                <div class="input-card">
+                  <label>Modelo de Máquina</label>
+                  <input type="text" [(ngModel)]="solicitud.machineModel" />
+                </div>
+
+                <div class="input-card">
+                  <label>Serial de Máquina</label>
+                  <input type="text" [(ngModel)]="solicitud.machineSerial" />
+                </div>
+
+                <div class="input-card">
+                  <label>ID de Máquina</label>
+                  <input type="text" [(ngModel)]="solicitud.machineID" />
+                </div>
+
+                <div class="input-card">
+                  <label>Tiempo de Entrega</label>
+                  <input type="text" [(ngModel)]="solicitud.deliveryTime" />
+                </div>
+              </div>
+            </div>
+
+            <!-- NUEVA SECCIÓN: Información de Contacto y Ubicación -->
+            <div class="input-card">
+              <h3 class="section-subtitle">
+                Información de Contacto y Ubicación
+              </h3>
+              <div class="card-grid">
+                <div class="input-card">
+                  <label>Hora</label>
+                  <input type="time" [(ngModel)]="solicitud.hora" />
+                </div>
+
+                <div class="input-card">
+                  <label>Ubicación</label>
+                  <input type="text" [(ngModel)]="solicitud.ubicacion" />
+                </div>
+
+                <div class="input-card">
+                  <label>Datos de contacto</label>
+                  <input type="text" [(ngModel)]="solicitud.datosContacto" />
+                </div>
+
+                <div class="input-card">
+                  <label>Proveedor</label>
+                  <input type="text" [(ngModel)]="solicitud.proveedor" />
+                </div>
+              </div>
+            </div>
+
             <div class="partida-control">
               <div class="partida-badge">
                 Partida #{{ solicitud.partida }}

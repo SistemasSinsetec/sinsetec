@@ -63,6 +63,17 @@ export class RegisterSolicitudesComponent {
     numeroSerie: '',
     descripcionServicio: '',
     observacionesPartidas: '',
+    // NUEVOS CAMPOS
+    hora: '',
+    ubicacion: '',
+    datosContacto: '',
+    proveedor: '',
+    deliveryTime: '',
+    lineNumber: 1,
+    machineType: '',
+    machineModel: '',
+    machineSerial: '',
+    machineID: '',
   };
 
   // Control del formulario
@@ -290,6 +301,17 @@ export class RegisterSolicitudesComponent {
       numeroSerie: '',
       descripcionServicio: '',
       observacionesPartidas: '',
+      // NUEVOS CAMPOS
+      hora: '',
+      ubicacion: '',
+      datosContacto: '',
+      proveedor: '',
+      deliveryTime: '',
+      lineNumber: 1,
+      machineType: '',
+      machineModel: '',
+      machineSerial: '',
+      machineID: '',
     };
 
     this.partidas = [
@@ -348,7 +370,40 @@ export class RegisterSolicitudesComponent {
           layout: 'noBorders',
         },
 
-        { text: '2. DATOS TÉCNICOS', style: 'sectionHeader' },
+        { text: '2. INFORMACIÓN ADICIONAL', style: 'sectionHeader' },
+        {
+          table: {
+            widths: ['30%', '70%'],
+            body: [
+              ['Hora:', this.solicitud.hora || 'N/A'],
+              ['Ubicación:', this.solicitud.ubicacion || 'N/A'],
+              ['Contacto:', this.solicitud.datosContacto || 'N/A'],
+              ['Proveedor:', this.solicitud.proveedor || 'N/A'],
+              ['Tiempo de Entrega:', this.solicitud.deliveryTime || 'N/A'],
+            ],
+          },
+          layout: 'noBorders',
+        },
+
+        { text: '3. INFORMACIÓN DE MÁQUINA', style: 'sectionHeader' },
+        {
+          table: {
+            widths: ['30%', '70%'],
+            body: [
+              [
+                'Número de Línea:',
+                this.solicitud.lineNumber?.toString() || 'N/A',
+              ],
+              ['Tipo de Máquina:', this.solicitud.machineType || 'N/A'],
+              ['Modelo de Máquina:', this.solicitud.machineModel || 'N/A'],
+              ['Serial de Máquina:', this.solicitud.machineSerial || 'N/A'],
+              ['ID de Máquina:', this.solicitud.machineID || 'N/A'],
+            ],
+          },
+          layout: 'noBorders',
+        },
+
+        { text: '4. DATOS TÉCNICOS', style: 'sectionHeader' },
         {
           table: {
             widths: ['30%', '70%'],
@@ -375,7 +430,7 @@ export class RegisterSolicitudesComponent {
           layout: 'noBorders',
         },
 
-        { text: '3. DESCRIPCIÓN DEL SERVICIO', style: 'sectionHeader' },
+        { text: '5. DESCRIPCIÓN DEL SERVICIO', style: 'sectionHeader' },
         {
           table: {
             widths: ['30%', '70%'],
@@ -391,6 +446,38 @@ export class RegisterSolicitudesComponent {
         {
           text: this.solicitud.descripcionServicio || 'Ninguna',
           margin: [0, 0, 0, 20],
+        },
+
+        { text: '6. PARTIDAS', style: 'sectionHeader' },
+        {
+          table: {
+            headerRows: 1,
+            widths: ['*', 'auto', 'auto', 'auto'],
+            body: [
+              ['Descripción', 'Cantidad', 'Precio Unitario', 'Total'],
+              ...this.partidas.map((partida) => [
+                partida.descripcion || '',
+                partida.cantidad || 0,
+                partida.precioUnitario
+                  ? partida.precioUnitario.toFixed(2)
+                  : '0.00',
+                partida.total ? partida.total.toFixed(2) : '0.00',
+              ]),
+              [
+                { text: 'TOTAL GENERAL', colSpan: 3, bold: true },
+                {},
+                {},
+                { text: this.calcularTotalGeneral().toFixed(2), bold: true },
+              ],
+            ],
+          },
+        },
+
+        {
+          text:
+            'Observaciones: ' +
+            (this.solicitud.observacionesPartidas || 'Ninguna'),
+          margin: [0, 20, 0, 20],
         },
 
         {
