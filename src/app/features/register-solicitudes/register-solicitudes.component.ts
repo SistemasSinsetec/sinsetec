@@ -62,6 +62,7 @@ export class RegisterSolicitudesComponent {
     modeloMaquina: '',
     numeroSerie: '',
     descripcionServicio: '',
+    observacionesPartidas: '',
   };
 
   // Control del formulario
@@ -72,9 +73,11 @@ export class RegisterSolicitudesComponent {
   submittedStep3 = false;
   documentId: string;
   isLoading = false;
+  partidas: any[] = [];
 
   constructor() {
     this.documentId = this.generateDocumentId();
+    this.addPartida(); // Agregar una partida inicial
   }
 
   generateDocumentId(): string {
@@ -122,7 +125,28 @@ export class RegisterSolicitudesComponent {
   }
 
   addPartida() {
-    this.solicitud.partida++;
+    this.partidas.push({
+      descripcion: '',
+      cantidad: 1,
+      precioUnitario: 0,
+      total: 0,
+    });
+    this.solicitud.partida = this.partidas.length;
+  }
+
+  eliminarPartida(index: number) {
+    if (this.partidas.length > 1) {
+      this.partidas.splice(index, 1);
+      this.solicitud.partida = this.partidas.length;
+    }
+  }
+
+  calcularTotalPartida(partida: any) {
+    partida.total = partida.cantidad * partida.precioUnitario;
+  }
+
+  calcularTotalGeneral(): number {
+    return this.partidas.reduce((total, partida) => total + partida.total, 0);
   }
 
   onSubmit() {
@@ -143,6 +167,8 @@ export class RegisterSolicitudesComponent {
     const solicitudData = {
       ...this.solicitud,
       documentId: this.documentId,
+      partidas: this.partidas,
+      totalGeneral: this.calcularTotalGeneral(),
     };
 
     const url = this.isDevelopment()
@@ -263,7 +289,17 @@ export class RegisterSolicitudesComponent {
       modeloMaquina: '',
       numeroSerie: '',
       descripcionServicio: '',
+      observacionesPartidas: '',
     };
+
+    this.partidas = [
+      {
+        descripcion: '',
+        cantidad: 1,
+        precioUnitario: 0,
+        total: 0,
+      },
+    ];
 
     this.currentStep = 1;
     this.submittedStep1 = false;
