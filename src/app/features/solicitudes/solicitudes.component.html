@@ -130,7 +130,7 @@
                 <td>
                   <span
                     class="estado-badge"
-                    [class]="'estado-' + solicitud.estado.toLowerCase()"
+                    [class]="'estado-' + obtenerClaseEstado(solicitud.estado)"
                   >
                     {{ solicitud.estado }}
                   </span>
@@ -332,10 +332,8 @@
             }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Descripción Adicional:</span>
-            <span class="detail-value">{{
-              solicitudDetalle.descripcion_adicional
-            }}</span>
+            <span class="detail-label">Comentario:</span>
+            <span class="detail-value">{{ solicitudDetalle.comentario }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Fecha de Solicitud:</span>
@@ -347,66 +345,10 @@
             <span class="detail-label">Estado:</span>
             <span
               class="detail-value estado-badge"
-              [class]="'estado-' + solicitudDetalle.estado.toLowerCase()"
+              [class]="'estado-' + obtenerClaseEstado(solicitudDetalle.estado)"
             >
               {{ solicitudDetalle.estado }}
             </span>
-          </div>
-
-          <!-- Sección de Cotizaciones -->
-          <div
-            class="detail-row full-width"
-            *ngIf="solicitudDetalle.cotizaciones?.length"
-          >
-            <span class="detail-label">Cotizaciones:</span>
-            <div class="documentos-container">
-              <div
-                *ngFor="let cotizacion of solicitudDetalle.cotizaciones"
-                class="documento"
-              >
-                <div><strong>Número:</strong> {{ cotizacion.numero }}</div>
-                <div><strong>Fecha:</strong> {{ cotizacion.fecha | date }}</div>
-                <div>
-                  <strong>Monto:</strong> ${{ cotizacion.monto | number }}
-                </div>
-                <div *ngIf="cotizacion.descripcion">
-                  <strong>Descripción:</strong> {{ cotizacion.descripcion }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sección de Facturas -->
-          <div
-            class="detail-row full-width"
-            *ngIf="solicitudDetalle.facturas?.length"
-          >
-            <span class="detail-label">Facturas:</span>
-            <div class="documentos-container">
-              <div
-                *ngFor="let factura of solicitudDetalle.facturas"
-                class="documento"
-              >
-                <div><strong>Folio:</strong> {{ factura.folio }}</div>
-                <div><strong>Fecha:</strong> {{ factura.fecha | date }}</div>
-                <div>
-                  <strong>Cantidad:</strong> ${{ factura.cantidad | number }}
-                </div>
-                <div *ngIf="factura.tiempo_entrega">
-                  <strong>Tiempo de Entrega:</strong>
-                  {{ factura.tiempo_entrega }}
-                </div>
-                <div *ngIf="factura.garantia">
-                  <strong>Garantía:</strong> {{ factura.garantia }}
-                </div>
-                <div *ngIf="factura.iva">
-                  <strong>IVA:</strong> ${{ factura.iva | number }}
-                </div>
-                <div *ngIf="factura.descripcion">
-                  <strong>Descripción:</strong> {{ factura.descripcion }}
-                </div>
-              </div>
-            </div>
           </div>
 
           <!-- Información de Entrega -->
@@ -560,11 +502,11 @@
               />
             </div>
             <div class="form-row full-width">
-              <label for="edit-descripcion">Descripción Adicional:</label>
+              <label for="edit-comentario">Comentario:</label>
               <textarea
-                id="edit-descripcion"
-                [(ngModel)]="solicitudDetalle.descripcion_adicional"
-                name="descripcion_adicional"
+                id="edit-comentario"
+                [(ngModel)]="solicitudDetalle.comentario"
+                name="comentario"
               ></textarea>
             </div>
           </div>
@@ -580,115 +522,6 @@
           [disabled]="isLoading"
         >
           <span *ngIf="!isLoading">Guardar Cambios</span>
-          <span *ngIf="isLoading"
-            ><i class="fas fa-spinner fa-spin"></i> Guardando...</span
-          >
-        </button>
-      </div>
-    </div>
-
-    <!-- Modal Factura -->
-    <div
-      class="modal-overlay"
-      *ngIf="showFacturaModal"
-      (click)="showFacturaModal = false"
-    ></div>
-    <div class="modal modal-lg" *ngIf="showFacturaModal">
-      <div class="modal-header">
-        <h3>Factura</h3>
-        <button class="modal-close" (click)="showFacturaModal = false">
-          &times;
-        </button>
-      </div>
-      <div class="modal-body">
-        <form *ngIf="solicitudDetalle" (ngSubmit)="guardarFactura()">
-          <div class="form-grid">
-            <div class="form-row">
-              <label for="folio">Folio:</label>
-              <input
-                id="folio"
-                type="text"
-                [(ngModel)]="folioDocumento"
-                name="folioDocumento"
-                required
-              />
-            </div>
-
-            <div class="form-row">
-              <label for="fecha-documento">Fecha:</label>
-              <input
-                id="fecha-documento"
-                type="date"
-                [(ngModel)]="fechaDocumento"
-                name="fechaDocumento"
-                required
-              />
-            </div>
-
-            <div class="form-row">
-              <label for="tiempo-entrega">Tiempo de Entrega:</label>
-              <input
-                id="tiempo-entrega"
-                type="text"
-                [(ngModel)]="tiempoEntrega"
-                name="tiempoEntrega"
-              />
-            </div>
-
-            <div class="form-row">
-              <label for="garantia">Garantía:</label>
-              <input
-                id="garantia"
-                type="text"
-                [(ngModel)]="garantia"
-                name="garantia"
-              />
-            </div>
-
-            <div class="form-row">
-              <label for="cantidad">Cantidad:</label>
-              <input
-                id="cantidad"
-                type="number"
-                step="0.01"
-                [(ngModel)]="cantidad"
-                name="cantidad"
-                required
-              />
-            </div>
-
-            <div class="form-row">
-              <label for="iva">IVA:</label>
-              <input
-                id="iva"
-                type="number"
-                step="0.01"
-                [(ngModel)]="iva"
-                name="iva"
-              />
-            </div>
-
-            <div class="form-row full-width">
-              <label for="descripcion">Descripción:</label>
-              <textarea
-                id="descripcion"
-                [(ngModel)]="descripcionDocumento"
-                name="descripcionDocumento"
-              ></textarea>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="showFacturaModal = false">
-          Cancelar
-        </button>
-        <button
-          class="btn btn-primary"
-          (click)="guardarFactura()"
-          [disabled]="isLoading"
-        >
-          <span *ngIf="!isLoading">Guardar Factura</span>
           <span *ngIf="isLoading"
             ><i class="fas fa-spinner fa-spin"></i> Guardando...</span
           >

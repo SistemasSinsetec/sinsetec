@@ -268,15 +268,30 @@ $margin: 10px;
       font-size: 12px;
       font-weight: 500;
       text-align: center;
-      min-width: 80px;
+      min-width: 100px;
 
+      // Estados compuestos
+      &.estado-factura {
+        background-color: rgba($warning-color, 0.1);
+        color: color.adjust($warning-color, $lightness: -10%);
+      }
+      &.estado-cotizado {
+        background-color: rgba($info-color, 0.1);
+        color: color.adjust($info-color, $lightness: -10%);
+      }
+      &.estado-entregado {
+        background-color: rgba($success-color, 0.1);
+        color: color.adjust($success-color, $lightness: -10%);
+      }
+
+      // Mantener los estados simples existentes
       &.estado-pendiente {
         background-color: rgba($info-color, 0.1);
         color: color.adjust($info-color, $lightness: -10%);
       }
       &.estado-enproceso {
         background-color: rgba($warning-color, 0.1);
-        color: color.adjust($warning-color, $lightness: -20%);
+        color: color.adjust($warning-color, $lightness: -10%);
       }
       &.estado-completado {
         background-color: rgba($success-color, 0.1);
@@ -286,17 +301,13 @@ $margin: 10px;
         background-color: rgba($danger-color, 0.1);
         color: color.adjust($danger-color, $lightness: -10%);
       }
-      &.estado-factura {
-        background-color: rgba($primary-color, 0.1);
-        color: color.adjust($primary-color, $lightness: -10%);
-      }
-      &.estado-cotizado {
-        background-color: rgba($secondary-color, 0.1);
-        color: color.adjust($secondary-color, $lightness: -10%);
-      }
-      &.estado-entregado {
+      &.estado-autorizado {
         background-color: rgba($success-color, 0.1);
         color: color.adjust($success-color, $lightness: -10%);
+      }
+      &.estado-procesado {
+        background-color: rgba($info-color, 0.1);
+        color: color.adjust($info-color, $lightness: -10%);
       }
     }
 

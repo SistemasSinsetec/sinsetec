@@ -51,17 +51,9 @@
             <div class="step-number">1</div>
             <div class="step-label">Información General</div>
           </div>
-          <div
-            class="step-indicator"
-            [class.active]="currentStep === 2"
-            [class.completed]="currentStep > 2"
-          >
+          <div class="step-indicator" [class.active]="currentStep === 2">
             <div class="step-number">2</div>
-            <div class="step-label">Descripción</div>
-          </div>
-          <div class="step-indicator" [class.active]="currentStep === 3">
-            <div class="step-number">3</div>
-            <div class="step-label">Partidas</div>
+            <div class="step-label">Información Adicional</div>
           </div>
         </div>
       </div>
@@ -96,9 +88,27 @@
                 {{ solicitud.solicitante || "No especificado" }}
               </div>
             </div>
+            <div class="info-item">
+              <div class="info-label">Representante</div>
+              <div class="info-value">
+                {{ solicitud.representante || "No especificado" }}
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Proveedor</div>
+              <div class="info-value">
+                {{ solicitud.proveedor || "No especificado" }}
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Empresa</div>
+              <div class="info-value">
+                {{ solicitud.empresa || "No especificado" }}
+              </div>
+            </div>
           </div>
 
-          <div class="sidebar-section" *ngIf="currentStep >= 2">
+          <div class="sidebar-section" *ngIf="currentStep >= 1">
             <h3>
               <svg
                 viewBox="0 0 24 24"
@@ -133,6 +143,24 @@
                   getLabel(naturalezasTrabajo, solicitud.naturalezaTrabajo) ||
                     "No especificado"
                 }}
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">ID máquina</div>
+              <div class="info-value">
+                {{ solicitud.idMaquina || "No especificado" }}
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Modelo máquina</div>
+              <div class="info-value">
+                {{ solicitud.modeloMaquina || "No especificado" }}
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Número de serie</div>
+              <div class="info-value">
+                {{ solicitud.numeroSerie || "No especificado" }}
               </div>
             </div>
           </div>
@@ -191,6 +219,21 @@
                   Campo obligatorio
                 </div>
               </div>
+
+              <div class="input-card">
+                <label>Representante</label>
+                <input type="text" [(ngModel)]="solicitud.representante" />
+              </div>
+
+              <div class="input-card">
+                <label>Proveedor</label>
+                <input type="text" [(ngModel)]="solicitud.proveedor" />
+              </div>
+
+              <div class="input-card">
+                <label>Empresa</label>
+                <input type="text" [(ngModel)]="solicitud.empresa" />
+              </div>
             </div>
 
             <h3 class="section-subtitle">
@@ -217,20 +260,25 @@
                 [class.invalid]="submittedStep1 && !solicitud.tipoTrabajo"
               >
                 <label>Tipo de trabajo <span class="required">*</span></label>
-                <select [(ngModel)]="solicitud.tipoTrabajo" required>
-                  <option value="" disabled selected>Seleccione...</option>
+                <input
+                  type="text"
+                  [(ngModel)]="solicitud.tipoTrabajo"
+                  placeholder="Seleccione o escriba el tipo de trabajo"
+                  list="tiposTrabajoList"
+                  required
+                />
+                <datalist id="tiposTrabajoList">
                   <option
                     *ngFor="let tipo of tiposTrabajo"
-                    [value]="tipo.value"
-                  >
-                    {{ tipo.label }}
-                  </option>
-                </select>
+                    [value]="tipo.label"
+                  ></option>
+                </datalist>
+
                 <div
                   class="error-message"
                   *ngIf="submittedStep1 && !solicitud.tipoTrabajo"
                 >
-                  Seleccione una opción
+                  Campo obligatorio
                 </div>
               </div>
 
@@ -241,20 +289,25 @@
                 <label
                   >Naturaleza del trabajo <span class="required">*</span></label
                 >
-                <select [(ngModel)]="solicitud.naturalezaTrabajo" required>
-                  <option value="" disabled selected>Seleccione...</option>
+                <input
+                  type="text"
+                  [(ngModel)]="solicitud.naturalezaTrabajo"
+                  placeholder="Seleccione o escriba la naturaleza"
+                  list="naturalezasTrabajoList"
+                  required
+                />
+                <datalist id="naturalezasTrabajoList">
                   <option
                     *ngFor="let nat of naturalezasTrabajo"
-                    [value]="nat.value"
-                  >
-                    {{ nat.label }}
-                  </option>
-                </select>
+                    [value]="nat.label"
+                  ></option>
+                </datalist>
+
                 <div
                   class="error-message"
                   *ngIf="submittedStep1 && !solicitud.naturalezaTrabajo"
                 >
-                  Seleccione una opción
+                  Campo obligatorio
                 </div>
               </div>
 
@@ -263,111 +316,51 @@
                 [class.invalid]="submittedStep1 && !solicitud.tipoMaquina"
               >
                 <label>Tipo de máquina <span class="required">*</span></label>
-                <select [(ngModel)]="solicitud.tipoMaquina" required>
-                  <option value="" disabled selected>Seleccione...</option>
+                <input
+                  type="text"
+                  [(ngModel)]="solicitud.tipoMaquina"
+                  placeholder="Seleccione o escriba el tipo de máquina"
+                  list="tiposMaquinaList"
+                  required
+                />
+                <datalist id="tiposMaquinaList">
                   <option
                     *ngFor="let tipo of tiposMaquina"
-                    [value]="tipo.value"
-                  >
-                    {{ tipo.label }}
-                  </option>
-                </select>
+                    [value]="tipo.label"
+                  ></option>
+                </datalist>
+
                 <div
                   class="error-message"
                   *ngIf="submittedStep1 && !solicitud.tipoMaquina"
                 >
-                  Seleccione una opción
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Paso 2: Descripción -->
-          <div class="step-content" [class.active]="currentStep === 2">
-            <h2>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                style="width: 22px; height: 22px"
-              >
-                <path
-                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                ></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-              Descripción del Servicio
-            </h2>
-
-            <div class="card-grid">
-              <div
-                class="input-card"
-                [class.invalid]="submittedStep2 && !solicitud.idMaquina"
-              >
-                <label>ID máquina <span class="required">*</span></label>
-                <input type="text" [(ngModel)]="solicitud.idMaquina" required />
-                <div
-                  class="error-message"
-                  *ngIf="submittedStep2 && !solicitud.idMaquina"
-                >
-                  Campo obligatorio
-                </div>
-              </div>
-
-              <div
-                class="input-card"
-                [class.invalid]="submittedStep2 && !solicitud.modeloMaquina"
-              >
-                <label>Modelo máquina <span class="required">*</span></label>
-                <input
-                  type="text"
-                  [(ngModel)]="solicitud.modeloMaquina"
-                  required
-                />
-                <div
-                  class="error-message"
-                  *ngIf="submittedStep2 && !solicitud.modeloMaquina"
-                >
-                  Campo obligatorio
-                </div>
-              </div>
-
-              <div
-                class="input-card"
-                [class.invalid]="submittedStep2 && !solicitud.numeroSerie"
-              >
-                <label>Número de serie <span class="required">*</span></label>
-                <input
-                  type="text"
-                  [(ngModel)]="solicitud.numeroSerie"
-                  required
-                />
-                <div
-                  class="error-message"
-                  *ngIf="submittedStep2 && !solicitud.numeroSerie"
-                >
                   Campo obligatorio
                 </div>
               </div>
             </div>
 
-            <div class="input-card">
-              <label>Comentarios</label>
+            <div
+              class="input-card"
+              [class.invalid]="submittedStep1 && !solicitud.descripcionServicio"
+            >
+              <label>Comentarios <span class="required">*</span></label>
               <textarea
                 [(ngModel)]="solicitud.descripcionServicio"
                 rows="4"
+                required
+                placeholder="Describa el servicio requerido"
               ></textarea>
+              <div
+                class="error-message"
+                *ngIf="submittedStep1 && !solicitud.descripcionServicio"
+              >
+                Campo obligatorio
+              </div>
             </div>
           </div>
 
-          <!-- Paso 3: Partidas -->
-          <div class="step-content" [class.active]="currentStep === 3">
+          <!-- Paso 2: Partidas -->
+          <div class="step-content" [class.active]="currentStep === 2">
             <h2>
               <svg
                 viewBox="0 0 24 24"
@@ -446,11 +439,6 @@
                 <div class="input-card">
                   <label>Datos de contacto</label>
                   <input type="text" [(ngModel)]="solicitud.datosContacto" />
-                </div>
-
-                <div class="input-card">
-                  <label>Proveedor</label>
-                  <input type="text" [(ngModel)]="solicitud.proveedor" />
                 </div>
               </div>
             </div>

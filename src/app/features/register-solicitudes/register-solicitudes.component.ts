@@ -28,7 +28,7 @@ export class RegisterSolicitudesComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  // Datos para los selects
+  // Datos para los datalist
   tiposTrabajo = [
     { value: 'Mantenimiento Correctivo', label: 'Mantenimiento Correctivo' },
     { value: 'Mantenimiento Preventivo', label: 'Mantenimiento Preventivo' },
@@ -50,24 +50,27 @@ export class RegisterSolicitudesComponent {
     { value: 'Otro', label: 'Otro' },
   ];
 
-  // Modelo del formulario
+  // Modelo del formulario COMPLETO (con todos los campos)
   solicitud = {
     cliente: '',
     solicitante: '',
+    representante: '',
+    proveedor: '',
+    empresa: '',
     partida: 1,
-    tipoTrabajo: '',
-    naturalezaTrabajo: '',
-    tipoMaquina: '',
+    tipoTrabajo: '', // Texto libre con sugerencias
+    naturalezaTrabajo: '', // Texto libre con sugerencias
+    tipoMaquina: '', // Texto libre con sugerencias
+    // Campos de máquina (se mantienen para el Paso 2)
     idMaquina: '',
     modeloMaquina: '',
     numeroSerie: '',
-    descripcionServicio: '',
+    descripcionServicio: '', // Obligatorio
     observacionesPartidas: '',
-    // NUEVOS CAMPOS
+    // Campos adicionales para el paso 2
     hora: '',
     ubicacion: '',
     datosContacto: '',
-    proveedor: '',
     deliveryTime: '',
     lineNumber: 1,
     machineType: '',
@@ -78,10 +81,9 @@ export class RegisterSolicitudesComponent {
 
   // Control del formulario
   currentStep = 1;
-  totalSteps = 3;
+  totalSteps = 2;
   submittedStep1 = false;
   submittedStep2 = false;
-  submittedStep3 = false;
   documentId: string;
   isLoading = false;
   partidas: any[] = [];
@@ -103,7 +105,6 @@ export class RegisterSolicitudesComponent {
 
   nextStep() {
     if (this.currentStep === 1 && !this.validateStep1()) return;
-    if (this.currentStep === 2 && !this.validateStep2()) return;
     this.currentStep++;
   }
 
@@ -113,26 +114,24 @@ export class RegisterSolicitudesComponent {
 
   validateStep1(): boolean {
     this.submittedStep1 = true;
-    return !!this.solicitud.cliente && !!this.solicitud.solicitante;
+    return (
+      !!this.solicitud.cliente &&
+      !!this.solicitud.solicitante &&
+      !!this.solicitud.tipoTrabajo &&
+      !!this.solicitud.naturalezaTrabajo &&
+      !!this.solicitud.tipoMaquina &&
+      !!this.solicitud.descripcionServicio
+    );
   }
 
   validateStep2(): boolean {
     this.submittedStep2 = true;
-    return (
-      !!this.solicitud.tipoTrabajo &&
-      !!this.solicitud.naturalezaTrabajo &&
-      !!this.solicitud.tipoMaquina
-    );
+    // El paso 2 no tiene campos obligatorios, siempre retorna true
+    return true;
   }
 
   validateAllSteps(): boolean {
-    return (
-      this.validateStep1() &&
-      this.validateStep2() &&
-      !!this.solicitud.idMaquina &&
-      !!this.solicitud.modeloMaquina &&
-      !!this.solicitud.numeroSerie
-    );
+    return this.validateStep1(); // Solo valida el paso 1
   }
 
   addPartida() {
@@ -161,9 +160,11 @@ export class RegisterSolicitudesComponent {
   }
 
   onSubmit() {
-    this.submittedStep3 = true;
+    this.submittedStep1 = true;
+    this.submittedStep2 = true;
 
-    if (!this.validateAllSteps()) {
+    // Solo valida el paso 1 ya que el paso 2 es opcional
+    if (!this.validateStep1()) {
       this.showError('Por favor complete todos los campos requeridos');
       return;
     }
@@ -292,6 +293,9 @@ export class RegisterSolicitudesComponent {
     this.solicitud = {
       cliente: '',
       solicitante: '',
+      representante: '',
+      proveedor: '',
+      empresa: '',
       partida: 1,
       tipoTrabajo: '',
       naturalezaTrabajo: '',
@@ -301,11 +305,9 @@ export class RegisterSolicitudesComponent {
       numeroSerie: '',
       descripcionServicio: '',
       observacionesPartidas: '',
-      // NUEVOS CAMPOS
       hora: '',
       ubicacion: '',
       datosContacto: '',
-      proveedor: '',
       deliveryTime: '',
       lineNumber: 1,
       machineType: '',
@@ -326,7 +328,6 @@ export class RegisterSolicitudesComponent {
     this.currentStep = 1;
     this.submittedStep1 = false;
     this.submittedStep2 = false;
-    this.submittedStep3 = false;
     this.documentId = this.generateDocumentId();
   }
 
@@ -364,6 +365,9 @@ export class RegisterSolicitudesComponent {
             body: [
               ['Cliente:', this.solicitud.cliente || 'N/A'],
               ['Solicitante:', this.solicitud.solicitante || 'N/A'],
+              ['Representante:', this.solicitud.representante || 'N/A'],
+              ['Proveedor:', this.solicitud.proveedor || 'N/A'],
+              ['Empresa:', this.solicitud.empresa || 'N/A'],
               ['Partida:', this.solicitud.partida.toString() || '1'],
             ],
           },
@@ -378,7 +382,6 @@ export class RegisterSolicitudesComponent {
               ['Hora:', this.solicitud.hora || 'N/A'],
               ['Ubicación:', this.solicitud.ubicacion || 'N/A'],
               ['Contacto:', this.solicitud.datosContacto || 'N/A'],
-              ['Proveedor:', this.solicitud.proveedor || 'N/A'],
               ['Tiempo de Entrega:', this.solicitud.deliveryTime || 'N/A'],
             ],
           },
@@ -398,6 +401,9 @@ export class RegisterSolicitudesComponent {
               ['Modelo de Máquina:', this.solicitud.machineModel || 'N/A'],
               ['Serial de Máquina:', this.solicitud.machineSerial || 'N/A'],
               ['ID de Máquina:', this.solicitud.machineID || 'N/A'],
+              ['ID Máquina:', this.solicitud.idMaquina || 'N/A'],
+              ['Modelo:', this.solicitud.modeloMaquina || 'N/A'],
+              ['Número de serie:', this.solicitud.numeroSerie || 'N/A'],
             ],
           },
           layout: 'noBorders',
@@ -431,18 +437,6 @@ export class RegisterSolicitudesComponent {
         },
 
         { text: '5. DESCRIPCIÓN DEL SERVICIO', style: 'sectionHeader' },
-        {
-          table: {
-            widths: ['30%', '70%'],
-            body: [
-              ['ID Máquina:', this.solicitud.idMaquina || 'N/A'],
-              ['Modelo:', this.solicitud.modeloMaquina || 'N/A'],
-              ['Número de serie:', this.solicitud.numeroSerie || 'N/A'],
-            ],
-          },
-          layout: 'noBorders',
-        },
-        { text: 'Descripción adicional:', style: 'sectionHeader' },
         {
           text: this.solicitud.descripcionServicio || 'Ninguna',
           margin: [0, 0, 0, 20],
@@ -516,7 +510,16 @@ export class RegisterSolicitudesComponent {
   }
 
   getLabel(options: any[], value: string): string {
-    return options.find((opt) => opt.value === value)?.label || '';
+    // Si el valor coincide exactamente con alguna opción predefinida
+    const exactMatch = options.find(
+      (opt) => opt.value === value || opt.label === value
+    );
+    if (exactMatch) {
+      return exactMatch.label;
+    }
+
+    // Si no coincide, devolver el valor tal cual (texto libre)
+    return value || 'No especificado';
   }
 
   logout(): void {

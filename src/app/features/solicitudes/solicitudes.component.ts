@@ -16,14 +16,12 @@ interface Solicitud {
   id_maquina: string;
   modelo_maquina: string;
   numero_serie: string;
-  descripcion_adicional: string;
+  comentario: string;
   fecha_solicitud: string;
   estado: string;
   recibido_por?: string | null;
   fecha_recibido?: string | null;
   seleccionada?: boolean;
-  cotizaciones?: any[];
-  facturas?: any[];
 }
 
 @Component({
@@ -53,27 +51,19 @@ export class SolicitudesComponent implements OnInit {
     'En Proceso',
     'Completado',
     'Cancelado',
-    'Factura',
-    'Cotizado',
+    'Pendiente/Factura',
+    'Pendiente/Cotizado',
+    'Autorizado',
+    'Procesado',
     'Entregado',
   ];
 
   showDeleteModal: boolean = false;
   showViewModal: boolean = false;
   showEditModal: boolean = false;
-  showFacturaModal: boolean = false;
   showEntregaModal: boolean = false;
   isLoading: boolean = false;
   errorMessage: string = '';
-
-  // Campos para factura
-  folioDocumento: string = '';
-  fechaDocumento: string = new Date().toISOString().split('T')[0];
-  tiempoEntrega: string = '';
-  garantia: string = '';
-  cantidad: number = 0;
-  iva: number = 0;
-  descripcionDocumento: string = '';
 
   recibidoPor: string = '';
 
@@ -186,7 +176,6 @@ export class SolicitudesComponent implements OnInit {
             ? new Date(data.fecha_recibido).toLocaleString()
             : undefined,
         };
-        this.cargarDocumentosRelacionados(id);
         this.showViewModal = true;
       },
       error: (err: any) => {
@@ -212,26 +201,6 @@ export class SolicitudesComponent implements OnInit {
         console.error('Error al cargar para editar:', err);
         this.errorMessage = 'Error al cargar la solicitud para editar';
       },
-    });
-  }
-
-  cargarDocumentosRelacionados(solicitudId: number): void {
-    this.solicitudesService.getCotizaciones(solicitudId).subscribe({
-      next: (cotizaciones: any[]) => {
-        if (this.solicitudDetalle) {
-          this.solicitudDetalle.cotizaciones = cotizaciones;
-        }
-      },
-      error: (err: any) => console.error('Error al cargar cotizaciones:', err),
-    });
-
-    this.solicitudesService.getFacturas(solicitudId).subscribe({
-      next: (facturas: any[]) => {
-        if (this.solicitudDetalle) {
-          this.solicitudDetalle.facturas = facturas;
-        }
-      },
-      error: (err: any) => console.error('Error al cargar facturas:', err),
     });
   }
 
@@ -320,112 +289,62 @@ export class SolicitudesComponent implements OnInit {
     console.log('Exportando a Excel...');
   }
 
-  // Método para cotización simple
+  // Método para cotización (estado Pendiente/Cotizado)
   crearCotizacionSimple(): void {
     if (!this.solicitudSeleccionada) {
       alert('Por favor seleccione una solicitud primero');
       return;
     }
 
-    if (confirm('¿Desea marcar esta solicitud como COTIZADA?')) {
+    if (confirm('¿Desea marcar esta solicitud como PENDIENTE COTIZACIÓN?')) {
       this.isLoading = true;
 
       this.solicitudesService
         .actualizarSolicitud(this.solicitudSeleccionada.id, {
-          estado: 'Cotizado',
+          estado: 'Pendiente/Cotizado',
         })
         .subscribe({
           next: () => {
             this.cargarSolicitudes();
             this.isLoading = false;
-            alert('Solicitud marcada como COTIZADA');
+            alert('Solicitud marcada como PENDIENTE COTIZACIÓN');
           },
           error: (err: any) => {
             console.error('Error al actualizar estado:', err);
-            this.errorMessage = 'Error al marcar como cotizada';
+            this.errorMessage = 'Error al marcar como pendiente cotización';
             this.isLoading = false;
           },
         });
     }
   }
 
-  // Método para mostrar formulario de factura
+  // Método para factura (estado Pendiente/Factura)
   mostrarFormularioFactura(): void {
     if (!this.solicitudSeleccionada) {
       alert('Por favor seleccione una solicitud primero');
       return;
     }
 
-    // Resetear campos del formulario
-    this.folioDocumento = '';
-    this.fechaDocumento = new Date().toISOString().split('T')[0];
-    this.tiempoEntrega = '';
-    this.garantia = '';
-    this.cantidad = 0;
-    this.iva = 0;
-    this.descripcionDocumento = '';
+    if (confirm('¿Desea marcar esta solicitud como PENDIENTE FACTURA?')) {
+      this.isLoading = true;
 
-    this.solicitudesService
-      .getSolicitud(this.solicitudSeleccionada.id)
-      .subscribe({
-        next: (data: Solicitud) => {
-          this.solicitudDetalle = data;
-          this.showFacturaModal = true;
-        },
-        error: (err: any) => {
-          console.error('Error al cargar solicitud:', err);
-          this.errorMessage = 'Error al cargar la solicitud';
-        },
-      });
-  }
-
-  // Método para guardar factura
-  guardarFactura(): void {
-    if (!this.solicitudSeleccionada) return;
-
-    this.isLoading = true;
-
-    const factura = {
-      solicitud_id: this.solicitudSeleccionada.id,
-      folio: this.folioDocumento,
-      fecha: this.fechaDocumento,
-      tiempo_entrega: this.tiempoEntrega,
-      garantia: this.garantia,
-      cantidad: this.cantidad,
-      iva: this.iva,
-      descripcion: this.descripcionDocumento,
-    };
-
-    this.solicitudesService.crearFactura(factura).subscribe({
-      next: () => {
-        this.actualizarEstadoSolicitud('Factura');
-        this.showFacturaModal = false;
-        this.isLoading = false;
-        alert('Factura registrada correctamente');
-      },
-      error: (err: any) => {
-        console.error('Error al guardar factura:', err);
-        this.errorMessage = 'Error al registrar factura';
-        this.isLoading = false;
-      },
-    });
-  }
-
-  actualizarEstadoSolicitud(nuevoEstado: string): void {
-    if (!this.solicitudSeleccionada) return;
-
-    this.solicitudesService
-      .actualizarSolicitud(this.solicitudSeleccionada.id, {
-        estado: nuevoEstado,
-      })
-      .subscribe({
-        next: () => {
-          this.cargarSolicitudes();
-        },
-        error: (err) => {
-          console.error('Error al actualizar estado:', err);
-        },
-      });
+      this.solicitudesService
+        .actualizarSolicitud(this.solicitudSeleccionada.id, {
+          estado: 'Pendiente/Factura',
+        })
+        .subscribe({
+          next: () => {
+            this.cargarSolicitudes();
+            this.isLoading = false;
+            alert('Solicitud marcada como PENDIENTE FACTURA');
+          },
+          error: (err: any) => {
+            console.error('Error al actualizar estado:', err);
+            this.errorMessage = 'Error al marcar como pendiente factura';
+            this.isLoading = false;
+          },
+        });
+    }
   }
 
   mostrarFormularioEntrega(): void {
@@ -464,5 +383,18 @@ export class SolicitudesComponent implements OnInit {
           this.isLoading = false;
         },
       });
+  }
+
+  // Función para obtener la clase CSS válida para el estado
+  // Función para obtener la clase CSS válida para el estado
+  obtenerClaseEstado(estado: string): string {
+    // Mapear estados compuestos a clases simples
+    if (estado.includes('/')) {
+      // Para estados compuestos, usar la parte después de la barra
+      return estado.split('/')[1].toLowerCase().trim();
+    }
+
+    // Para estados simples, convertir a minúsculas y eliminar espacios
+    return estado.toLowerCase().replace(/\s+/g, '');
   }
 }
