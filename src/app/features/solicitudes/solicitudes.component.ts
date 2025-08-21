@@ -35,6 +35,7 @@ interface Solicitud {
   tiempo_entrega: string;
   datos_contacto: string;
   iva: number;
+  partidas?: any[]; // NUEVO: Campo para las partidas desde la BD
   itemsFactura?: ItemFactura[];
   recibido_por?: string | null;
   fecha_recibido?: string | null;
@@ -115,6 +116,7 @@ export class SolicitudesComponent implements OnInit {
             tiempo_entrega: item.tiempo_entrega || '',
             datos_contacto: item.datos_contacto || '',
             iva: item.iva || 0,
+            partidas: item.partidas || [], // NUEVO: Cargar partidas
             itemsFactura: item.itemsFactura || [],
           }));
         } else if (response && response.data) {
@@ -133,6 +135,7 @@ export class SolicitudesComponent implements OnInit {
             tiempo_entrega: item.tiempo_entrega || '',
             datos_contacto: item.datos_contacto || '',
             iva: item.iva || 0,
+            partidas: item.partidas || [], // NUEVO: Cargar partidas
             itemsFactura: item.itemsFactura || [],
           }));
         } else {
@@ -221,6 +224,17 @@ export class SolicitudesComponent implements OnInit {
     this.actualizarCalculosFacturacion();
   }
 
+  // NUEVO: Método para convertir partidas a itemsFactura
+  convertirPartidasAItemsFactura(partidas: any[]): ItemFactura[] {
+    return partidas.map((partida: any) => ({
+      descripcion: partida.descripcion || '',
+      cantidad: partida.cantidad || 0,
+      precioUnitario: partida.precioUnitario || 0,
+      iva: 0, // Valor por defecto, puedes ajustar según necesites
+      total: partida.total || 0,
+    }));
+  }
+
   filtrarSolicitudes(): void {
     let resultado = this.solicitudes;
 
@@ -274,6 +288,11 @@ export class SolicitudesComponent implements OnInit {
   verDetalles(id: number): void {
     this.solicitudesService.getSolicitud(id).subscribe({
       next: (data: Solicitud) => {
+        // Convertir partidas a itemsFactura
+        const itemsFactura = data.partidas
+          ? this.convertirPartidasAItemsFactura(data.partidas)
+          : [];
+
         this.solicitudDetalle = {
           ...data,
           fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
@@ -288,7 +307,7 @@ export class SolicitudesComponent implements OnInit {
           tiempo_entrega: data.tiempo_entrega || '',
           datos_contacto: data.datos_contacto || '',
           iva: data.iva || 0,
-          itemsFactura: data.itemsFactura || [],
+          itemsFactura: itemsFactura, // Usar las partidas convertidas
         };
         this.showViewModal = true;
       },
@@ -302,6 +321,11 @@ export class SolicitudesComponent implements OnInit {
   editarSolicitud(id: number): void {
     this.solicitudesService.getSolicitud(id).subscribe({
       next: (data: Solicitud) => {
+        // Convertir partidas a itemsFactura
+        const itemsFactura = data.partidas
+          ? this.convertirPartidasAItemsFactura(data.partidas)
+          : [];
+
         this.solicitudDetalle = {
           ...data,
           fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
@@ -316,15 +340,7 @@ export class SolicitudesComponent implements OnInit {
           tiempo_entrega: data.tiempo_entrega || '',
           datos_contacto: data.datos_contacto || '',
           iva: data.iva || 0,
-          itemsFactura: data.itemsFactura || [
-            {
-              descripcion: '',
-              cantidad: 1,
-              precioUnitario: 0,
-              iva: 0,
-              total: 0,
-            },
-          ],
+          itemsFactura: itemsFactura, // Usar las partidas convertidas
         };
         this.showEditModal = true;
       },
