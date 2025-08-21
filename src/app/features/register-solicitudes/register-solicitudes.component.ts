@@ -227,7 +227,6 @@ export class RegisterSolicitudesComponent {
   private handleSuccess(response: any) {
     this.isLoading = false;
     this.showSuccess('Solicitud registrada exitosamente');
-    this.downloadPDF();
     this.resetForm();
   }
 
@@ -332,6 +331,16 @@ export class RegisterSolicitudesComponent {
   }
 
   downloadPDF() {
+    // CONFIGURACIÓN CON FUENTES ROBOTO (vienen incluidas)
+    pdfMake.fonts = {
+      Roboto: {
+        normal: 'Roboto-Regular.ttf',
+        bold: 'Roboto-Medium.ttf',
+        italics: 'Roboto-Italic.ttf',
+        bolditalics: 'Roboto-MediumItalic.ttf',
+      },
+    };
+
     if (typeof pdfMake === 'undefined') {
       console.error('pdfMake no está disponible');
       return;
@@ -505,7 +514,7 @@ export class RegisterSolicitudesComponent {
           margin: [0, 10, 0, 5],
         },
       },
-      defaultStyle: { font: 'Helvetica', fontSize: 12 },
+      defaultStyle: { font: 'Roboto', fontSize: 12 },
     };
   }
 
