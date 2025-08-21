@@ -270,7 +270,7 @@
       </div>
     </div>
 
-    <!-- Modal Ver Detalles -->
+    <!-- Modal Ver Detalles - VISTA ACTUALIZADA CON FACTURACIÓN -->
     <div
       class="modal-overlay"
       *ngIf="showViewModal"
@@ -285,6 +285,7 @@
       </div>
       <div class="modal-body">
         <div class="detail-grid" *ngIf="solicitudDetalle">
+          <!-- Campos existentes -->
           <div class="detail-row">
             <span class="detail-label">Cliente:</span>
             <span class="detail-value">{{ solicitudDetalle.cliente }}</span>
@@ -292,6 +293,25 @@
           <div class="detail-row">
             <span class="detail-label">Solicitante:</span>
             <span class="detail-value">{{ solicitudDetalle.solicitante }}</span>
+          </div>
+          <!-- Nuevos campos para la VISTA -->
+          <div class="detail-row">
+            <span class="detail-label">Empresa:</span>
+            <span class="detail-value">{{
+              solicitudDetalle.empresa || "N/A"
+            }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Representante:</span>
+            <span class="detail-value">{{
+              solicitudDetalle.representante || "N/A"
+            }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Proveedor:</span>
+            <span class="detail-value">{{
+              solicitudDetalle.proveedor || "N/A"
+            }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Partida:</span>
@@ -332,7 +352,31 @@
             }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Comentario:</span>
+            <span class="detail-label">Horas:</span>
+            <span class="detail-value">{{
+              solicitudDetalle.horas || "N/A"
+            }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Ubicación:</span>
+            <span class="detail-value">{{
+              solicitudDetalle.ubicacion || "N/A"
+            }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Tiempo de Entrega:</span>
+            <span class="detail-value">{{
+              solicitudDetalle.tiempo_entrega || "N/A"
+            }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Datos de Contacto:</span>
+            <span class="detail-value">{{
+              solicitudDetalle.datos_contacto || "N/A"
+            }}</span>
+          </div>
+          <div class="detail-row full-width">
+            <span class="detail-label">Comentario y Observaciones:</span>
             <span class="detail-value">{{ solicitudDetalle.comentario }}</span>
           </div>
           <div class="detail-row">
@@ -349,6 +393,83 @@
             >
               {{ solicitudDetalle.estado }}
             </span>
+          </div>
+
+          <!-- SECCIÓN DE FACTURACIÓN/IVA (SOLO EN VISTA) -->
+          <div class="detail-row full-width">
+            <h4
+              style="
+                margin: 20px 0 10px 0;
+                border-bottom: 1px solid #ddd;
+                padding-bottom: 5px;
+              "
+            >
+              Información de Facturación
+            </h4>
+          </div>
+
+          <div class="detail-row full-width">
+            <div class="facturacion-section">
+              <table class="facturacion-table">
+                <thead>
+                  <tr>
+                    <th>Descripción</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>IVA %</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of solicitudDetalle.itemsFactura || []">
+                    <td>{{ item.descripcion || "N/A" }}</td>
+                    <td>{{ item.cantidad || "0" }}</td>
+                    <td>{{ item.precioUnitario | currency }}</td>
+                    <td>{{ item.iva || "0" }}%</td>
+                    <td>{{ item.total | currency }}</td>
+                  </tr>
+                  <tr
+                    *ngIf="
+                      !solicitudDetalle.itemsFactura ||
+                      solicitudDetalle.itemsFactura.length === 0
+                    "
+                  >
+                    <td colspan="5" style="text-align: center">
+                      No hay items registrados
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td
+                      colspan="3"
+                      style="text-align: right; font-weight: bold"
+                    >
+                      Subtotal:
+                    </td>
+                    <td colspan="2">{{ calcularSubtotal() | currency }}</td>
+                  </tr>
+                  <tr>
+                    <td
+                      colspan="3"
+                      style="text-align: right; font-weight: bold"
+                    >
+                      IVA Total:
+                    </td>
+                    <td colspan="2">{{ calcularIVA() | currency }}</td>
+                  </tr>
+                  <tr>
+                    <td
+                      colspan="3"
+                      style="text-align: right; font-weight: bold"
+                    >
+                      Total General:
+                    </td>
+                    <td colspan="2">{{ calcularTotalGeneral() | currency }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
           </div>
 
           <!-- Información de Entrega -->
@@ -374,7 +495,7 @@
       </div>
     </div>
 
-    <!-- Modal Editar -->
+    <!-- Modal Editar - EDITAR ACTUALIZADO CON FACTURACIÓN CORREGIDA -->
     <div
       class="modal-overlay"
       *ngIf="showEditModal"
@@ -390,6 +511,7 @@
       <div class="modal-body">
         <form *ngIf="solicitudDetalle" (ngSubmit)="guardarEdicion()">
           <div class="form-grid">
+            <!-- Campos de solo lectura -->
             <div class="form-row">
               <label>ID:</label>
               <input type="text" [value]="solicitudDetalle.id" readonly />
@@ -407,6 +529,30 @@
               />
             </div>
             <div class="form-row">
+              <label>Empresa:</label>
+              <input
+                type="text"
+                [value]="solicitudDetalle.empresa || 'N/A'"
+                readonly
+              />
+            </div>
+            <div class="form-row">
+              <label>Representante:</label>
+              <input
+                type="text"
+                [value]="solicitudDetalle.representante || 'N/A'"
+                readonly
+              />
+            </div>
+            <div class="form-row">
+              <label>Proveedor:</label>
+              <input
+                type="text"
+                [value]="solicitudDetalle.proveedor || 'N/A'"
+                readonly
+              />
+            </div>
+            <div class="form-row">
               <label>Fecha de Solicitud:</label>
               <input
                 type="text"
@@ -418,62 +564,36 @@
               <label>Estado:</label>
               <input type="text" [value]="solicitudDetalle.estado" readonly />
             </div>
-
             <div class="form-row">
-              <label for="edit-partida">Partida:</label>
+              <label>Partida:</label>
+              <input type="text" [value]="solicitudDetalle.partida" readonly />
+            </div>
+            <div class="form-row">
+              <label>Tipo de Trabajo:</label>
               <input
-                id="edit-partida"
                 type="text"
-                [(ngModel)]="solicitudDetalle.partida"
-                name="partida"
+                [value]="solicitudDetalle.tipo_trabajo"
+                readonly
               />
             </div>
             <div class="form-row">
-              <label for="edit-tipo-trabajo">Tipo de Trabajo:</label>
-              <select
-                id="edit-tipo-trabajo"
-                [(ngModel)]="solicitudDetalle.tipo_trabajo"
-                name="tipo_trabajo"
-              >
-                <option value="">Seleccione...</option>
-                <option value="Mantenimiento Correctivo">
-                  Mantenimiento Correctivo
-                </option>
-                <option value="Mantenimiento Preventivo">
-                  Mantenimiento Preventivo
-                </option>
-                <option value="Diagnóstico">Diagnóstico</option>
-                <option value="Instalación">Instalación</option>
-              </select>
+              <label>Naturaleza del Trabajo:</label>
+              <input
+                type="text"
+                [value]="solicitudDetalle.naturaleza_trabajo"
+                readonly
+              />
             </div>
             <div class="form-row">
-              <label for="edit-naturaleza">Naturaleza del Trabajo:</label>
-              <select
-                id="edit-naturaleza"
-                [(ngModel)]="solicitudDetalle.naturaleza_trabajo"
-                name="naturaleza_trabajo"
-              >
-                <option value="">Seleccione...</option>
-                <option value="Mecánica">Mecánica</option>
-                <option value="Eléctrica">Eléctrica</option>
-                <option value="Electrónica">Electrónica</option>
-                <option value="Hidráulica">Hidráulica</option>
-              </select>
+              <label>Tipo de Máquina:</label>
+              <input
+                type="text"
+                [value]="solicitudDetalle.tipo_maquina"
+                readonly
+              />
             </div>
-            <div class="form-row">
-              <label for="edit-tipo-maquina">Tipo de Máquina:</label>
-              <select
-                id="edit-tipo-maquina"
-                [(ngModel)]="solicitudDetalle.tipo_maquina"
-                name="tipo_maquina"
-              >
-                <option value="">Seleccione...</option>
-                <option value="Centro de Maquinado">Centro de Maquinado</option>
-                <option value="Generador">Generador</option>
-                <option value="Equipo Eléctrico">Equipo Eléctrico</option>
-                <option value="Otro">Otro</option>
-              </select>
-            </div>
+
+            <!-- Campos editables según especificación -->
             <div class="form-row">
               <label for="edit-id-maquina">ID Máquina:</label>
               <input
@@ -501,13 +621,186 @@
                 name="numero_serie"
               />
             </div>
+            <div class="form-row">
+              <label for="edit-tiempo-entrega">Tiempo de Entrega:</label>
+              <input
+                id="edit-tiempo-entrega"
+                type="text"
+                [(ngModel)]="solicitudDetalle.tiempo_entrega"
+                name="tiempo_entrega"
+              />
+            </div>
+            <div class="form-row">
+              <label for="edit-horas">Horas:</label>
+              <input
+                id="edit-horas"
+                type="number"
+                [(ngModel)]="solicitudDetalle.horas"
+                name="horas"
+              />
+            </div>
+            <div class="form-row">
+              <label for="edit-ubicacion">Ubicación:</label>
+              <input
+                id="edit-ubicacion"
+                type="text"
+                [(ngModel)]="solicitudDetalle.ubicacion"
+                name="ubicacion"
+              />
+            </div>
+            <div class="form-row">
+              <label for="edit-datos-contacto">Datos de Contacto:</label>
+              <input
+                id="edit-datos-contacto"
+                type="text"
+                [(ngModel)]="solicitudDetalle.datos_contacto"
+                name="datos_contacto"
+              />
+            </div>
             <div class="form-row full-width">
-              <label for="edit-comentario">Comentario:</label>
+              <label for="edit-comentario">Comentario y Observaciones:</label>
               <textarea
                 id="edit-comentario"
                 [(ngModel)]="solicitudDetalle.comentario"
                 name="comentario"
               ></textarea>
+            </div>
+
+            <!-- SECCIÓN DE FACTURACIÓN/IVA (SOLO EN EDITAR) - CORREGIDA -->
+            <div class="form-row full-width">
+              <h4
+                style="
+                  margin: 20px 0 10px 0;
+                  border-bottom: 1px solid #ddd;
+                  padding-bottom: 5px;
+                "
+              >
+                Información de Facturación
+              </h4>
+            </div>
+            <div class="form-row full-width">
+              <div class="facturacion-section">
+                <table class="facturacion-table">
+                  <thead>
+                    <tr>
+                      <th>Descripción</th>
+                      <th>Cantidad</th>
+                      <th>Precio Unitario</th>
+                      <th>IVA %</th>
+                      <th>Total</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="
+                        let item of solicitudDetalle.itemsFactura || [];
+                        let i = index
+                      "
+                    >
+                      <td>
+                        <input
+                          type="text"
+                          [(ngModel)]="item.descripcion"
+                          [name]="'descripcion_' + i"
+                          placeholder="Descripción"
+                          class="facturacion-input"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          [(ngModel)]="item.cantidad"
+                          [name]="'cantidad_' + i"
+                          min="0"
+                          (change)="calcularTotalItem(item)"
+                          class="facturacion-input"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          [(ngModel)]="item.precioUnitario"
+                          [name]="'precioUnitario_' + i"
+                          min="0"
+                          step="0.01"
+                          (change)="calcularTotalItem(item)"
+                          class="facturacion-input"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          [(ngModel)]="item.iva"
+                          [name]="'iva_' + i"
+                          min="0"
+                          step="0.01"
+                          (change)="calcularTotalItem(item)"
+                          class="facturacion-input"
+                        />
+                        %
+                      </td>
+                      <td class="text-right">{{ item.total | currency }}</td>
+                      <td class="text-center">
+                        <button
+                          type="button"
+                          class="btn btn-danger btn-sm"
+                          (click)="eliminarItemFactura(i)"
+                        >
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr
+                      *ngIf="
+                        !solicitudDetalle.itemsFactura ||
+                        solicitudDetalle.itemsFactura.length === 0
+                      "
+                    >
+                      <td colspan="6" class="text-center">
+                        No hay items registrados
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="6" class="text-center">
+                        <button
+                          type="button"
+                          class="btn btn-primary btn-sm"
+                          (click)="agregarItemFactura()"
+                        >
+                          <i class="fas fa-plus"></i> Agregar Item
+                        </button>
+                      </td>
+                    </tr>
+                    <tr class="facturacion-total">
+                      <td colspan="4" class="text-right font-weight-bold">
+                        Subtotal:
+                      </td>
+                      <td colspan="2" class="text-right">
+                        {{ calcularSubtotal() | currency }}
+                      </td>
+                    </tr>
+                    <tr class="facturacion-total">
+                      <td colspan="4" class="text-right font-weight-bold">
+                        IVA Total:
+                      </td>
+                      <td colspan="2" class="text-right">
+                        {{ calcularIVA() | currency }}
+                      </td>
+                    </tr>
+                    <tr class="facturacion-total grand-total">
+                      <td colspan="4" class="text-right font-weight-bold">
+                        Total General:
+                      </td>
+                      <td colspan="2" class="text-right">
+                        {{ calcularTotalGeneral() | currency }}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
           </div>
         </form>

@@ -5,10 +5,21 @@ import { FormsModule } from '@angular/forms';
 import { SolicitudesService } from './solicitudes.service';
 import { HttpClientModule } from '@angular/common/http';
 
+interface ItemFactura {
+  descripcion: string;
+  cantidad: number;
+  precioUnitario: number;
+  iva: number; // Este será el porcentaje (ej: 16, 10, 0)
+  total: number;
+}
+
 interface Solicitud {
   id: number;
   cliente: string;
   solicitante: string;
+  empresa: string;
+  representante: string;
+  proveedor: string;
   partida: string;
   tipo_trabajo: string;
   naturaleza_trabajo: string;
@@ -19,6 +30,12 @@ interface Solicitud {
   comentario: string;
   fecha_solicitud: string;
   estado: string;
+  horas: number;
+  ubicacion: string;
+  tiempo_entrega: string;
+  datos_contacto: string;
+  iva: number;
+  itemsFactura?: ItemFactura[];
   recibido_por?: string | null;
   fecha_recibido?: string | null;
   seleccionada?: boolean;
@@ -90,6 +107,15 @@ export class SolicitudesComponent implements OnInit {
             fecha_recibido: item.fecha_recibido
               ? new Date(item.fecha_recibido).toLocaleString()
               : null,
+            empresa: item.empresa || '',
+            representante: item.representante || '',
+            proveedor: item.proveedor || '',
+            horas: item.horas || 0,
+            ubicacion: item.ubicacion || '',
+            tiempo_entrega: item.tiempo_entrega || '',
+            datos_contacto: item.datos_contacto || '',
+            iva: item.iva || 0,
+            itemsFactura: item.itemsFactura || [],
           }));
         } else if (response && response.data) {
           this.solicitudes = response.data.map((item: any) => ({
@@ -99,6 +125,15 @@ export class SolicitudesComponent implements OnInit {
             fecha_recibido: item.fecha_recibido
               ? new Date(item.fecha_recibido).toLocaleString()
               : null,
+            empresa: item.empresa || '',
+            representante: item.representante || '',
+            proveedor: item.proveedor || '',
+            horas: item.horas || 0,
+            ubicacion: item.ubicacion || '',
+            tiempo_entrega: item.tiempo_entrega || '',
+            datos_contacto: item.datos_contacto || '',
+            iva: item.iva || 0,
+            itemsFactura: item.itemsFactura || [],
           }));
         } else {
           throw new Error('Formato de respuesta inesperado');
@@ -114,6 +149,76 @@ export class SolicitudesComponent implements OnInit {
         this.isLoading = false;
       },
     });
+  }
+
+  // Métodos para cálculos de facturación - CORREGIDOS PARA PORCENTAJE
+  calcularTotalItem(item: ItemFactura): void {
+    const cantidad = item.cantidad || 0;
+    const precioUnitario = item.precioUnitario || 0;
+    const ivaPorcentaje = item.iva || 0; // Este es el porcentaje (ej: 16, 10, 0)
+
+    const subtotal = cantidad * precioUnitario;
+    const ivaMonto = (subtotal * ivaPorcentaje) / 100;
+    item.total = subtotal + ivaMonto;
+
+    this.actualizarCalculosFacturacion();
+  }
+
+  calcularSubtotal(): number {
+    if (!this.solicitudDetalle || !this.solicitudDetalle.itemsFactura) return 0;
+    return this.solicitudDetalle.itemsFactura.reduce((total, item) => {
+      const cantidad = item.cantidad || 0;
+      const precioUnitario = item.precioUnitario || 0;
+      return total + cantidad * precioUnitario;
+    }, 0);
+  }
+
+  calcularIVA(): number {
+    if (!this.solicitudDetalle || !this.solicitudDetalle.itemsFactura) return 0;
+
+    return this.solicitudDetalle.itemsFactura.reduce((totalIva, item) => {
+      const cantidad = item.cantidad || 0;
+      const precioUnitario = item.precioUnitario || 0;
+      const ivaPorcentaje = item.iva || 0;
+
+      const subtotalItem = cantidad * precioUnitario;
+      return totalIva + (subtotalItem * ivaPorcentaje) / 100;
+    }, 0);
+  }
+
+  calcularTotalGeneral(): number {
+    return this.calcularSubtotal() + this.calcularIVA();
+  }
+
+  actualizarCalculosFacturacion(): void {
+    if (this.solicitudDetalle) {
+      this.solicitudDetalle = { ...this.solicitudDetalle };
+    }
+  }
+
+  agregarItemFactura(): void {
+    if (!this.solicitudDetalle) return;
+
+    if (!this.solicitudDetalle.itemsFactura) {
+      this.solicitudDetalle.itemsFactura = [];
+    }
+
+    this.solicitudDetalle.itemsFactura.push({
+      descripcion: '',
+      cantidad: 1,
+      precioUnitario: 0,
+      iva: 0,
+      total: 0,
+    });
+
+    this.actualizarCalculosFacturacion();
+  }
+
+  eliminarItemFactura(index: number): void {
+    if (!this.solicitudDetalle || !this.solicitudDetalle.itemsFactura) return;
+
+    this.solicitudDetalle.itemsFactura.splice(index, 1);
+    this.actualizarCalculosFacturacion();
   }
 
   filtrarSolicitudes(): void {
@@ -175,6 +280,15 @@ export class SolicitudesComponent implements OnInit {
           fecha_recibido: data.fecha_recibido
             ? new Date(data.fecha_recibido).toLocaleString()
             : undefined,
+          empresa: data.empresa || '',
+          representante: data.representante || '',
+          proveedor: data.proveedor || '',
+          horas: data.horas || 0,
+          ubicacion: data.ubicacion || '',
+          tiempo_entrega: data.tiempo_entrega || '',
+          datos_contacto: data.datos_contacto || '',
+          iva: data.iva || 0,
+          itemsFactura: data.itemsFactura || [],
         };
         this.showViewModal = true;
       },
@@ -194,6 +308,23 @@ export class SolicitudesComponent implements OnInit {
           fecha_recibido: data.fecha_recibido
             ? new Date(data.fecha_recibido).toLocaleString()
             : undefined,
+          empresa: data.empresa || '',
+          representante: data.representante || '',
+          proveedor: data.proveedor || '',
+          horas: data.horas || 0,
+          ubicacion: data.ubicacion || '',
+          tiempo_entrega: data.tiempo_entrega || '',
+          datos_contacto: data.datos_contacto || '',
+          iva: data.iva || 0,
+          itemsFactura: data.itemsFactura || [
+            {
+              descripcion: '',
+              cantidad: 1,
+              precioUnitario: 0,
+              iva: 0,
+              total: 0,
+            },
+          ],
         };
         this.showEditModal = true;
       },
@@ -289,7 +420,6 @@ export class SolicitudesComponent implements OnInit {
     console.log('Exportando a Excel...');
   }
 
-  // Método para cotización (estado Pendiente/Cotizado)
   crearCotizacionSimple(): void {
     if (!this.solicitudSeleccionada) {
       alert('Por favor seleccione una solicitud primero');
@@ -318,7 +448,6 @@ export class SolicitudesComponent implements OnInit {
     }
   }
 
-  // Método para factura (estado Pendiente/Factura)
   mostrarFormularioFactura(): void {
     if (!this.solicitudSeleccionada) {
       alert('Por favor seleccione una solicitud primero');
@@ -385,16 +514,11 @@ export class SolicitudesComponent implements OnInit {
       });
   }
 
-  // Función para obtener la clase CSS válida para el estado
-  // Función para obtener la clase CSS válida para el estado
   obtenerClaseEstado(estado: string): string {
-    // Mapear estados compuestos a clases simples
     if (estado.includes('/')) {
-      // Para estados compuestos, usar la parte después de la barra
       return estado.split('/')[1].toLowerCase().trim();
     }
 
-    // Para estados simples, convertir a minúsculas y eliminar espacios
     return estado.toLowerCase().replace(/\s+/g, '');
   }
 }
