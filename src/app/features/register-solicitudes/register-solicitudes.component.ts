@@ -159,11 +159,11 @@ export class RegisterSolicitudesComponent {
     return this.partidas.reduce((total, partida) => total + partida.total, 0);
   }
 
+  // En el método onSubmit(), actualiza para enviar el IVA:
   onSubmit() {
     this.submittedStep1 = true;
     this.submittedStep2 = true;
 
-    // Solo valida el paso 1 ya que el paso 2 es opcional
     if (!this.validateStep1()) {
       this.showError('Por favor complete todos los campos requeridos');
       return;
@@ -176,10 +176,14 @@ export class RegisterSolicitudesComponent {
       Accept: 'application/json',
     });
 
+    // Calcular IVA basado en las partidas si es necesario, o usar un valor fijo
+    const ivaCalculado = 16.0; // Ejemplo: 16% de IVA
+
     const solicitudData = {
       ...this.solicitud,
       documentId: this.documentId,
       partidas: this.partidas,
+      iva: ivaCalculado, // Enviar el IVA calculado
       totalGeneral: this.calcularTotalGeneral(),
     };
 
