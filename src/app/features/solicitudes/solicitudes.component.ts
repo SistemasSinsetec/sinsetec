@@ -35,7 +35,7 @@ interface Solicitud {
   tiempo_entrega: string;
   datos_contacto: string;
   iva: number;
-  partidas?: any[]; // NUEVO: Campo para las partidas desde la BD
+  partidas?: any[]; // Campo para las partidas desde la BD
   itemsFactura?: ItemFactura[];
   recibido_por?: string | null;
   fecha_recibido?: string | null;
@@ -116,7 +116,7 @@ export class SolicitudesComponent implements OnInit {
             tiempo_entrega: item.tiempo_entrega || '',
             datos_contacto: item.datos_contacto || '',
             iva: item.iva || 0,
-            partidas: item.partidas || [], // NUEVO: Cargar partidas
+            partidas: item.partidas || [],
             itemsFactura: item.itemsFactura || [],
           }));
         } else if (response && response.data) {
@@ -135,7 +135,7 @@ export class SolicitudesComponent implements OnInit {
             tiempo_entrega: item.tiempo_entrega || '',
             datos_contacto: item.datos_contacto || '',
             iva: item.iva || 0,
-            partidas: item.partidas || [], // NUEVO: Cargar partidas
+            partidas: item.partidas || [],
             itemsFactura: item.itemsFactura || [],
           }));
         } else {
@@ -224,14 +224,20 @@ export class SolicitudesComponent implements OnInit {
     this.actualizarCalculosFacturacion();
   }
 
-  // NUEVO: Método para convertir partidas a itemsFactura
-  convertirPartidasAItemsFactura(partidas: any[]): ItemFactura[] {
+  // Método para convertir partidas a itemsFactura
+  convertirPartidasAItemsFactura(
+    partidas: any[],
+    ivaPorcentaje: number
+  ): ItemFactura[] {
     return partidas.map((partida: any) => ({
       descripcion: partida.descripcion || '',
       cantidad: partida.cantidad || 0,
       precioUnitario: partida.precioUnitario || 0,
-      iva: 0, // Valor por defecto, puedes ajustar según necesites
-      total: partida.total || 0,
+      iva: ivaPorcentaje, // Usar el porcentaje de IVA de la solicitud
+      total:
+        (partida.cantidad || 0) *
+        (partida.precioUnitario || 0) *
+        (1 + ivaPorcentaje / 100),
     }));
   }
 
@@ -288,9 +294,9 @@ export class SolicitudesComponent implements OnInit {
   verDetalles(id: number): void {
     this.solicitudesService.getSolicitud(id).subscribe({
       next: (data: Solicitud) => {
-        // Convertir partidas a itemsFactura
+        // Convertir partidas a itemsFactura con IVA
         const itemsFactura = data.partidas
-          ? this.convertirPartidasAItemsFactura(data.partidas)
+          ? this.convertirPartidasAItemsFactura(data.partidas, data.iva || 0)
           : [];
 
         this.solicitudDetalle = {
@@ -323,7 +329,7 @@ export class SolicitudesComponent implements OnInit {
       next: (data: Solicitud) => {
         // Convertir partidas a itemsFactura
         const itemsFactura = data.partidas
-          ? this.convertirPartidasAItemsFactura(data.partidas)
+          ? this.convertirPartidasAItemsFactura(data.partidas, data.iva || 0)
           : [];
 
         this.solicitudDetalle = {

@@ -474,7 +474,7 @@
                   <input
                     type="number"
                     [(ngModel)]="partida.cantidad"
-                    (change)="calcularTotalPartida(partida)"
+                    (change)="calcularTotales()"
                     min="1"
                     placeholder="Cantidad"
                   />
@@ -483,7 +483,7 @@
                   <input
                     type="number"
                     [(ngModel)]="partida.precioUnitario"
-                    (change)="calcularTotalPartida(partida)"
+                    (change)="calcularTotales()"
                     min="0"
                     step="0.01"
                     placeholder="Precio"
@@ -499,7 +499,33 @@
                 </div>
               </div>
 
+              <!-- NUEVA SECCIÓN: Cálculo de IVA y totales -->
               <div class="partida-totales">
+                <div class="total-label">Subtotal:</div>
+                <div class="total-value">
+                  {{ calcularSubtotal() | currency }}
+                </div>
+              </div>
+
+              <div class="partida-iva">
+                <div class="iva-input">
+                  <label>IVA (%):</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="solicitud.iva"
+                    (change)="calcularTotales()"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div class="iva-amount">
+                  {{ calcularIVA() | currency }}
+                </div>
+              </div>
+
+              <div class="partida-totales final">
                 <div class="total-label">Total General:</div>
                 <div class="total-value">
                   {{ calcularTotalGeneral() | currency }}

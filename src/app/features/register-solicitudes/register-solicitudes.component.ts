@@ -77,6 +77,7 @@ export class RegisterSolicitudesComponent {
     machineModel: '',
     machineSerial: '',
     machineID: '',
+    iva: 16.0, // Valor por defecto del 16%
   };
 
   // Control del formulario
@@ -142,21 +143,37 @@ export class RegisterSolicitudesComponent {
       total: 0,
     });
     this.solicitud.partida = this.partidas.length;
+    this.calcularTotales();
   }
 
   eliminarPartida(index: number) {
     if (this.partidas.length > 1) {
       this.partidas.splice(index, 1);
       this.solicitud.partida = this.partidas.length;
+      this.calcularTotales();
     }
   }
 
-  calcularTotalPartida(partida: any) {
-    partida.total = partida.cantidad * partida.precioUnitario;
+  calcularSubtotal(): number {
+    return this.partidas.reduce((total, partida) => total + partida.total, 0);
+  }
+
+  calcularIVA(): number {
+    const subtotal = this.calcularSubtotal();
+    return subtotal * (this.solicitud.iva / 100);
   }
 
   calcularTotalGeneral(): number {
-    return this.partidas.reduce((total, partida) => total + partida.total, 0);
+    const subtotal = this.calcularSubtotal();
+    const iva = this.calcularIVA();
+    return subtotal + iva;
+  }
+
+  calcularTotales() {
+    // Recalcular totales de cada partida
+    this.partidas.forEach((partida) => {
+      partida.total = partida.cantidad * partida.precioUnitario;
+    });
   }
 
   // En el método onSubmit(), actualiza para enviar el IVA:
@@ -176,14 +193,12 @@ export class RegisterSolicitudesComponent {
       Accept: 'application/json',
     });
 
-    // Calcular IVA basado en las partidas si es necesario, o usar un valor fijo
-    const ivaCalculado = 16.0; // Ejemplo: 16% de IVA
-
     const solicitudData = {
       ...this.solicitud,
       documentId: this.documentId,
       partidas: this.partidas,
-      iva: ivaCalculado, // Enviar el IVA calculado
+      subtotal: this.calcularSubtotal(),
+      ivaAmount: this.calcularIVA(),
       totalGeneral: this.calcularTotalGeneral(),
     };
 
@@ -317,6 +332,7 @@ export class RegisterSolicitudesComponent {
       machineModel: '',
       machineSerial: '',
       machineID: '',
+      iva: 16.0,
     };
 
     this.partidas = [
@@ -470,6 +486,22 @@ export class RegisterSolicitudesComponent {
                   : '0.00',
                 partida.total ? partida.total.toFixed(2) : '0.00',
               ]),
+              [
+                { text: 'SUBTOTAL', colSpan: 3, bold: true },
+                {},
+                {},
+                { text: this.calcularSubtotal().toFixed(2), bold: true },
+              ],
+              [
+                {
+                  text: `IVA (${this.solicitud.iva}%)`,
+                  colSpan: 3,
+                  bold: true,
+                },
+                {},
+                {},
+                { text: this.calcularIVA().toFixed(2), bold: true },
+              ],
               [
                 { text: 'TOTAL GENERAL', colSpan: 3, bold: true },
                 {},
