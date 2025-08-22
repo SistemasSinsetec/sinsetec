@@ -1,0 +1,495 @@
+@use "../../shared/styles/toolbar" as toolbar;
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css");
+
+/* Estructura principal */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+/* Barra de navegación mejorada */
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 2rem;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .toolbar-left {
+    display: flex;
+    gap: 1.8rem;
+
+    .toolbar-title {
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding: 0.5rem 0;
+      position: relative;
+      transition: color 0.3s;
+
+      &:hover {
+        color: toolbar.$primary-color;
+      }
+
+      &.active {
+        color: toolbar.$primary-color;
+        font-weight: 600;
+
+        &::after {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: toolbar.$primary-color;
+        }
+      }
+    }
+  }
+
+  .toolbar-right {
+    .dropdown {
+      position: relative;
+
+      .profile {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #475569;
+        cursor: pointer;
+        padding: 0.5rem 0.8rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s;
+
+        &:hover {
+          background: #f1f5f9;
+        }
+
+        i {
+          font-size: 0.9rem;
+        }
+      }
+
+      .dropdown-content {
+        position: absolute;
+        right: 0;
+        background: white;
+        min-width: 160px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 0.5rem;
+        overflow: hidden;
+        display: none;
+        z-index: 10;
+
+        a {
+          display: block;
+          padding: 0.8rem 1rem;
+          color: #475569;
+          text-decoration: none;
+          font-size: 0.9rem;
+          transition: all 0.2s;
+
+          &:hover {
+            background: #f1f5f9;
+            color: toolbar.$primary-color;
+          }
+        }
+      }
+
+      &:hover .dropdown-content {
+        display: block;
+      }
+    }
+  }
+}
+
+/* Contenedor del proceso */
+.process-container {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.process-wrapper {
+  background: white;
+  border-radius: 0.8rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Encabezado del proceso */
+.process-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e2e8f0;
+
+  .header-info {
+    h1 {
+      font-size: 1.5rem;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .document-badge {
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 0.3rem 0.8rem;
+        border-radius: 1rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+    }
+
+    p {
+      color: #64748b;
+      margin: 0;
+    }
+  }
+}
+
+/* Pasos del proceso mejorados */
+.process-steps {
+  display: flex;
+  justify-content: space-between;
+  margin: 2rem 0;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 50px;
+    right: 50px;
+    height: 2px;
+    background: #e2e8f0;
+    z-index: 1;
+  }
+}
+
+.step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  max-width: 200px;
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+  }
+
+  .step-label {
+    color: #64748b;
+    font-size: 0.9rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    padding: 0 0.5rem;
+  }
+
+  &.active {
+    .step-number {
+      background: white;
+      border-color: toolbar.$primary-color;
+      color: toolbar.$primary-color;
+      transform: scale(1.1);
+    }
+
+    .step-label {
+      color: toolbar.$primary-color;
+      font-weight: 600;
+    }
+  }
+
+  &.completed {
+    .step-number {
+      background: toolbar.$primary-color;
+      border-color: toolbar.$primary-color;
+      color: white;
+    }
+
+    .step-label {
+      color: toolbar.$primary-color;
+    }
+  }
+}
+
+/* Contenido principal */
+.process-content {
+  display: flex;
+  padding: 0 2rem 2rem;
+  gap: 2rem;
+}
+
+/* Sidebar mejorado */
+.process-sidebar {
+  width: 280px;
+  background: #f8fafc;
+  border-radius: 0.8rem;
+  padding: 1.5rem;
+  height: fit-content;
+  border: 1px solid #e2e8f0;
+
+  .sidebar-section {
+    margin-bottom: 1.8rem;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-size: 1rem;
+      color: #1e293b;
+      margin-bottom: 1.2rem;
+      font-weight: 600;
+
+      svg {
+        width: 18px;
+        height: 18px;
+        color: #64748b;
+      }
+    }
+
+    .info-item {
+      margin-bottom: 1rem;
+
+      .info-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-bottom: 0.3rem;
+      }
+
+      .info-value {
+        font-size: 0.95rem;
+        color: #1e293b;
+        font-weight: 500;
+        padding: 0.3rem 0;
+        border-bottom: 1px dashed #e2e8f0;
+      }
+    }
+  }
+}
+
+/* Área principal del formulario */
+.process-main {
+  flex: 1;
+  background: white;
+  border-radius: 0.8rem;
+  padding: 1.8rem;
+  border: 1px solid #e2e8f0;
+
+  .step-content {
+    display: none;
+
+    &.active {
+      display: block;
+    }
+
+    h2 {
+      color: #1e293b;
+      font-size: 1.3rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+  }
+}
+
+/* Campos del formulario mejorados */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.input-card {
+  margin-bottom: 1.2rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-size: 0.9rem;
+    color: #475569;
+    font-weight: 500;
+
+    .required {
+      color: #ef4444;
+      margin-left: 0.2rem;
+    }
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    background: white;
+
+    &:focus {
+      outline: none;
+      border-color: toolbar.$primary-color;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  }
+
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.8rem center;
+    background-size: 12px;
+  }
+
+  textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  &.invalid {
+    input,
+    select,
+    textarea {
+      border-color: #ef4444;
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: 0.8rem;
+      margin-top: 0.4rem;
+    }
+  }
+}
+
+/* Botones mejorados */
+.process-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+
+  button {
+    padding: 0.8rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+
+    &.btn-prev {
+      background: #f1f5f9;
+      color: #475569;
+
+      &:hover {
+        background: #e2e8f0;
+      }
+    }
+
+    &.btn-next,
+    &.btn-submit {
+      background: toolbar.$primary-color;
+      color: white;
+
+      &:hover {
+        background: darken(toolbar.$primary-color, 8%);
+      }
+    }
+
+    &.btn-download {
+      background: #f1f5f9;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &:hover {
+        background: #e2e8f0;
+      }
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .toolbar {
+    padding: 0.8rem 1rem;
+    flex-direction: column;
+    gap: 1rem;
+
+    .toolbar-left {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+    }
+  }
+
+  .process-container {
+    padding: 1rem;
+  }
+
+  .process-header {
+    padding: 1.2rem;
+  }
+
+  .process-steps {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .step-indicator {
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+    max-width: 100%;
+    width: 100%;
+
+    .step-number {
+      margin-bottom: 0;
+    }
+  }
+
+  .process-content {
+    flex-direction: column;
+    padding: 0 1.2rem 1.5rem;
+  }
+
+  .process-sidebar {
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+}

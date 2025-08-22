@@ -1,0 +1,74 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2>CREATE ACCOUNT</h2>
+    </div>
+
+    <!-- Mostrar mensaje de error general -->
+    <div *ngIf="errorMessage" class="error-message global-error">
+      {{ errorMessage }}
+    </div>
+
+    <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          formControlName="username"
+          placeholder="Choose a username"
+          autocomplete="username"
+        />
+        <!-- Mensajes de validación... -->
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          autocomplete="email"
+        />
+        <!-- Mensajes de validación... -->
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Create a password"
+          autocomplete="new-password"
+        />
+        <!-- Mensajes de validación... -->
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          formControlName="confirmPassword"
+          placeholder="Confirm your password"
+          autocomplete="new-password"
+        />
+        <!-- Mensajes de validación... -->
+      </div>
+
+      <button
+        type="submit"
+        class="auth-button"
+        [disabled]="registerForm.invalid || registerForm.pristine"
+      >
+        SIGN UP
+      </button>
+
+      <div class="auth-footer">
+        Already have an account? <a (click)="navigateToLogin()">Sign in</a>
+      </div>
+    </form>
+  </div>
+</div>

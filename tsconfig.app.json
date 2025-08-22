@@ -4,14 +4,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": [
-      "node"
-    ]
+    "types": [],
+    "declaration": false, // ← FALSE (a menos que necesites .d.ts)
+    "composite": false // ← FALSE (elimina el error)
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "src/**/*.spec.ts"
-  ]
+  "files": ["src/main.ts", "src/polyfills.ts"],
+  "include": ["src/**/*.ts", "src/environments/environment.ts"],
+  "exclude": ["src/test.ts", "src/**/*.spec.ts"]
 }

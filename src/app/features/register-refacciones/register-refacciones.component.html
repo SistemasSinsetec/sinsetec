@@ -1,0 +1,378 @@
+<div class="app-container">
+  <!-- Barra de navegación -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <a class="toolbar-title" routerLink="/home">Inicio</a>
+      <a class="toolbar-title" routerLink="/register-solicitudes"
+        >Registro de Refacciones</a
+      >
+      <a class="toolbar-title" routerLink="/solicitudes">Solicitudes</a>
+      <a class="toolbar-title active" routerLink="/control-refacciones"
+        >Registro de Refacciones</a
+      >
+      <a class="toolbar-title" routerLink="/refacciones">Refacciones</a>
+      <a class="toolbar-title" routerLink="/accesos-permisos"
+        >Accesos/Permisos</a
+      >
+    </div>
+    <div class="toolbar-right">
+      <div class="dropdown">
+        <span class="profile">
+          <i class="fas fa-user"></i> Perfil
+          <i class="fa fa-caret-down"></i>
+        </span>
+        <div class="dropdown-content">
+          <a (click)="logout()">Cerrar sesión</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="process-container">
+    <div class="process-wrapper">
+      <div class="process-header">
+        <div class="header-info">
+          <h1>
+            Control de Refacciones
+            <span class="document-badge">ID: {{ documentId }}</span>
+          </h1>
+          <p>
+            Complete los siguientes pasos para registrar una nueva refacción
+          </p>
+        </div>
+
+        <div class="process-steps">
+          <div
+            class="step-indicator"
+            [class.active]="currentStep === 1"
+            [class.completed]="currentStep > 1"
+          >
+            <div class="step-number">1</div>
+            <div class="step-label">Información</div>
+          </div>
+          <div
+            class="step-indicator"
+            [class.active]="currentStep === 2"
+            [class.completed]="currentStep > 2"
+          >
+            <div class="step-number">2</div>
+            <div class="step-label">Almacenamiento</div>
+          </div>
+          <div class="step-indicator" [class.active]="currentStep === 3">
+            <div class="step-number">3</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="process-content">
+        <div class="process-sidebar">
+          <div class="sidebar-section">
+            <h3>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              Información Básica
+            </h3>
+            <div class="info-item">
+              <div class="info-label">Cliente</div>
+              <div class="info-value">
+                {{ refaccion.cliente || "No especificado" }}
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Empresa</div>
+              <div class="info-value">
+                {{ refaccion.empresa || "No especificado" }}
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Refacción</div>
+              <div class="info-value">
+                {{ refaccion.nombre || "No especificado" }}
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-section" *ngIf="currentStep >= 2">
+            <h3>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="2" y="3" width="20" height="18" rx="2"></rect>
+                <path d="M2 7h20M9 11h6"></path>
+              </svg>
+              Almacenamiento
+            </h3>
+            <div class="info-item">
+              <div class="info-label">Rack</div>
+              <div class="info-value">
+                {{ refaccion.rack || "No especificado" }}
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Cajón</div>
+              <div class="info-value">
+                {{ refaccion.cajon || "No especificado" }}
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Categorías</div>
+              <div class="info-value">
+                {{
+                  refaccion.categorias.length > 0
+                    ? refaccion.categorias.join(", ")
+                    : "No especificado"
+                }}
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-section" *ngIf="currentStep >= 3">
+            <div class="info-item">
+              <div class="info-label">Precio</div>
+              <div class="info-value">{{ refaccion.precio | currency }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="process-main">
+          <!-- Paso 1 -->
+          <div class="step-content" [class.active]="currentStep === 1">
+            <h2>Información Básica de la Refacción</h2>
+
+            <div class="card-grid">
+              <div
+                class="input-card"
+                [class.invalid]="submittedStep1 && !refaccion.cliente"
+              >
+                <label>Cliente <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="refaccion.cliente" required />
+                <div
+                  class="error-message"
+                  *ngIf="submittedStep1 && !refaccion.cliente"
+                >
+                  Campo obligatorio
+                </div>
+              </div>
+
+              <div
+                class="input-card"
+                [class.invalid]="submittedStep1 && !refaccion.empresa"
+              >
+                <label>Empresa <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="refaccion.empresa" required />
+                <div
+                  class="error-message"
+                  *ngIf="submittedStep1 && !refaccion.empresa"
+                >
+                  Campo obligatorio
+                </div>
+              </div>
+
+              <div
+                class="input-card"
+                [class.invalid]="submittedStep1 && !refaccion.claveInterna"
+              >
+                <label>Clave Interna <span class="required">*</span></label>
+                <input
+                  type="text"
+                  [(ngModel)]="refaccion.claveInterna"
+                  required
+                />
+                <div
+                  class="error-message"
+                  *ngIf="submittedStep1 && !refaccion.claveInterna"
+                >
+                  Campo obligatorio
+                </div>
+              </div>
+
+              <div
+                class="input-card"
+                [class.invalid]="submittedStep1 && !refaccion.nombre"
+              >
+                <label>Nombre Refacción <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="refaccion.nombre" required />
+                <div
+                  class="error-message"
+                  *ngIf="submittedStep1 && !refaccion.nombre"
+                >
+                  Campo obligatorio
+                </div>
+              </div>
+
+              <div class="input-card">
+                <label>Modelo Refacción</label>
+                <input type="text" [(ngModel)]="refaccion.modelo" />
+              </div>
+
+              <div class="input-card">
+                <label>Disponible <span class="required">*</span></label>
+                <select [(ngModel)]="refaccion.disponible" required>
+                  <option
+                    *ngFor="let opcion of opcionesDisponible"
+                    [value]="opcion.value"
+                  >
+                    {{ opcion.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Paso 2 -->
+          <div class="step-content" [class.active]="currentStep === 2">
+            <h2>Almacenamiento y Categorías</h2>
+
+            <div class="card-grid">
+              <div class="input-card">
+                <label>Rack</label>
+                <input type="text" [(ngModel)]="refaccion.rack" />
+              </div>
+
+              <div class="input-card">
+                <label>Cajón</label>
+                <input type="text" [(ngModel)]="refaccion.cajon" />
+              </div>
+
+              <div class="input-card file-upload">
+                <label>Archivos/Imágenes</label>
+                <input
+                  type="file"
+                  id="fileInput"
+                  (change)="onFileChange($event)"
+                  multiple
+                />
+                <label for="fileInput" class="file-upload-label">
+                  <i class="fas fa-cloud-upload-alt"></i> Seleccionar archivos
+                </label>
+                <div
+                  class="file-preview-container"
+                  *ngIf="refaccion.archivos.length > 0"
+                >
+                  <div
+                    class="file-preview-item"
+                    *ngFor="let file of refaccion.archivos; let i = index"
+                  >
+                    <div class="file-preview-content">
+                      <div
+                        *ngIf="i < refaccion.previews.length"
+                        class="image-preview"
+                      >
+                        <img [src]="refaccion.previews[i]" alt="Preview" />
+                      </div>
+                      <div class="file-info">
+                        <span class="file-name">{{ file.name }}</span>
+                        <span class="file-size">{{
+                          file.size | fileSize
+                        }}</span>
+                      </div>
+                    </div>
+                    <button class="remove-file" (click)="removeFile(i)">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="input-card"
+                [class.invalid]="
+                  submittedStep2 && refaccion.categorias.length === 0
+                "
+              >
+                <label>Categorías <span class="required">*</span></label>
+                <div class="categorias-container">
+                  <div
+                    *ngFor="let categoria of categoriasPosibles"
+                    class="categoria-item"
+                  >
+                    <input
+                      type="checkbox"
+                      [id]="'cat-' + categoria.value"
+                      [value]="categoria.value"
+                      [checked]="refaccion.categorias.includes(categoria.value)"
+                      (change)="toggleCategoria(categoria.value)"
+                    />
+                    <label [for]="'cat-' + categoria.value">{{
+                      categoria.label
+                    }}</label>
+                  </div>
+                </div>
+                <div
+                  class="error-message"
+                  *ngIf="submittedStep2 && refaccion.categorias.length === 0"
+                >
+                  Seleccione al menos una categoría
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Paso 3 -->
+          <div class="step-content" [class.active]="currentStep === 3">
+            <h2>Costos y Descripción</h2>
+
+            <div class="card-grid">
+              <div class="input-card">
+                <label>Precio ($)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  [(ngModel)]="refaccion.precio"
+                />
+              </div>
+            </div>
+
+            <div class="input-card full-width">
+              <label>Descripción Detallada</label>
+              <textarea [(ngModel)]="refaccion.descripcion" rows="4"></textarea>
+            </div>
+          </div>
+
+          <div class="process-actions">
+            <button
+              *ngIf="currentStep > 1"
+              (click)="prevStep()"
+              class="btn-prev"
+            >
+              Anterior
+            </button>
+            <button
+              *ngIf="currentStep < totalSteps"
+              (click)="nextStep()"
+              class="btn-next"
+            >
+              Siguiente
+            </button>
+            <button
+              *ngIf="currentStep === totalSteps"
+              (click)="onSubmit()"
+              class="btn-submit"
+            >
+              Guardar Refacción
+            </button>
+            <button
+              *ngIf="currentStep === totalSteps"
+              (click)="downloadPDF()"
+              class="btn-download"
+            >
+              <i class="fas fa-download"></i> Descargar PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
