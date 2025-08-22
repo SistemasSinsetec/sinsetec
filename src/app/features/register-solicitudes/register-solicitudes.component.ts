@@ -422,10 +422,6 @@ export class RegisterSolicitudesComponent {
           table: {
             widths: ['30%', '70%'],
             body: [
-              [
-                'Número de Línea:',
-                this.solicitud.lineNumber?.toString() || 'N/A',
-              ],
               ['Tipo de Máquina:', this.solicitud.machineType || 'N/A'],
               ['Modelo de Máquina:', this.solicitud.machineModel || 'N/A'],
               ['Serial de Máquina:', this.solicitud.machineSerial || 'N/A'],

@@ -56,9 +56,10 @@ export class SolicitudesService {
       .pipe(catchError(this.handleError));
   }
 
+  // MÉTODO CORREGIDO - SOLO LLAMA AL ENDPOINT PRINCIPAL
   eliminarSolicitud(id: number): Observable<any> {
     return this.http
-      .delete(`${this.apiUrl}/eliminar_solicitud.php?id=${id}`, {
+      .delete(`${this.apiUrl}/solicitudes.php?id=${id}`, {
         headers: this.headers,
         responseType: 'json' as const,
       })

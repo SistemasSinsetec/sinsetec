@@ -239,7 +239,7 @@
       </section>
     </main>
 
-    <!-- Modal Eliminar -->
+    <!-- Modal Eliminar - CORREGIDO -->
     <div
       class="modal-overlay"
       *ngIf="showDeleteModal"
@@ -454,7 +454,7 @@
                       colspan="3"
                       style="text-align: right; font-weight: bold"
                     >
-                      IVA Total ({{ solicitudDetalle.iva || 0 }}%):
+                      IVA Total:
                     </td>
                     <td colspan="2">{{ calcularIVA() | currency }}</td>
                   </tr>
