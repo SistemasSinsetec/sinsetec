@@ -1,3 +1,4 @@
+@use "sass:color";
 @use "../../shared/styles/toolbar" as toolbar;
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css");
 
@@ -420,7 +421,8 @@
       color: white;
 
       &:hover {
-        background: darken(toolbar.$primary-color, 8%);
+        // Fixed: Replaced deprecated darken() with color.adjust()
+        background: color.adjust(toolbar.$primary-color, $lightness: -8%);
       }
     }
 

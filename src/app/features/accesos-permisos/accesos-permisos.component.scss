@@ -2,22 +2,21 @@
 @use "sass:color";
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css");
 
-//----MENU-----
-/* Variables */
-$primary-color: toolbar.$primary-color;
-$secondary-color: toolbar.$secondary-color;
-$success-color: #28a745;
-$danger-color: #dc3545;
-$warning-color: #ffc107;
-$info-color: #17a2b8;
-$light-color: #f8f9fa;
-$dark-color: #343a40;
-$border-color: #dee2e6;
-$border-radius: 4px;
+// Variables
+$primary-color: #2c3e50;
+$secondary-color: #3498db;
+$success-color: #27ae60;
+$danger-color: #e74c3c;
+$warning-color: #f39c12;
+$info-color: #3498db;
+$light-color: #ecf0f1;
+$dark-color: #2c3e50;
+$border-color: #bdc3c7;
+$border-radius: 8px;
 $padding: 15px;
 $margin: 10px;
 
-/* Toolbar Styles */
+// Toolbar Styles
 .toolbar {
   background-color: white;
   color: $dark-color;
@@ -25,59 +24,574 @@ $margin: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); //no
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid $border-color;
 
   .toolbar-left {
     display: flex;
     gap: 20px;
   }
-}
-//---FIN DEL MENU---
 
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-  .article-details-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
+  .toolbar-title {
+    color: $dark-color;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
 
-    .detail-group.full-width {
-      grid-column: span 3 !important;
+    &:hover {
+      background-color: $light-color;
     }
+
+    &.active {
+      background-color: $primary-color;
+      color: white;
+    }
+  }
+}
+
+// Contenedor principal
+.refacciones-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: calc(100vh - 80px);
+}
+
+// Header
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px 0;
+  border-bottom: 2px solid $border-color;
+
+  h1 {
+    color: $primary-color;
+    margin-bottom: 5px;
+    font-size: 2.5rem;
+    font-weight: 600;
+  }
+
+  p {
+    color: $dark-color;
+    opacity: 0.8;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+}
+
+// Botones
+.btn-primary {
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: $border-radius;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: darken($primary-color, 10%);
+  }
+}
+
+.btn-secondary {
+  background-color: $light-color;
+  color: $dark-color;
+  border: 1px solid $border-color;
+  padding: 12px 24px;
+  border-radius: $border-radius;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: darken($light-color, 10%);
+  }
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &.btn-success {
+    background-color: $success-color;
+    color: white;
+
+    &:hover {
+      background-color: darken($success-color, 10%);
+    }
+  }
+
+  &.btn-danger {
+    background-color: $danger-color;
+    color: white;
+
+    &:hover {
+      background-color: darken($danger-color, 10%);
+    }
+  }
+}
+
+// Formulario de registro
+.registro-form {
+  background: white;
+  border-radius: $border-radius;
+  padding: $padding;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  h3 {
+    margin-bottom: 20px;
+    color: $primary-color;
+  }
+}
+
+.form-group {
+  margin-bottom: 15px;
+
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: $dark-color;
+  }
+
+  input,
+  select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid $border-color;
+    border-radius: 4px;
+    font-size: 14px;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+    }
+  }
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+// Loading
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: $info-color;
+  font-size: 18px;
+
+  i {
+    margin-right: 10px;
+  }
+}
+
+// Contenido principal
+.permisos-content {
+  background: white;
+  border-radius: $border-radius;
+  padding: $padding;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+// Buscador
+.search-control {
+  position: relative;
+  margin-bottom: 30px;
+  max-width: 400px;
+
+  .search-input {
+    width: 100%;
+    padding: 12px 40px 12px 15px;
+    border: 2px solid $border-color;
+    border-radius: $border-radius;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+      box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+    }
+
+    &::placeholder {
+      color: #6c757d;
+    }
+  }
+
+  .search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $dark-color;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+// Lista de usuarios
+.usuarios-list {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: $light-color;
+  border-radius: $border-radius;
+
+  h3 {
+    margin-bottom: 20px;
+    color: $dark-color;
+    font-size: 1.3rem;
+    font-weight: 600;
+    border-bottom: 2px solid $border-color;
+    padding-bottom: 10px;
+  }
+}
+
+.usuarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 15px;
+}
+
+.usuario-card {
+  background: white;
+  border: 2px solid $border-color;
+  border-radius: $border-radius;
+  padding: $padding;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &:hover {
+    border-color: $primary-color;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  &.selected {
+    border-color: $primary-color;
+    background-color: lighten($primary-color, 45%);
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background-color: $primary-color;
+    }
+  }
+}
+
+.usuario-info {
+  flex: 1;
+  cursor: pointer;
+
+  h4 {
+    margin: 0 0 8px 0;
+    color: $dark-color;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0 0 12px 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+}
+
+.usuario-actions {
+  margin-left: 15px;
+}
+
+.rol-badge,
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.rol-badge {
+  background-color: $info-color;
+  color: white;
+}
+
+.status-badge {
+  background-color: #6c757d;
+  color: white;
+
+  &.active {
+    background-color: $success-color;
+  }
+}
+
+// Sección de permisos
+.permisos-section {
+  background: white;
+  border-radius: $border-radius;
+  padding: $padding;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.permisos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid $border-color;
+
+  h3 {
+    color: $dark-color;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.user-status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+
+  &.active {
+    background-color: $success-color;
+    color: white;
+  }
+
+  &:not(.active) {
+    background-color: $danger-color;
+    color: white;
+  }
+}
+
+.warning-message {
+  background-color: lighten($warning-color, 35%);
+  border: 1px solid $warning-color;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  i {
+    color: $warning-color;
+    font-size: 1.2rem;
+  }
+
+  p {
+    margin: 0;
+    color: darken($warning-color, 20%);
+  }
+}
+
+.permisos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 15px;
+}
+
+.permiso-item {
+  background: $light-color;
+  border-radius: $border-radius;
+  padding: 15px;
+  border: 1px solid $border-color;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background: darken($light-color, 2%);
+  }
+}
+
+.permiso-checkbox {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  margin: 0;
+
+  input[type="checkbox"] {
+    margin-right: 15px;
+    margin-top: 3px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: $primary-color;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+}
+
+.permiso-info {
+  flex: 1;
+
+  strong {
+    display: block;
+    margin-bottom: 5px;
+    color: $dark-color;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0 0 8px 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+}
+
+.permiso-clave {
+  color: $info-color;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+// Sin selección
+.no-selection {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6c757d;
+  background: $light-color;
+  border-radius: $border-radius;
+  margin-top: 20px;
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    display: block;
+    color: #adb5bd;
+  }
+
+  p {
+    font-size: 1.1rem;
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+// Mensaje cuando no hay usuarios
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+
+  i {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    display: block;
+  }
+
+  p {
+    font-size: 1.1rem;
+    margin: 0;
+  }
+}
+
+// Responsive
+@media (max-width: 1200px) {
+  .usuarios-grid,
+  .permisos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
 }
 
 @media (max-width: 900px) {
-  .article-details-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-
-    .detail-group.full-width {
-      grid-column: span 2 !important;
-    }
+  .refacciones-container {
+    padding: 15px;
   }
 
-  .solicitud-details {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-
-  .search-control {
+  .header {
     flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
 
-    input {
-      min-width: 100% !important;
+  .usuarios-grid,
+  .permisos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  .header {
+    h1 {
+      font-size: 2rem;
+    }
+
+    p {
+      font-size: 1rem;
     }
   }
 }
 
-@media (max-width: 600px) {
-  .solicitud-details {
-    grid-template-columns: 1fr !important;
+@media (max-width: 768px) {
+  .usuarios-grid,
+  .permisos-grid {
+    grid-template-columns: 1fr;
   }
 
-  .modal-body {
-    .form-row {
-      flex-direction: column;
-      gap: 15px;
+  .permisos-content {
+    padding: 15px;
+  }
+
+  .search-control {
+    max-width: 100%;
+  }
+
+  .usuario-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .usuario-actions {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .refacciones-container {
+    padding: 10px;
+  }
+
+  .header {
+    padding: 15px 0;
+
+    h1 {
+      font-size: 1.8rem;
     }
+  }
+
+  .usuario-card {
+    padding: 12px;
+  }
+
+  .permiso-item {
+    padding: 12px;
   }
 
   .toolbar {
@@ -88,6 +602,45 @@ $margin: 10px;
     .toolbar-left {
       flex-wrap: wrap;
       gap: 10px;
+      justify-content: center;
     }
   }
+}
+
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .search-control .search-input {
+    font-size: 14px;
+    padding: 10px 35px 10px 12px;
+  }
+
+  .rol-badge,
+  .status-badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+  }
+
+  .form-buttons {
+    flex-direction: column;
+  }
+}
+
+// Animaciones
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.usuario-card,
+.permiso-item {
+  animation: fadeIn 0.3s ease-out;
 }
