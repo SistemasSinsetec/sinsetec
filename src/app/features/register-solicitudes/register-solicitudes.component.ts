@@ -77,6 +77,7 @@ export class RegisterSolicitudesComponent {
     machineModel: '',
     machineSerial: '',
     machineID: '',
+    iva: 16.0, // Valor por defecto del 16%
   };
 
   // Control del formulario
@@ -117,6 +118,8 @@ export class RegisterSolicitudesComponent {
     return (
       !!this.solicitud.cliente &&
       !!this.solicitud.solicitante &&
+      !!this.solicitud.representante && // Nuevo campo obligatorio
+      !!this.solicitud.empresa && // Nuevo campo obligatorio
       !!this.solicitud.tipoTrabajo &&
       !!this.solicitud.naturalezaTrabajo &&
       !!this.solicitud.tipoMaquina &&
@@ -126,12 +129,12 @@ export class RegisterSolicitudesComponent {
 
   validateStep2(): boolean {
     this.submittedStep2 = true;
-    // El paso 2 no tiene campos obligatorios, siempre retorna true
-    return true;
+    // Ahora validamos los campos obligatorios del paso 2
+    return !!this.solicitud.hora && !!this.solicitud.ubicacion;
   }
 
   validateAllSteps(): boolean {
-    return this.validateStep1(); // Solo valida el paso 1
+    return this.validateStep1() && this.validateStep2();
   }
 
   addPartida() {
@@ -142,21 +145,37 @@ export class RegisterSolicitudesComponent {
       total: 0,
     });
     this.solicitud.partida = this.partidas.length;
+    this.calcularTotales();
   }
 
   eliminarPartida(index: number) {
     if (this.partidas.length > 1) {
       this.partidas.splice(index, 1);
       this.solicitud.partida = this.partidas.length;
+      this.calcularTotales();
     }
   }
 
-  calcularTotalPartida(partida: any) {
-    partida.total = partida.cantidad * partida.precioUnitario;
+  calcularSubtotal(): number {
+    return this.partidas.reduce((total, partida) => total + partida.total, 0);
+  }
+
+  calcularIVA(): number {
+    const subtotal = this.calcularSubtotal();
+    return subtotal * (this.solicitud.iva / 100);
   }
 
   calcularTotalGeneral(): number {
-    return this.partidas.reduce((total, partida) => total + partida.total, 0);
+    const subtotal = this.calcularSubtotal();
+    const iva = this.calcularIVA();
+    return subtotal + iva;
+  }
+
+  calcularTotales() {
+    // Recalcular totales de cada partida
+    this.partidas.forEach((partida) => {
+      partida.total = partida.cantidad * partida.precioUnitario;
+    });
   }
 
   // En el método onSubmit(), actualiza para enviar el IVA:
@@ -164,7 +183,7 @@ export class RegisterSolicitudesComponent {
     this.submittedStep1 = true;
     this.submittedStep2 = true;
 
-    if (!this.validateStep1()) {
+    if (!this.validateStep1() || !this.validateStep2()) {
       this.showError('Por favor complete todos los campos requeridos');
       return;
     }
@@ -176,14 +195,12 @@ export class RegisterSolicitudesComponent {
       Accept: 'application/json',
     });
 
-    // Calcular IVA basado en las partidas si es necesario, o usar un valor fijo
-    const ivaCalculado = 16.0; // Ejemplo: 16% de IVA
-
     const solicitudData = {
       ...this.solicitud,
       documentId: this.documentId,
       partidas: this.partidas,
-      iva: ivaCalculado, // Enviar el IVA calculado
+      subtotal: this.calcularSubtotal(),
+      ivaAmount: this.calcularIVA(),
       totalGeneral: this.calcularTotalGeneral(),
     };
 
@@ -317,6 +334,7 @@ export class RegisterSolicitudesComponent {
       machineModel: '',
       machineSerial: '',
       machineID: '',
+      iva: 16.0,
     };
 
     this.partidas = [
@@ -406,10 +424,6 @@ export class RegisterSolicitudesComponent {
           table: {
             widths: ['30%', '70%'],
             body: [
-              [
-                'Número de Línea:',
-                this.solicitud.lineNumber?.toString() || 'N/A',
-              ],
               ['Tipo de Máquina:', this.solicitud.machineType || 'N/A'],
               ['Modelo de Máquina:', this.solicitud.machineModel || 'N/A'],
               ['Serial de Máquina:', this.solicitud.machineSerial || 'N/A'],
@@ -470,6 +484,22 @@ export class RegisterSolicitudesComponent {
                   : '0.00',
                 partida.total ? partida.total.toFixed(2) : '0.00',
               ]),
+              [
+                { text: 'SUBTOTAL', colSpan: 3, bold: true },
+                {},
+                {},
+                { text: this.calcularSubtotal().toFixed(2), bold: true },
+              ],
+              [
+                {
+                  text: `IVA (${this.solicitud.iva}%)`,
+                  colSpan: 3,
+                  bold: true,
+                },
+                {},
+                {},
+                { text: this.calcularIVA().toFixed(2), bold: true },
+              ],
               [
                 { text: 'TOTAL GENERAL', colSpan: 3, bold: true },
                 {},

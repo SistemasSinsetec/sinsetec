@@ -421,6 +421,7 @@
       color: white;
 
       &:hover {
+        // Fixed: Replaced deprecated darken() with color.adjust()
         background: color.adjust(toolbar.$primary-color, $lightness: -8%);
       }
     }
