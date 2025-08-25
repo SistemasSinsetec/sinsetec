@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://apps.sinsetec.com.mx/sinsetec-php',
+  apiUrl: 'http://localhost:2898/api',
 };
 /*
  * For easier debugging in development mode, you can import the following file
