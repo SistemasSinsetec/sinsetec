@@ -25,7 +25,7 @@ $margin: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); //no
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid $border-color;
 
   .toolbar-left {
@@ -33,6 +33,7 @@ $margin: 10px;
     gap: 20px;
   }
 }
+
 //---FIN DEL MENU---
 
 /* Estilos base */
@@ -282,7 +283,7 @@ $margin: 10px;
   gap: 0.8rem;
 
   .partidas-icon {
-    color: #3b82f6; /* Color azul original */
+    color: #3b82f6;
     width: 32px !important;
     height: 32px !important;
     stroke-width: 1.5;
@@ -366,7 +367,7 @@ $margin: 10px;
   }
 
   .total-value {
-    color: #059669; /* Color verde para el total */
+    color: #059669;
     min-width: 100px;
     text-align: right;
   }
@@ -604,7 +605,7 @@ $margin: 10px;
     border: 1px solid toolbar.$primary-color;
 
     &:hover {
-      // Corregida la función darken obsoleta
+      // Función darken reemplazada con color.adjust
       background: color.adjust(toolbar.$primary-color, $lightness: -10%);
     }
   }

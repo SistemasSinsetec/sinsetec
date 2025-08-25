@@ -146,6 +146,15 @@
               </div>
             </div>
             <div class="info-item">
+              <div class="info-label">Tipo de máquina</div>
+              <div class="info-value">
+                {{
+                  getLabel(tiposMaquina, solicitud.tipoMaquina) ||
+                    "No especificado"
+                }}
+              </div>
+            </div>
+            <div class="info-item">
               <div class="info-label">ID máquina</div>
               <div class="info-value">
                 {{ solicitud.idMaquina || "No especificado" }}
@@ -220,9 +229,22 @@
                 </div>
               </div>
 
-              <div class="input-card">
-                <label>Representante</label>
-                <input type="text" [(ngModel)]="solicitud.representante" />
+              <div
+                class="input-card"
+                [class.invalid]="submittedStep1 && !solicitud.representante"
+              >
+                <label>Representante <span class="required">*</span></label>
+                <input
+                  type="text"
+                  [(ngModel)]="solicitud.representante"
+                  required
+                />
+                <div
+                  class="error-message"
+                  *ngIf="submittedStep1 && !solicitud.representante"
+                >
+                  Campo obligatorio
+                </div>
               </div>
 
               <div class="input-card">
@@ -230,9 +252,18 @@
                 <input type="text" [(ngModel)]="solicitud.proveedor" />
               </div>
 
-              <div class="input-card">
-                <label>Empresa</label>
-                <input type="text" [(ngModel)]="solicitud.empresa" />
+              <div
+                class="input-card"
+                [class.invalid]="submittedStep1 && !solicitud.empresa"
+              >
+                <label>Empresa <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="solicitud.empresa" required />
+                <div
+                  class="error-message"
+                  *ngIf="submittedStep1 && !solicitud.empresa"
+                >
+                  Campo obligatorio
+                </div>
               </div>
             </div>
 
@@ -417,14 +448,36 @@
                 Información de Contacto y Ubicación
               </h3>
               <div class="card-grid">
-                <div class="input-card">
-                  <label>Hora</label>
-                  <input type="time" [(ngModel)]="solicitud.hora" />
+                <div
+                  class="input-card"
+                  [class.invalid]="submittedStep2 && !solicitud.hora"
+                >
+                  <label>Hora <span class="required">*</span></label>
+                  <input type="time" [(ngModel)]="solicitud.hora" required />
+                  <div
+                    class="error-message"
+                    *ngIf="submittedStep2 && !solicitud.hora"
+                  >
+                    Campo obligatorio
+                  </div>
                 </div>
 
-                <div class="input-card">
-                  <label>Ubicación</label>
-                  <input type="text" [(ngModel)]="solicitud.ubicacion" />
+                <div
+                  class="input-card"
+                  [class.invalid]="submittedStep2 && !solicitud.ubicacion"
+                >
+                  <label>Ubicación <span class="required">*</span></label>
+                  <input
+                    type="text"
+                    [(ngModel)]="solicitud.ubicacion"
+                    required
+                  />
+                  <div
+                    class="error-message"
+                    *ngIf="submittedStep2 && !solicitud.ubicacion"
+                  >
+                    Campo obligatorio
+                  </div>
                 </div>
 
                 <div class="input-card">
