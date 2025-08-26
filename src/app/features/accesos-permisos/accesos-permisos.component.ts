@@ -30,6 +30,7 @@ interface Permiso {
   descripcion: string;
   clave: string;
   activo: boolean;
+  empresa_id?: number;
 }
 
 interface PermisoUsuario {
@@ -64,6 +65,7 @@ export class AccesosPermisosComponent implements OnInit {
     email: '',
     password: '',
     rol: 'Usuario',
+    empresa_id: null,
   };
 
   constructor(
@@ -76,18 +78,35 @@ export class AccesosPermisosComponent implements OnInit {
     this.cargarDatosIniciales();
   }
 
+  // Función para comparar empresas en el selector
+  compareEmpresas(e1: Empresa, e2: Empresa): boolean {
+    return e1 && e2 ? e1.id === e2.id : e1 === e2;
+  }
+
   cargarDatosIniciales() {
     this.isLoading = true;
 
-    // Cargar empresa del usuario actual
-    this.http.get<Empresa>('/api/mi-empresa.php').subscribe({
-      next: (empresa) => {
-        this.empresaSeleccionada = empresa;
-        this.cargarUsuariosEmpresa();
-        this.cargarPermisos();
+    // Cargar todas las empresas disponibles
+    this.http.get<Empresa[]>('/api/empresas.php').subscribe({
+      next: (empresas) => {
+        this.empresas = empresas;
+
+        // Cargar empresa del usuario actual (para el contexto por defecto)
+        this.http.get<Empresa>('/api/mi-empresa.php').subscribe({
+          next: (empresa) => {
+            this.empresaSeleccionada = empresa;
+            this.nuevoUsuario.empresa_id = empresa.id;
+            this.cargarUsuariosEmpresa();
+            this.cargarPermisos();
+          },
+          error: (error) => {
+            console.error('Error cargando empresa:', error);
+            this.isLoading = false;
+          },
+        });
       },
       error: (error) => {
-        console.error('Error cargando empresa:', error);
+        console.error('Error cargando empresas:', error);
         this.isLoading = false;
       },
     });
@@ -113,7 +132,11 @@ export class AccesosPermisosComponent implements OnInit {
   }
 
   cargarPermisos() {
-    this.http.get<Permiso[]>('/api/permisos.php').subscribe({
+    const url = this.empresaSeleccionada
+      ? `/api/permisos.php?empresa_id=${this.empresaSeleccionada.id}`
+      : '/api/permisos.php';
+
+    this.http.get<Permiso[]>(url).subscribe({
       next: (permisos) => {
         this.permisos = permisos;
         if (this.usuarioSeleccionado) {
@@ -139,6 +162,14 @@ export class AccesosPermisosComponent implements OnInit {
           console.error('Error cargando permisos de usuario:', error);
         },
       });
+  }
+
+  cambiarEmpresaSeleccionada() {
+    if (this.empresaSeleccionada) {
+      this.usuarioSeleccionado = null;
+      this.cargarUsuariosEmpresa();
+      this.cargarPermisos();
+    }
   }
 
   seleccionarUsuario(usuario: Usuario) {
@@ -184,14 +215,14 @@ export class AccesosPermisosComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error actualizando permiso:', error);
-        alert('Error al ac.tualizar el permiso');
+        alert('Error al actualizar el permiso');
       },
     });
   }
 
   registrarNuevoUsuario() {
-    if (!this.empresaSeleccionada) {
-      alert('No hay empresa seleccionada');
+    if (!this.nuevoUsuario.empresa_id) {
+      alert('Por favor seleccione una empresa');
       return;
     }
 
@@ -206,7 +237,6 @@ export class AccesosPermisosComponent implements OnInit {
 
     const payload = {
       ...this.nuevoUsuario,
-      empresa_id: this.empresaSeleccionada.id,
     };
 
     this.http.post('/api/registrar-usuario.php', payload).subscribe({
@@ -218,6 +248,7 @@ export class AccesosPermisosComponent implements OnInit {
           email: '',
           password: '',
           rol: 'Usuario',
+          empresa_id: this.empresaSeleccionada?.id || null,
         };
         this.cargarUsuariosEmpresa();
       },
@@ -258,6 +289,11 @@ export class AccesosPermisosComponent implements OnInit {
           alert('Error al actualizar el usuario');
         },
       });
+  }
+
+  getNombreEmpresa(empresaId: number): string {
+    const empresa = this.empresas.find((e) => e.id === empresaId);
+    return empresa ? empresa.nombre : 'Sin empresa';
   }
 
   get usuariosFiltrados(): Usuario[] {

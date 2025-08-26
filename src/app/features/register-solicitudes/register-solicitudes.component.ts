@@ -55,29 +55,10 @@ export class RegisterSolicitudesComponent {
     cliente: '',
     solicitante: '',
     representante: '',
-    proveedor: '',
-    empresa: '',
-    partida: 1,
-    tipoTrabajo: '', // Texto libre con sugerencias
-    naturalezaTrabajo: '', // Texto libre con sugerencias
-    tipoMaquina: '', // Texto libre con sugerencias
-    // Campos de máquina (se mantienen para el Paso 2)
-    idMaquina: '',
-    modeloMaquina: '',
-    numeroSerie: '',
-    descripcionServicio: '', // Obligatorio
-    observacionesPartidas: '',
-    // Campos adicionales para el paso 2
-    hora: '',
+    contacto: '',
     ubicacion: '',
-    datosContacto: '',
-    deliveryTime: '',
-    lineNumber: 1,
-    machineType: '',
-    machineModel: '',
-    machineSerial: '',
-    machineID: '',
-    iva: 16.0, // Valor por defecto del 16%
+    descripcionServicio: '',
+    iva: 16.0,
   };
 
   // Control del formulario
@@ -118,19 +99,30 @@ export class RegisterSolicitudesComponent {
     return (
       !!this.solicitud.cliente &&
       !!this.solicitud.solicitante &&
-      !!this.solicitud.representante && // Nuevo campo obligatorio
-      !!this.solicitud.empresa && // Nuevo campo obligatorio
-      !!this.solicitud.tipoTrabajo &&
-      !!this.solicitud.naturalezaTrabajo &&
-      !!this.solicitud.tipoMaquina &&
-      !!this.solicitud.descripcionServicio
+      !!this.solicitud.representante &&
+      !!this.solicitud.ubicacion
     );
   }
 
   validateStep2(): boolean {
     this.submittedStep2 = true;
-    // Ahora validamos los campos obligatorios del paso 2
-    return !!this.solicitud.hora && !!this.solicitud.ubicacion;
+
+    // Validar que todas las partidas tengan los campos obligatorios
+    for (const partida of this.partidas) {
+      if (
+        !partida.tipoTrabajo ||
+        !partida.naturalezaTrabajo ||
+        !partida.tipoMaquina ||
+        !partida.hora ||
+        !partida.descripcion ||
+        !partida.cantidad ||
+        !partida.precioUnitario
+      ) {
+        return false;
+      }
+    }
+
+    return this.partidas.length > 0;
   }
 
   validateAllSteps(): boolean {
@@ -143,15 +135,22 @@ export class RegisterSolicitudesComponent {
       cantidad: 1,
       precioUnitario: 0,
       total: 0,
+      tipoTrabajo: '',
+      naturalezaTrabajo: '',
+      tipoMaquina: '',
+      idMaquina: '',
+      modeloMaquina: '',
+      numeroSerie: '',
+      hora: '',
+      contactoRecibe: '',
+      tiempoEntrega: '',
     });
-    this.solicitud.partida = this.partidas.length;
     this.calcularTotales();
   }
 
   eliminarPartida(index: number) {
     if (this.partidas.length > 1) {
       this.partidas.splice(index, 1);
-      this.solicitud.partida = this.partidas.length;
       this.calcularTotales();
     }
   }
@@ -178,7 +177,6 @@ export class RegisterSolicitudesComponent {
     });
   }
 
-  // En el método onSubmit(), actualiza para enviar el IVA:
   onSubmit() {
     this.submittedStep1 = true;
     this.submittedStep2 = true;
@@ -195,9 +193,14 @@ export class RegisterSolicitudesComponent {
       Accept: 'application/json',
     });
 
+    const firstPartida = this.partidas[0]; // Obtener la primera partida
+
     const solicitudData = {
       ...this.solicitud,
       documentId: this.documentId,
+      // Se agrega tipoTrabajo y naturalezaTrabajo del primer elemento de partidas
+      tipoTrabajo: firstPartida.tipoTrabajo,
+      naturalezaTrabajo: firstPartida.naturalezaTrabajo,
       partidas: this.partidas,
       subtotal: this.calcularSubtotal(),
       ivaAmount: this.calcularIVA(),
@@ -314,26 +317,9 @@ export class RegisterSolicitudesComponent {
       cliente: '',
       solicitante: '',
       representante: '',
-      proveedor: '',
-      empresa: '',
-      partida: 1,
-      tipoTrabajo: '',
-      naturalezaTrabajo: '',
-      tipoMaquina: '',
-      idMaquina: '',
-      modeloMaquina: '',
-      numeroSerie: '',
-      descripcionServicio: '',
-      observacionesPartidas: '',
-      hora: '',
+      contacto: '',
       ubicacion: '',
-      datosContacto: '',
-      deliveryTime: '',
-      lineNumber: 1,
-      machineType: '',
-      machineModel: '',
-      machineSerial: '',
-      machineID: '',
+      descripcionServicio: '',
       iva: 16.0,
     };
 
@@ -343,6 +329,15 @@ export class RegisterSolicitudesComponent {
         cantidad: 1,
         precioUnitario: 0,
         total: 0,
+        tipoTrabajo: '',
+        naturalezaTrabajo: '',
+        tipoMaquina: '',
+        idMaquina: '',
+        modeloMaquina: '',
+        numeroSerie: '',
+        hora: '',
+        contactoRecibe: '',
+        tiempoEntrega: '',
       },
     ];
 
@@ -352,216 +347,13 @@ export class RegisterSolicitudesComponent {
     this.documentId = this.generateDocumentId();
   }
 
-  downloadPDF() {
-    // CONFIGURACIÓN CON FUENTES ROBOTO (vienen incluidas)
-    pdfMake.fonts = {
-      Roboto: {
-        normal: 'Roboto-Regular.ttf',
-        bold: 'Roboto-Medium.ttf',
-        italics: 'Roboto-Italic.ttf',
-        bolditalics: 'Roboto-MediumItalic.ttf',
-      },
-    };
-
-    if (typeof pdfMake === 'undefined') {
-      console.error('pdfMake no está disponible');
-      return;
-    }
-
-    const docDefinition = this.getPdfDefinition();
-    pdfMake
-      .createPdf(docDefinition)
-      .download(`Solicitud_${this.documentId}.pdf`);
-  }
-
-  private getPdfDefinition() {
-    return {
-      content: [
-        { text: 'SOLICITUD DE SERVICIO TÉCNICO', style: 'header' },
-        { text: `Folio: ${this.documentId}`, style: 'subheader' },
-        {
-          text: `Fecha: ${new Date().toLocaleDateString()}`,
-          style: 'subheader',
-        },
-        {
-          canvas: [
-            { type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1 },
-          ],
-        },
-
-        { text: '1. INFORMACIÓN DEL CLIENTE', style: 'sectionHeader' },
-        {
-          table: {
-            widths: ['30%', '70%'],
-            body: [
-              ['Cliente:', this.solicitud.cliente || 'N/A'],
-              ['Solicitante:', this.solicitud.solicitante || 'N/A'],
-              ['Representante:', this.solicitud.representante || 'N/A'],
-              ['Proveedor:', this.solicitud.proveedor || 'N/A'],
-              ['Empresa:', this.solicitud.empresa || 'N/A'],
-              ['Partida:', this.solicitud.partida.toString() || '1'],
-            ],
-          },
-          layout: 'noBorders',
-        },
-
-        { text: '2. INFORMACIÓN ADICIONAL', style: 'sectionHeader' },
-        {
-          table: {
-            widths: ['30%', '70%'],
-            body: [
-              ['Hora:', this.solicitud.hora || 'N/A'],
-              ['Ubicación:', this.solicitud.ubicacion || 'N/A'],
-              ['Contacto:', this.solicitud.datosContacto || 'N/A'],
-              ['Tiempo de Entrega:', this.solicitud.deliveryTime || 'N/A'],
-            ],
-          },
-          layout: 'noBorders',
-        },
-
-        { text: '3. INFORMACIÓN DE MÁQUINA', style: 'sectionHeader' },
-        {
-          table: {
-            widths: ['30%', '70%'],
-            body: [
-              ['Tipo de Máquina:', this.solicitud.machineType || 'N/A'],
-              ['Modelo de Máquina:', this.solicitud.machineModel || 'N/A'],
-              ['Serial de Máquina:', this.solicitud.machineSerial || 'N/A'],
-              ['ID de Máquina:', this.solicitud.machineID || 'N/A'],
-              ['ID Máquina:', this.solicitud.idMaquina || 'N/A'],
-              ['Modelo:', this.solicitud.modeloMaquina || 'N/A'],
-              ['Número de serie:', this.solicitud.numeroSerie || 'N/A'],
-            ],
-          },
-          layout: 'noBorders',
-        },
-
-        { text: '4. DATOS TÉCNICOS', style: 'sectionHeader' },
-        {
-          table: {
-            widths: ['30%', '70%'],
-            body: [
-              [
-                'Tipo de trabajo:',
-                this.getLabel(this.tiposTrabajo, this.solicitud.tipoTrabajo) ||
-                  'N/A',
-              ],
-              [
-                'Naturaleza:',
-                this.getLabel(
-                  this.naturalezasTrabajo,
-                  this.solicitud.naturalezaTrabajo
-                ) || 'N/A',
-              ],
-              [
-                'Tipo de máquina:',
-                this.getLabel(this.tiposMaquina, this.solicitud.tipoMaquina) ||
-                  'N/A',
-              ],
-            ],
-          },
-          layout: 'noBorders',
-        },
-
-        { text: '5. DESCRIPCIÓN DEL SERVICIO', style: 'sectionHeader' },
-        {
-          text: this.solicitud.descripcionServicio || 'Ninguna',
-          margin: [0, 0, 0, 20],
-        },
-
-        { text: '6. PARTIDAS', style: 'sectionHeader' },
-        {
-          table: {
-            headerRows: 1,
-            widths: ['*', 'auto', 'auto', 'auto'],
-            body: [
-              ['Descripción', 'Cantidad', 'Precio Unitario', 'Total'],
-              ...this.partidas.map((partida) => [
-                partida.descripcion || '',
-                partida.cantidad || 0,
-                partida.precioUnitario
-                  ? partida.precioUnitario.toFixed(2)
-                  : '0.00',
-                partida.total ? partida.total.toFixed(2) : '0.00',
-              ]),
-              [
-                { text: 'SUBTOTAL', colSpan: 3, bold: true },
-                {},
-                {},
-                { text: this.calcularSubtotal().toFixed(2), bold: true },
-              ],
-              [
-                {
-                  text: `IVA (${this.solicitud.iva}%)`,
-                  colSpan: 3,
-                  bold: true,
-                },
-                {},
-                {},
-                { text: this.calcularIVA().toFixed(2), bold: true },
-              ],
-              [
-                { text: 'TOTAL GENERAL', colSpan: 3, bold: true },
-                {},
-                {},
-                { text: this.calcularTotalGeneral().toFixed(2), bold: true },
-              ],
-            ],
-          },
-        },
-
-        {
-          text:
-            'Observaciones: ' +
-            (this.solicitud.observacionesPartidas || 'Ninguna'),
-          margin: [0, 20, 0, 20],
-        },
-
-        {
-          canvas: [
-            { type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1 },
-          ],
-        },
-        {
-          text: 'Firma del solicitante: ___________________________',
-          alignment: 'right',
-        },
-        {
-          text: 'Firma del técnico: ___________________________',
-          alignment: 'right',
-          margin: [0, 0, 0, 20],
-        },
-      ],
-      styles: {
-        header: {
-          fontSize: 18,
-          bold: true,
-          color: '#1a365d',
-          alignment: 'center',
-          margin: [0, 0, 0, 10],
-        },
-        subheader: { fontSize: 12, bold: true, margin: [0, 0, 0, 10] },
-        sectionHeader: {
-          fontSize: 14,
-          bold: true,
-          color: '#2c5282',
-          margin: [0, 10, 0, 5],
-        },
-      },
-      defaultStyle: { font: 'Roboto', fontSize: 12 },
-    };
-  }
-
   getLabel(options: any[], value: string): string {
-    // Si el valor coincide exactamente con alguna opción predefinida
     const exactMatch = options.find(
       (opt) => opt.value === value || opt.label === value
     );
     if (exactMatch) {
       return exactMatch.label;
     }
-
-    // Si no coincide, devolver el valor tal cual (texto libre)
     return value || 'No especificado';
   }
 

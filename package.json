@@ -31,6 +31,7 @@
     "ngx-toastr": "^19.0.0",
     "pdfmake": "^0.2.7",
     "rxjs": "~7.8.0",
+    "xlsx": "^0.18.5",
     "zone.js": "^0.15.1"
   },
   "devDependencies": {
@@ -45,6 +46,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^18.19.120",
     "@types/pdfmake": "^0.1.21",
+    "@types/xlsx": "^0.0.35",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",

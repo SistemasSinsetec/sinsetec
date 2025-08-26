@@ -707,3 +707,47 @@ $margin: 10px;
   font-weight: bold;
   font-size: 1.1em;
 }
+
+// Estilos adicionales para las partidas
+.partida-data {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #f8fafc;
+}
+
+.partida-details-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.partida-total-display {
+  padding: 0.8rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #059669;
+  display: flex;
+  align-items: center;
+}
+
+.partida-totales-container {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f1f5f9;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.description {
+  font-style: italic;
+  color: #64748b;
+  line-height: 1.5;
+}

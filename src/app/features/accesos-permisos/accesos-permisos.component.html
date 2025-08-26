@@ -36,9 +36,26 @@
           Gestión de permisos de usuarios - {{ empresaSeleccionada?.nombre }}
         </p>
       </div>
-      <button class="btn-primary" (click)="mostrarFormularioRegistro = true">
-        <i class="fas fa-plus"></i> Nuevo Usuario
-      </button>
+      <div class="header-actions">
+        <!-- Selector de empresa -->
+        <div class="empresa-selector">
+          <label>Empresa:</label>
+          <select
+            [ngModel]="empresaSeleccionada"
+            (ngModelChange)="
+              empresaSeleccionada = $event; cambiarEmpresaSeleccionada()
+            "
+            [compareWith]="compareEmpresas"
+          >
+            <option *ngFor="let empresa of empresas" [ngValue]="empresa">
+              {{ empresa.nombre }}
+            </option>
+          </select>
+        </div>
+        <button class="btn-primary" (click)="mostrarFormularioRegistro = true">
+          <i class="fas fa-plus"></i> Nuevo Usuario
+        </button>
+      </div>
     </div>
 
     <!-- Formulario de registro de nuevo usuario -->
@@ -67,6 +84,14 @@
           [(ngModel)]="nuevoUsuario.password"
           placeholder="Contraseña"
         />
+      </div>
+      <div class="form-group">
+        <label>Empresa:</label>
+        <select [(ngModel)]="nuevoUsuario.empresa_id">
+          <option *ngFor="let empresa of empresas" [value]="empresa.id">
+            {{ empresa.nombre }}
+          </option>
+        </select>
       </div>
       <div class="form-group">
         <label>Rol:</label>
@@ -109,10 +134,12 @@
 
       <!-- Lista de usuarios -->
       <div class="usuarios-list">
-        <h3>Usuarios de la Empresa ({{ usuarios.length }})</h3>
+        <h3>
+          Usuarios de {{ empresaSeleccionada?.nombre }} ({{ usuarios.length }})
+        </h3>
         <div *ngIf="usuarios.length === 0" class="empty-state">
           <i class="fas fa-users"></i>
-          <p>No hay usuarios registrados</p>
+          <p>No hay usuarios registrados en esta empresa</p>
         </div>
 
         <div class="usuarios-grid">
@@ -124,10 +151,15 @@
             <div class="usuario-info" (click)="seleccionarUsuario(usuario)">
               <h4>{{ usuario.nombre }}</h4>
               <p>{{ usuario.email }}</p>
-              <span class="rol-badge">{{ usuario.rol }}</span>
-              <span class="status-badge" [class.active]="usuario.activo">
-                {{ usuario.activo ? "Activo" : "Inactivo" }}
-              </span>
+              <div class="usuario-details">
+                <span class="rol-badge">{{ usuario.rol }}</span>
+                <span class="empresa-badge">{{
+                  getNombreEmpresa(usuario.empresa_id)
+                }}</span>
+                <span class="status-badge" [class.active]="usuario.activo">
+                  {{ usuario.activo ? "Activo" : "Inactivo" }}
+                </span>
+              </div>
             </div>
             <div class="usuario-actions">
               <button
