@@ -13,6 +13,29 @@ interface ItemFactura {
   total: number;
 }
 
+interface Partida {
+  descripcion: string;
+  cantidad: number;
+  precioUnitario: number;
+  total: number;
+}
+
+interface DetallesPartida {
+  tipoTrabajo?: string;
+  naturalezaTrabajo?: string;
+  tipoMaquina?: string;
+  numeroSerie?: string;
+  idMaquina?: string;
+  modeloMaquina?: string;
+  hora?: string;
+  contactoRecibe?: string;
+  tiempoEntrega?: string;
+  ubicacion?: string;
+  partidas?: Partida[];
+  subtotal?: number;
+  total_general?: number;
+}
+
 interface Solicitud {
   id: number;
   cliente: string;
@@ -37,6 +60,7 @@ interface Solicitud {
   iva: number;
   partidas?: any[];
   itemsFactura?: ItemFactura[];
+  detallesPartida?: DetallesPartida;
   recibido_por?: string | null;
   fecha_recibido?: string | null;
   seleccionada?: boolean;
@@ -118,6 +142,8 @@ export class SolicitudesComponent implements OnInit {
             iva: item.iva || 0,
             partidas: item.partidas || [],
             itemsFactura: item.itemsFactura || [],
+            detallesPartida:
+              item.detallesPartida || this.inicializarDetallesPartida(item),
           }));
         } else if (response && response.data) {
           this.solicitudes = response.data.map((item: any) => ({
@@ -128,7 +154,7 @@ export class SolicitudesComponent implements OnInit {
               ? new Date(item.fecha_recibido).toLocaleString()
               : null,
             empresa: item.empresa || '',
-            representante: item.rerepresentante || '',
+            representante: item.representante || '',
             proveedor: item.proveedor || '',
             horas: item.horas || 0,
             ubicacion: item.ubicacion || '',
@@ -137,6 +163,8 @@ export class SolicitudesComponent implements OnInit {
             iva: item.iva || 0,
             partidas: item.partidas || [],
             itemsFactura: item.itemsFactura || [],
+            detallesPartida:
+              item.detallesPartida || this.inicializarDetallesPartida(item),
           }));
         } else {
           throw new Error('Formato de respuesta inesperado');
@@ -154,6 +182,87 @@ export class SolicitudesComponent implements OnInit {
     });
   }
 
+  inicializarDetallesPartida(item: any): DetallesPartida {
+    return {
+      tipoTrabajo: item.tipo_trabajo || '', // Cambiado
+      naturalezaTrabajo: item.naturaleza_trabajo || '', // Cambiado
+      tipoMaquina: item.tipo_maquina || '', // Cambiado
+      numeroSerie: item.numero_serie || '',
+      partidas: [],
+      subtotal: 0,
+      total_general: 0,
+    };
+  }
+
+  // Métodos para partidas
+  calcularTotalPartida(partida: Partida): void {
+    partida.total = (partida.cantidad || 0) * (partida.precioUnitario || 0);
+    this.actualizarCalculosPartidas();
+  }
+
+  calcularSubtotalPartidas(): number {
+    if (
+      !this.solicitudDetalle ||
+      !this.solicitudDetalle.detallesPartida ||
+      !this.solicitudDetalle.detallesPartida.partidas
+    )
+      return 0;
+    return this.solicitudDetalle.detallesPartida.partidas.reduce(
+      (total, partida) => {
+        return total + (partida.total || 0);
+      },
+      0
+    );
+  }
+
+  actualizarCalculosPartidas(): void {
+    if (this.solicitudDetalle && this.solicitudDetalle.detallesPartida) {
+      this.solicitudDetalle.detallesPartida.subtotal =
+        this.calcularSubtotalPartidas();
+      this.solicitudDetalle.detallesPartida.total_general =
+        this.solicitudDetalle.detallesPartida.subtotal;
+    }
+  }
+
+  agregarPartida(): void {
+    if (!this.solicitudDetalle) return;
+
+    // Verificar y inicializar detallesPartida si no existe
+    if (!this.solicitudDetalle.detallesPartida) {
+      this.solicitudDetalle.detallesPartida = this.inicializarDetallesPartida(
+        this.solicitudDetalle
+      );
+    }
+
+    // Verificar y inicializar partidas si no existe
+    if (!this.solicitudDetalle.detallesPartida.partidas) {
+      this.solicitudDetalle.detallesPartida.partidas = [];
+    }
+
+    // Ahora podemos usar push() con seguridad
+    this.solicitudDetalle.detallesPartida.partidas.push({
+      descripcion: '',
+      cantidad: 1,
+      precioUnitario: 0,
+      total: 0,
+    });
+
+    this.actualizarCalculosPartidas();
+  }
+
+  eliminarPartida(index: number): void {
+    if (
+      !this.solicitudDetalle ||
+      !this.solicitudDetalle.detallesPartida ||
+      !this.solicitudDetalle.detallesPartida.partidas
+    )
+      return;
+
+    this.solicitudDetalle.detallesPartida.partidas.splice(index, 1);
+    this.actualizarCalculosPartidas();
+  }
+
+  // Métodos existentes para facturación
   calcularTotalItem(item: ItemFactura): void {
     const cantidad = item.cantidad || 0;
     const precioUnitario = item.precioUnitario || 0;
@@ -288,17 +397,27 @@ export class SolicitudesComponent implements OnInit {
 
   verDetalles(id: number): void {
     this.solicitudesService.getSolicitud(id).subscribe({
-      next: (data: Solicitud) => {
-        const itemsFactura = data.partidas
-          ? this.convertirPartidasAItemsFactura(data.partidas, data.iva || 0)
-          : [];
+      next: (data: any) => {
+        let detallesPartida: DetallesPartida = {};
+
+        // Procesar partidas_json si existe
+        if (data.partidas_json) {
+          try {
+            const partidasData = JSON.parse(data.partidas_json);
+            if (Array.isArray(partidasData)) {
+              detallesPartida = this.procesarInformacionPartidas(partidasData);
+            }
+          } catch (e) {
+            console.error('Error al parsear partidas JSON:', e);
+          }
+        }
 
         this.solicitudDetalle = {
           ...data,
           fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
           fecha_recibido: data.fecha_recibido
             ? new Date(data.fecha_recibido).toLocaleString()
-            : undefined,
+            : null,
           empresa: data.empresa || '',
           representante: data.representante || '',
           proveedor: data.proveedor || '',
@@ -307,8 +426,10 @@ export class SolicitudesComponent implements OnInit {
           tiempo_entrega: data.tiempo_entrega || '',
           datos_contacto: data.datos_contacto || '',
           iva: data.iva || 0,
-          itemsFactura: itemsFactura,
+          itemsFactura: data.itemsFactura || [],
+          detallesPartida: detallesPartida,
         };
+
         this.showViewModal = true;
       },
       error: (err: any) => {
@@ -318,12 +439,61 @@ export class SolicitudesComponent implements OnInit {
     });
   }
 
+  // En el método verDetalles, agregar el procesamiento de partidas
+  procesarInformacionPartidas(partidas: any[]): DetallesPartida {
+    const resultado: DetallesPartida = {};
+
+    if (!partidas || !Array.isArray(partidas)) {
+      return resultado;
+    }
+
+    // Campos a extraer
+    const campos = [
+      'tipoTrabajo',
+      'naturalezaTrabajo',
+      'tipoMaquina',
+      'numeroSerie',
+      'idMaquina',
+      'modeloMaquina',
+      'hora',
+      'contactoRecibe',
+      'tiempoEntrega',
+      'ubicacion',
+    ];
+
+    campos.forEach((campo) => {
+      const valores: Set<string> = new Set();
+
+      partidas.forEach((partida) => {
+        const valor = partida[campo];
+        if (valor && valor !== 'N/A' && valor !== '') {
+          valores.add(valor.toString().trim());
+        }
+      });
+
+      if (valores.size > 0) {
+        // Usa type assertion para evitar el error
+        (resultado as any)[campo] = Array.from(valores).join(', ');
+      }
+    });
+
+    return resultado;
+  }
+
+  // Método para procesar información de partidas
+
+  // Método para actualizar detalles de partida
+
   editarSolicitud(id: number): void {
     this.solicitudesService.getSolicitud(id).subscribe({
       next: (data: Solicitud) => {
         const itemsFactura = data.partidas
           ? this.convertirPartidasAItemsFactura(data.partidas, data.iva || 0)
           : [];
+
+        if (!data.detallesPartida) {
+          data.detallesPartida = this.inicializarDetallesPartida(data);
+        }
 
         this.solicitudDetalle = {
           ...data,
@@ -340,6 +510,7 @@ export class SolicitudesComponent implements OnInit {
           datos_contacto: data.datos_contacto || '',
           iva: data.iva || 0,
           itemsFactura: itemsFactura,
+          detallesPartida: data.detallesPartida,
         };
         this.showEditModal = true;
       },
@@ -535,5 +706,19 @@ export class SolicitudesComponent implements OnInit {
     }
 
     return estado.toLowerCase().replace(/\s+/g, '');
+  }
+
+  // Método para actualizar detalles de partida
+  actualizarDetallePartida(campo: keyof DetallesPartida, valor: any): void {
+    if (!this.solicitudDetalle) return;
+
+    if (!this.solicitudDetalle.detallesPartida) {
+      this.solicitudDetalle.detallesPartida = this.inicializarDetallesPartida(
+        this.solicitudDetalle
+      );
+    }
+
+    // Usa type assertion para evitar errores de tipo
+    (this.solicitudDetalle.detallesPartida as any)[campo] = valor;
   }
 }

@@ -924,3 +924,105 @@ $margin: 10px;
 .text-center {
   text-align: center;
 }
+
+/* Estilos para la sección de partidas (NUEVO) */
+.partidas-section {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.partidas-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th,
+  td {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    text-align: left;
+  }
+
+  th {
+    background-color: #e9ecef;
+    font-weight: 600;
+  }
+
+  tfoot {
+    font-weight: bold;
+
+    tr:last-child {
+      background-color: #e9ecef;
+    }
+  }
+
+  input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+
+    &:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+  }
+
+  .btn-sm {
+    padding: 2px 6px;
+    font-size: 12px;
+  }
+}
+
+/* Estilos adicionales para inputs de partidas */
+.partidas-input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+}
+
+.partidas-table {
+  th,
+  td {
+    padding: 8px;
+    text-align: center;
+
+    &:first-child {
+      text-align: left;
+    }
+
+    &.text-right {
+      text-align: right;
+    }
+
+    &.text-center {
+      text-align: center;
+    }
+  }
+
+  .partidas-total {
+    td {
+      border-top: 2px solid #dee2e6;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    &.grand-total {
+      td {
+        border-top: 2px solid #000;
+        font-size: 1.1em;
+      }
+    }
+  }
+}
