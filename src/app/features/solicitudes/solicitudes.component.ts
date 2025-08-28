@@ -5,21 +5,33 @@ import { FormsModule } from '@angular/forms';
 import { SolicitudesService } from './solicitudes.service';
 import { HttpClientModule } from '@angular/common/http';
 
-interface ItemFactura {
-  descripcion: string;
+interface PartidaDetalle {
+  descripcion_articulo: string;
   cantidad: number;
-  precioUnitario: number;
+  precio_unitario: number;
+  total_partida: number;
+}
+
+interface SolicitudDetalles {
+  hora: string;
+  ubicacion: string;
+  datos_contacto: string;
+  tiempo_entrega: string;
+  numero_partida: string;
+  tipo_maquina_detalle: string;
+  id_maquina_detalle: string;
+  modelo_maquina_detalle: string;
+  serial_maquina_detalle: string;
+  descripcion_articulo: string;
+  cantidad: number;
+  precio_unitario: number;
+  total_partida: number;
+  subtotal: number;
   iva: number;
-  total: number;
+  total_general: number;
 }
 
-interface Partida {
-  descripcion: string;
-  cantidad: number;
-  precioUnitario: number;
-  total: number;
-}
-
+// Interfaz para detallesPartida con firma de índice
 interface DetallesPartida {
   tipoTrabajo?: string;
   naturalezaTrabajo?: string;
@@ -31,38 +43,60 @@ interface DetallesPartida {
   contactoRecibe?: string;
   tiempoEntrega?: string;
   ubicacion?: string;
-  partidas?: Partida[];
-  subtotal?: number;
-  total_general?: number;
+  [key: string]: any; // Firma de índice para permitir cualquier propiedad
 }
 
 interface Solicitud {
   id: number;
   cliente: string;
   solicitante: string;
-  empresa: string;
   representante: string;
   proveedor: string;
+  empresa: string;
   partida: string;
   tipo_trabajo: string;
   naturaleza_trabajo: string;
+  comentario: string;
+  estado: string;
+  fecha_solicitud: string;
+  recibido_por: string | null;
+  fecha_recibido: string | null;
+
+  // Campos de la tabla de detalles
+  hora: string;
+  ubicacion: string;
+  datos_contacto: string;
+  tiempo_entrega: string;
+  numero_partida: string;
+  tipo_maquina_detalle: string;
+  id_maquina_detalle: string;
+  modelo_maquina_detalle: string;
+  serial_maquina_detalle: string;
+  descripcion_articulo: string;
+  cantidad: number;
+  precio_unitario: number;
+  total_partida: number;
+  subtotal: number;
+  iva: number;
+  total_general: number;
+
+  // Nuevos campos requeridos por el template
   tipo_maquina: string;
-  id_maquina: string;
   modelo_maquina: string;
   numero_serie: string;
-  comentario: string;
-  fecha_solicitud: string;
-  estado: string;
-  horas: number;
-  ubicacion: string;
-  tiempo_entrega: string;
-  datos_contacto: string;
-  iva: number;
-  partidas?: any[];
-  itemsFactura?: ItemFactura[];
+  id_maquina: string;
+
+  // Campos para detallesPartida e itemsFactura
   detallesPartida?: DetallesPartida;
-  recibido_por?: string | null;
-  fecha_recibido?: string | null;
+  itemsFactura?: Array<{
+    descripcion: string;
+    cantidad: number;
+    precioUnitario: number;
+    iva: number;
+    total: number;
+  }>;
+
+  // Para UI
   seleccionada?: boolean;
 }
 
@@ -118,34 +152,72 @@ export class SolicitudesComponent implements OnInit {
     this.cargarSolicitudes();
   }
 
+  // Métodos para facturación
+  calcularSubtotal(): number {
+    if (!this.solicitudDetalle?.itemsFactura) return 0;
+    return this.solicitudDetalle.itemsFactura.reduce(
+      (sum, item) => sum + item.precioUnitario * item.cantidad,
+      0
+    );
+  }
+
+  calcularIVA(): number {
+    if (!this.solicitudDetalle?.itemsFactura) return 0;
+    return this.solicitudDetalle.itemsFactura.reduce((sum, item) => {
+      const subtotalItem = item.precioUnitario * item.cantidad;
+      return sum + subtotalItem * (item.iva / 100);
+    }, 0);
+  }
+
+  calcularTotalGeneral(): number {
+    return this.calcularSubtotal() + this.calcularIVA();
+  }
+
+  calcularTotalItem(item: any): void {
+    const subtotal = item.precioUnitario * item.cantidad;
+    item.total = subtotal + subtotal * (item.iva / 100);
+  }
+
+  agregarItemFactura(): void {
+    if (!this.solicitudDetalle) return;
+
+    if (!this.solicitudDetalle.itemsFactura) {
+      this.solicitudDetalle.itemsFactura = [];
+    }
+
+    this.solicitudDetalle.itemsFactura.push({
+      descripcion: '',
+      cantidad: 1,
+      precioUnitario: 0,
+      iva: 16,
+      total: 0,
+    });
+  }
+
+  eliminarItemFactura(index: number): void {
+    if (this.solicitudDetalle?.itemsFactura) {
+      this.solicitudDetalle.itemsFactura.splice(index, 1);
+    }
+  }
+
+  actualizarDetallePartida(campo: string, valor: any): void {
+    if (!this.solicitudDetalle) return;
+
+    if (!this.solicitudDetalle.detallesPartida) {
+      this.solicitudDetalle.detallesPartida = {};
+    }
+
+    this.solicitudDetalle.detallesPartida[campo] = valor;
+  }
+
+  // En el método cargarSolicitudes(), actualiza el mapeo de campos:
   cargarSolicitudes(): void {
     this.isLoading = true;
     this.errorMessage = '';
 
     this.solicitudesService.getSolicitudes().subscribe({
       next: (response: any) => {
-        if (response && Array.isArray(response)) {
-          this.solicitudes = response.map((item: any) => ({
-            ...item,
-            seleccionada: false,
-            fecha_solicitud: new Date(item.fecha_solicitud).toLocaleString(),
-            fecha_recibido: item.fecha_recibido
-              ? new Date(item.fecha_recibido).toLocaleString()
-              : null,
-            empresa: item.empresa || '',
-            representante: item.representante || '',
-            proveedor: item.proveedor || '',
-            horas: item.horas || 0,
-            ubicacion: item.ubicacion || '',
-            tiempo_entrega: item.tiempo_entrega || '',
-            datos_contacto: item.datos_contacto || '',
-            iva: item.iva || 0,
-            partidas: item.partidas || [],
-            itemsFactura: item.itemsFactura || [],
-            detallesPartida:
-              item.detallesPartida || this.inicializarDetallesPartida(item),
-          }));
-        } else if (response && response.data) {
+        if (response && response.success && Array.isArray(response.data)) {
           this.solicitudes = response.data.map((item: any) => ({
             ...item,
             seleccionada: false,
@@ -153,18 +225,46 @@ export class SolicitudesComponent implements OnInit {
             fecha_recibido: item.fecha_recibido
               ? new Date(item.fecha_recibido).toLocaleString()
               : null,
-            empresa: item.empresa || '',
-            representante: item.representante || '',
-            proveedor: item.proveedor || '',
-            horas: item.horas || 0,
+
+            // Mapeo de campos para compatibilidad con la interfaz
+            tipo_maquina: item.tipo_maquina || '',
+            modelo_maquina: item.modelo_maquina || '',
+            numero_serie: item.numero_serie || '',
+            id_maquina: item.id_maquina || '',
+            hora: item.hora || '',
             ubicacion: item.ubicacion || '',
+            datos_contacto: item.contacto_recibe || '', // Ajuste aquí
             tiempo_entrega: item.tiempo_entrega || '',
-            datos_contacto: item.datos_contacto || '',
-            iva: item.iva || 0,
-            partidas: item.partidas || [],
-            itemsFactura: item.itemsFactura || [],
-            detallesPartida:
-              item.detallesPartida || this.inicializarDetallesPartida(item),
+            descripcion_articulo: item.descripcion_articulo || '',
+            cantidad: item.cantidad || 0,
+            precio_unitario: item.precio_unitario || 0,
+            total_partida: item.total_general || 0, // Ajuste aquí
+            subtotal: item.subtotal || 0,
+            iva: item.iva_percent || 0,
+            total_general: item.total_general || 0,
+
+            // Inicializar arrays vacíos
+            detallesPartida: {
+              tipoTrabajo: item.tipo_trabajo,
+              naturalezaTrabajo: item.naturaleza_trabajo,
+              tipoMaquina: item.tipo_maquina,
+              numeroSerie: item.numero_serie,
+              idMaquina: item.id_maquina,
+              modeloMaquina: item.modelo_maquina,
+              hora: item.hora,
+              contactoRecibe: item.contacto_recibe,
+              tiempoEntrega: item.tiempo_entrega,
+              ubicacion: item.ubicacion,
+            },
+            itemsFactura: [
+              {
+                descripcion: item.descripcion_articulo || '',
+                cantidad: item.cantidad || 0,
+                precioUnitario: item.precio_unitario || 0,
+                iva: item.iva_percent || 0,
+                total: item.total_general || 0,
+              },
+            ],
           }));
         } else {
           throw new Error('Formato de respuesta inesperado');
@@ -182,169 +282,169 @@ export class SolicitudesComponent implements OnInit {
     });
   }
 
-  inicializarDetallesPartida(item: any): DetallesPartida {
-    return {
-      tipoTrabajo: item.tipo_trabajo || '', // Cambiado
-      naturalezaTrabajo: item.naturaleza_trabajo || '', // Cambiado
-      tipoMaquina: item.tipo_maquina || '', // Cambiado
-      numeroSerie: item.numero_serie || '',
-      partidas: [],
-      subtotal: 0,
-      total_general: 0,
-    };
-  }
+  verDetalles(id: number): void {
+    this.solicitudesService.getSolicitud(id).subscribe({
+      next: (data: any) => {
+        this.solicitudDetalle = {
+          ...data,
+          fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
+          fecha_recibido: data.fecha_recibido
+            ? new Date(data.fecha_recibido).toLocaleString()
+            : null,
 
-  // Métodos para partidas
-  calcularTotalPartida(partida: Partida): void {
-    partida.total = (partida.cantidad || 0) * (partida.precioUnitario || 0);
-    this.actualizarCalculosPartidas();
-  }
+          // Mapeo de campos requeridos
+          tipo_maquina: data.tipo_maquina || data.tipo_maquina_detalle || '',
+          modelo_maquina:
+            data.modelo_maquina || data.modelo_maquina_detalle || '',
+          numero_serie: data.numero_serie || data.serial_maquina_detalle || '',
+          id_maquina: data.id_maquina || data.id_maquina_detalle || '',
 
-  calcularSubtotalPartidas(): number {
-    if (
-      !this.solicitudDetalle ||
-      !this.solicitudDetalle.detallesPartida ||
-      !this.solicitudDetalle.detallesPartida.partidas
-    )
-      return 0;
-    return this.solicitudDetalle.detallesPartida.partidas.reduce(
-      (total, partida) => {
-        return total + (partida.total || 0);
+          // Campos de detalles
+          hora: data.hora || '',
+          ubicacion: data.ubicacion || '',
+          datos_contacto: data.datos_contacto || '',
+          tiempo_entrega: data.tiempo_entrega || '',
+          numero_partida: data.numero_partida || '',
+          tipo_maquina_detalle: data.tipo_maquina_detalle || '',
+          id_maquina_detalle: data.id_maquina_detalle || '',
+          modelo_maquina_detalle: data.modelo_maquina_detalle || '',
+          serial_maquina_detalle: data.serial_maquina_detalle || '',
+          descripcion_articulo: data.descripcion_articulo || '',
+          cantidad: data.cantidad || 0,
+          precio_unitario: data.precio_unitario || 0,
+          total_partida: data.total_partida || 0,
+          subtotal: data.subtotal || 0,
+          iva: data.iva || 0,
+          total_general: data.total_general || 0,
+
+          // Inicializar arrays vacíos
+          detallesPartida: data.detallesPartida || {},
+          itemsFactura: data.itemsFactura || [],
+        };
+        this.showViewModal = true;
       },
-      0
-    );
-  }
-
-  actualizarCalculosPartidas(): void {
-    if (this.solicitudDetalle && this.solicitudDetalle.detallesPartida) {
-      this.solicitudDetalle.detallesPartida.subtotal =
-        this.calcularSubtotalPartidas();
-      this.solicitudDetalle.detallesPartida.total_general =
-        this.solicitudDetalle.detallesPartida.subtotal;
-    }
-  }
-
-  agregarPartida(): void {
-    if (!this.solicitudDetalle) return;
-
-    // Verificar y inicializar detallesPartida si no existe
-    if (!this.solicitudDetalle.detallesPartida) {
-      this.solicitudDetalle.detallesPartida = this.inicializarDetallesPartida(
-        this.solicitudDetalle
-      );
-    }
-
-    // Verificar y inicializar partidas si no existe
-    if (!this.solicitudDetalle.detallesPartida.partidas) {
-      this.solicitudDetalle.detallesPartida.partidas = [];
-    }
-
-    // Ahora podemos usar push() con seguridad
-    this.solicitudDetalle.detallesPartida.partidas.push({
-      descripcion: '',
-      cantidad: 1,
-      precioUnitario: 0,
-      total: 0,
+      error: (err: any) => {
+        console.error('Error al obtener detalles:', err);
+        this.errorMessage = 'Error al cargar los detalles de la solicitud';
+      },
     });
-
-    this.actualizarCalculosPartidas();
   }
 
-  eliminarPartida(index: number): void {
-    if (
-      !this.solicitudDetalle ||
-      !this.solicitudDetalle.detallesPartida ||
-      !this.solicitudDetalle.detallesPartida.partidas
-    )
-      return;
+  editarSolicitud(id: number): void {
+    this.solicitudesService.getSolicitud(id).subscribe({
+      next: (data: any) => {
+        this.solicitudDetalle = {
+          ...data,
+          fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
+          fecha_recibido: data.fecha_recibido
+            ? new Date(data.fecha_recibido).toLocaleString()
+            : null,
 
-    this.solicitudDetalle.detallesPartida.partidas.splice(index, 1);
-    this.actualizarCalculosPartidas();
+          // Mapeo de campos requeridos
+          tipo_maquina: data.tipo_maquina || data.tipo_maquina_detalle || '',
+          modelo_maquina:
+            data.modelo_maquina || data.modelo_maquina_detalle || '',
+          numero_serie: data.numero_serie || data.serial_maquina_detalle || '',
+          id_maquina: data.id_maquina || data.id_maquina_detalle || '',
+
+          // Campos de detalles
+          hora: data.hora || '',
+          ubicacion: data.ubicacion || '',
+          datos_contacto: data.datos_contacto || '',
+          tiempo_entrega: data.tiempo_entrega || '',
+          numero_partida: data.numero_partida || '',
+          tipo_maquina_detalle: data.tipo_maquina_detalle || '',
+          id_maquina_detalle: data.id_maquina_detalle || '',
+          modelo_maquina_detalle: data.modelo_maquina_detalle || '',
+          serial_maquina_detalle: data.serial_maquina_detalle || '',
+          descripcion_articulo: data.descripcion_articulo || '',
+          cantidad: data.cantidad || 0,
+          precio_unitario: data.precio_unitario || 0,
+          total_partida: data.total_partida || 0,
+          subtotal: data.subtotal || 0,
+          iva: data.iva || 0,
+          total_general: data.total_general || 0,
+
+          // Inicializar arrays vacíos
+          detallesPartida: data.detallesPartida || {},
+          itemsFactura: data.itemsFactura || [],
+        };
+        this.showEditModal = true;
+      },
+      error: (err: any) => {
+        console.error('Error al cargar para editar:', err);
+        this.errorMessage = 'Error al cargar la solicitud para editar';
+      },
+    });
   }
 
-  // Métodos existentes para facturación
-  calcularTotalItem(item: ItemFactura): void {
-    const cantidad = item.cantidad || 0;
-    const precioUnitario = item.precioUnitario || 0;
-    const ivaPorcentaje = item.iva || 0;
-
-    const subtotal = cantidad * precioUnitario;
-    const ivaMonto = (subtotal * ivaPorcentaje) / 100;
-    item.total = subtotal + ivaMonto;
-
-    this.actualizarCalculosFacturacion();
-  }
-
-  calcularSubtotal(): number {
-    if (!this.solicitudDetalle || !this.solicitudDetalle.itemsFactura) return 0;
-    return this.solicitudDetalle.itemsFactura.reduce((total, item) => {
-      const cantidad = item.cantidad || 0;
-      const precioUnitario = item.precioUnitario || 0;
-      return total + cantidad * precioUnitario;
-    }, 0);
-  }
-
-  calcularIVA(): number {
-    if (!this.solicitudDetalle || !this.solicitudDetalle.itemsFactura) return 0;
-
-    return this.solicitudDetalle.itemsFactura.reduce((totalIva, item) => {
-      const cantidad = item.cantidad || 0;
-      const precioUnitario = item.precioUnitario || 0;
-      const ivaPorcentaje = item.iva || 0;
-
-      const subtotalItem = cantidad * precioUnitario;
-      return totalIva + (subtotalItem * ivaPorcentaje) / 100;
-    }, 0);
-  }
-
-  calcularTotalGeneral(): number {
-    return this.calcularSubtotal() + this.calcularIVA();
-  }
-
-  actualizarCalculosFacturacion(): void {
+  guardarEdicion(): void {
     if (this.solicitudDetalle) {
-      this.solicitudDetalle = { ...this.solicitudDetalle };
+      this.isLoading = true;
+
+      // Preparar datos para enviar al backend
+      const datosActualizacion = {
+        // Campos de la tabla principal
+        cliente: this.solicitudDetalle.cliente,
+        solicitante: this.solicitudDetalle.solicitante,
+        representante: this.solicitudDetalle.representante,
+        proveedor: this.solicitudDetalle.proveedor,
+        empresa: this.solicitudDetalle.empresa,
+        partida: this.solicitudDetalle.partida,
+        tipo_trabajo: this.solicitudDetalle.tipo_trabajo,
+        naturaleza_trabajo: this.solicitudDetalle.naturaleza_trabajo,
+        comentario: this.solicitudDetalle.comentario,
+        estado: this.solicitudDetalle.estado,
+        recibido_por: this.solicitudDetalle.recibido_por,
+        fecha_recibido: this.solicitudDetalle.fecha_recibido,
+
+        // Campos de la tabla de detalles
+        hora: this.solicitudDetalle.hora,
+        ubicacion: this.solicitudDetalle.ubicacion,
+        datos_contacto: this.solicitudDetalle.datos_contacto,
+        tiempo_entrega: this.solicitudDetalle.tiempo_entrega,
+        numero_partida: this.solicitudDetalle.numero_partida,
+        tipo_maquina_detalle: this.solicitudDetalle.tipo_maquina_detalle,
+        id_maquina_detalle: this.solicitudDetalle.id_maquina_detalle,
+        modelo_maquina_detalle: this.solicitudDetalle.modelo_maquina_detalle,
+        serial_maquina_detalle: this.solicitudDetalle.serial_maquina_detalle,
+        descripcion_articulo: this.solicitudDetalle.descripcion_articulo,
+        cantidad: this.solicitudDetalle.cantidad,
+        precio_unitario: this.solicitudDetalle.precio_unitario,
+        total_partida: this.solicitudDetalle.total_partida,
+        subtotal: this.solicitudDetalle.subtotal,
+        iva: this.solicitudDetalle.iva,
+        total_general: this.solicitudDetalle.total_general,
+
+        // Nuevos campos
+        tipo_maquina: this.solicitudDetalle.tipo_maquina,
+        modelo_maquina: this.solicitudDetalle.modelo_maquina,
+        numero_serie: this.solicitudDetalle.numero_serie,
+        id_maquina: this.solicitudDetalle.id_maquina,
+
+        // Campos para detallesPartida e itemsFactura
+        detallesPartida: this.solicitudDetalle.detallesPartida,
+        itemsFactura: this.solicitudDetalle.itemsFactura,
+      };
+
+      this.solicitudesService
+        .actualizarSolicitud(this.solicitudDetalle.id, datosActualizacion)
+        .subscribe({
+          next: () => {
+            this.cargarSolicitudes();
+            this.showEditModal = false;
+            this.isLoading = false;
+          },
+          error: (err: any) => {
+            console.error('Error al actualizar:', err);
+            this.errorMessage = 'Error al actualizar la solicitud';
+            this.isLoading = false;
+          },
+        });
     }
   }
 
-  agregarItemFactura(): void {
-    if (!this.solicitudDetalle) return;
-
-    if (!this.solicitudDetalle.itemsFactura) {
-      this.solicitudDetalle.itemsFactura = [];
-    }
-
-    this.solicitudDetalle.itemsFactura.push({
-      descripcion: '',
-      cantidad: 1,
-      precioUnitario: 0,
-      iva: 0,
-      total: 0,
-    });
-
-    this.actualizarCalculosFacturacion();
-  }
-
-  eliminarItemFactura(index: number): void {
-    if (!this.solicitudDetalle || !this.solicitudDetalle.itemsFactura) return;
-
-    this.solicitudDetalle.itemsFactura.splice(index, 1);
-    this.actualizarCalculosFacturacion();
-  }
-
-  convertirPartidasAItemsFactura(
-    partidas: any[],
-    ivaPorcentaje: number
-  ): ItemFactura[] {
-    return partidas.map((partida: any) => ({
-      descripcion: partida.descripcion || '',
-      cantidad: partida.cantidad || 0,
-      precioUnitario: partida.precioUnitario || 0,
-      iva: ivaPorcentaje,
-      total: partida.total || 0,
-    }));
-  }
-
+  // Métodos de utilidad para la UI
   filtrarSolicitudes(): void {
     let resultado = this.solicitudes;
 
@@ -393,152 +493,6 @@ export class SolicitudesComponent implements OnInit {
 
   nuevaSolicitud(): void {
     this.router.navigate(['/register-solicitudes']);
-  }
-
-  verDetalles(id: number): void {
-    this.solicitudesService.getSolicitud(id).subscribe({
-      next: (data: any) => {
-        let detallesPartida: DetallesPartida = {};
-
-        // Procesar partidas_json si existe
-        if (data.partidas_json) {
-          try {
-            const partidasData = JSON.parse(data.partidas_json);
-            if (Array.isArray(partidasData)) {
-              detallesPartida = this.procesarInformacionPartidas(partidasData);
-            }
-          } catch (e) {
-            console.error('Error al parsear partidas JSON:', e);
-          }
-        }
-
-        this.solicitudDetalle = {
-          ...data,
-          fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
-          fecha_recibido: data.fecha_recibido
-            ? new Date(data.fecha_recibido).toLocaleString()
-            : null,
-          empresa: data.empresa || '',
-          representante: data.representante || '',
-          proveedor: data.proveedor || '',
-          horas: data.horas || 0,
-          ubicacion: data.ubicacion || '',
-          tiempo_entrega: data.tiempo_entrega || '',
-          datos_contacto: data.datos_contacto || '',
-          iva: data.iva || 0,
-          itemsFactura: data.itemsFactura || [],
-          detallesPartida: detallesPartida,
-        };
-
-        this.showViewModal = true;
-      },
-      error: (err: any) => {
-        console.error('Error al obtener detalles:', err);
-        this.errorMessage = 'Error al cargar los detalles de la solicitud';
-      },
-    });
-  }
-
-  // En el método verDetalles, agregar el procesamiento de partidas
-  procesarInformacionPartidas(partidas: any[]): DetallesPartida {
-    const resultado: DetallesPartida = {};
-
-    if (!partidas || !Array.isArray(partidas)) {
-      return resultado;
-    }
-
-    // Campos a extraer
-    const campos = [
-      'tipoTrabajo',
-      'naturalezaTrabajo',
-      'tipoMaquina',
-      'numeroSerie',
-      'idMaquina',
-      'modeloMaquina',
-      'hora',
-      'contactoRecibe',
-      'tiempoEntrega',
-      'ubicacion',
-    ];
-
-    campos.forEach((campo) => {
-      const valores: Set<string> = new Set();
-
-      partidas.forEach((partida) => {
-        const valor = partida[campo];
-        if (valor && valor !== 'N/A' && valor !== '') {
-          valores.add(valor.toString().trim());
-        }
-      });
-
-      if (valores.size > 0) {
-        // Usa type assertion para evitar el error
-        (resultado as any)[campo] = Array.from(valores).join(', ');
-      }
-    });
-
-    return resultado;
-  }
-
-  // Método para procesar información de partidas
-
-  // Método para actualizar detalles de partida
-
-  editarSolicitud(id: number): void {
-    this.solicitudesService.getSolicitud(id).subscribe({
-      next: (data: Solicitud) => {
-        const itemsFactura = data.partidas
-          ? this.convertirPartidasAItemsFactura(data.partidas, data.iva || 0)
-          : [];
-
-        if (!data.detallesPartida) {
-          data.detallesPartida = this.inicializarDetallesPartida(data);
-        }
-
-        this.solicitudDetalle = {
-          ...data,
-          fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
-          fecha_recibido: data.fecha_recibido
-            ? new Date(data.fecha_recibido).toLocaleString()
-            : undefined,
-          empresa: data.empresa || '',
-          representante: data.representante || '',
-          proveedor: data.proveedor || '',
-          horas: data.horas || 0,
-          ubicacion: data.ubicacion || '',
-          tiempo_entrega: data.tiempo_entrega || '',
-          datos_contacto: data.datos_contacto || '',
-          iva: data.iva || 0,
-          itemsFactura: itemsFactura,
-          detallesPartida: data.detallesPartida,
-        };
-        this.showEditModal = true;
-      },
-      error: (err: any) => {
-        console.error('Error al cargar para editar:', err);
-        this.errorMessage = 'Error al cargar la solicitud para editar';
-      },
-    });
-  }
-
-  guardarEdicion(): void {
-    if (this.solicitudDetalle) {
-      this.isLoading = true;
-      this.solicitudesService
-        .actualizarSolicitud(this.solicitudDetalle.id, this.solicitudDetalle)
-        .subscribe({
-          next: () => {
-            this.cargarSolicitudes();
-            this.showEditModal = false;
-            this.isLoading = false;
-          },
-          error: (err: any) => {
-            console.error('Error al actualizar:', err);
-            this.errorMessage = 'Error al actualizar la solicitud';
-            this.isLoading = false;
-          },
-        });
-    }
   }
 
   confirmarEliminacion(solicitud: Solicitud): void {
@@ -706,19 +660,5 @@ export class SolicitudesComponent implements OnInit {
     }
 
     return estado.toLowerCase().replace(/\s+/g, '');
-  }
-
-  // Método para actualizar detalles de partida
-  actualizarDetallePartida(campo: keyof DetallesPartida, valor: any): void {
-    if (!this.solicitudDetalle) return;
-
-    if (!this.solicitudDetalle.detallesPartida) {
-      this.solicitudDetalle.detallesPartida = this.inicializarDetallesPartida(
-        this.solicitudDetalle
-      );
-    }
-
-    // Usa type assertion para evitar errores de tipo
-    (this.solicitudDetalle.detallesPartida as any)[campo] = valor;
   }
 }

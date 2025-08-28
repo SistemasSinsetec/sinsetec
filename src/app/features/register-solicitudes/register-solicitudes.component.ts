@@ -55,6 +55,8 @@ export class RegisterSolicitudesComponent {
     cliente: '',
     solicitante: '',
     representante: '',
+    proveedor: '',
+    empresa: '',
     contacto: '',
     ubicacion: '',
     descripcionServicio: '',
@@ -96,12 +98,7 @@ export class RegisterSolicitudesComponent {
 
   validateStep1(): boolean {
     this.submittedStep1 = true;
-    return (
-      !!this.solicitud.cliente &&
-      !!this.solicitud.solicitante &&
-      !!this.solicitud.representante &&
-      !!this.solicitud.ubicacion
-    );
+    return !!this.solicitud.cliente && !!this.solicitud.solicitante;
   }
 
   validateStep2(): boolean {
@@ -109,15 +106,7 @@ export class RegisterSolicitudesComponent {
 
     // Validar que todas las partidas tengan los campos obligatorios
     for (const partida of this.partidas) {
-      if (
-        !partida.tipoTrabajo ||
-        !partida.naturalezaTrabajo ||
-        !partida.tipoMaquina ||
-        !partida.hora ||
-        !partida.descripcion ||
-        !partida.cantidad ||
-        !partida.precioUnitario
-      ) {
+      if (!partida.tipoTrabajo || !partida.naturalezaTrabajo) {
         return false;
       }
     }
@@ -131,19 +120,20 @@ export class RegisterSolicitudesComponent {
 
   addPartida() {
     this.partidas.push({
-      descripcion: '',
-      cantidad: 1,
-      precioUnitario: 0,
-      total: 0,
+      numeroPartida: this.partidas.length + 1,
       tipoTrabajo: '',
       naturalezaTrabajo: '',
       tipoMaquina: '',
-      idMaquina: '',
       modeloMaquina: '',
       numeroSerie: '',
+      idMaquina: '',
       hora: '',
       contactoRecibe: '',
       tiempoEntrega: '',
+      descripcionArticulo: '',
+      cantidad: 1,
+      precioUnitario: 0,
+      totalPartida: 0,
     });
     this.calcularTotales();
   }
@@ -151,12 +141,21 @@ export class RegisterSolicitudesComponent {
   eliminarPartida(index: number) {
     if (this.partidas.length > 1) {
       this.partidas.splice(index, 1);
+
+      // Renumerar las partidas restantes
+      this.partidas.forEach((partida, i) => {
+        partida.numeroPartida = i + 1;
+      });
+
       this.calcularTotales();
     }
   }
 
   calcularSubtotal(): number {
-    return this.partidas.reduce((total, partida) => total + partida.total, 0);
+    return this.partidas.reduce(
+      (total, partida) => total + partida.totalPartida,
+      0
+    );
   }
 
   calcularIVA(): number {
@@ -173,7 +172,7 @@ export class RegisterSolicitudesComponent {
   calcularTotales() {
     // Recalcular totales de cada partida
     this.partidas.forEach((partida) => {
-      partida.total = partida.cantidad * partida.precioUnitario;
+      partida.totalPartida = partida.cantidad * partida.precioUnitario;
     });
   }
 
@@ -193,18 +192,39 @@ export class RegisterSolicitudesComponent {
       Accept: 'application/json',
     });
 
-    const firstPartida = this.partidas[0]; // Obtener la primera partida
-
+    // Preparar datos para enviar al backend
     const solicitudData = {
-      ...this.solicitud,
-      documentId: this.documentId,
-      // Se agrega tipoTrabajo y naturalezaTrabajo del primer elemento de partidas
-      tipoTrabajo: firstPartida.tipoTrabajo,
-      naturalezaTrabajo: firstPartida.naturalezaTrabajo,
-      partidas: this.partidas,
+      // Campos de la tabla principal (solicitudes_servicios)
+      cliente: this.solicitud.cliente,
+      solicitante: this.solicitud.solicitante,
+      representante: this.solicitud.representante || null,
+      proveedor: this.solicitud.proveedor || null,
+      empresa: this.solicitud.empresa || null,
+      partida: 1, // Valor por defecto
+      tipoTrabajo: this.partidas[0].tipoTrabajo, // Tomar de la primera partida
+      naturalezaTrabajo: this.partidas[0].naturalezaTrabajo, // Tomar de la primera partida
+      descripcionServicio: this.solicitud.descripcionServicio || null,
+
+      // Campos de la tabla de detalles (solicitudes_detalles)
+      numeroPartida: this.partidas[0].numeroPartida || 1,
+      machineType: this.partidas[0].tipoMaquina || null,
+      machineModel: this.partidas[0].modeloMaquina || null,
+      machineSerial: this.partidas[0].numeroSerie || null,
+      machineID: this.partidas[0].idMaquina || null,
+      hora: this.partidas[0].hora || null,
+      ubicacion: this.solicitud.ubicacion || null,
+      datosContacto: this.solicitud.contacto || null,
+      deliveryTime: this.partidas[0].tiempoEntrega || null,
+      descripcionArticulo: this.partidas[0].descripcionArticulo || null,
+      cantidad: this.partidas[0].cantidad || 1,
+      precioUnitario: this.partidas[0].precioUnitario || 0.0,
+      totalPartida: this.partidas[0].totalPartida || 0.0,
       subtotal: this.calcularSubtotal(),
-      ivaAmount: this.calcularIVA(),
+      iva: this.calcularIVA(),
       totalGeneral: this.calcularTotalGeneral(),
+
+      // Datos adicionales
+      documentId: this.documentId,
     };
 
     const url = this.isDevelopment()
@@ -317,6 +337,8 @@ export class RegisterSolicitudesComponent {
       cliente: '',
       solicitante: '',
       representante: '',
+      proveedor: '',
+      empresa: '',
       contacto: '',
       ubicacion: '',
       descripcionServicio: '',
@@ -325,19 +347,20 @@ export class RegisterSolicitudesComponent {
 
     this.partidas = [
       {
-        descripcion: '',
-        cantidad: 1,
-        precioUnitario: 0,
-        total: 0,
+        numeroPartida: 1,
         tipoTrabajo: '',
         naturalezaTrabajo: '',
         tipoMaquina: '',
-        idMaquina: '',
         modeloMaquina: '',
         numeroSerie: '',
+        idMaquina: '',
         hora: '',
         contactoRecibe: '',
         tiempoEntrega: '',
+        descripcionArticulo: '',
+        cantidad: 1,
+        precioUnitario: 0,
+        totalPartida: 0,
       },
     ];
 
