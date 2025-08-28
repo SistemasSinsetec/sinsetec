@@ -654,11 +654,27 @@ export class SolicitudesComponent implements OnInit {
       });
   }
 
-  obtenerClaseEstado(estado: string): string {
-    if (estado.includes('/')) {
-      return estado.split('/')[1].toLowerCase().trim();
-    }
+  // En solicitudes.component.ts, añadir esta función:
+  obtenerClaseEstado(estado: string) {
+    if (!estado) return 'estado-pendiente';
 
-    return estado.toLowerCase().replace(/\s+/g, '');
+    if (estado.includes('Pendiente')) {
+      return 'estado-pendiente';
+    } else if (estado.includes('Completado')) {
+      return 'estado-completado';
+    } else if (estado.includes('Proceso')) {
+      return 'estado-proceso';
+    } else if (estado.includes('Cancelado')) {
+      return 'estado-cancelado';
+    } else if (estado.includes('Autorizado')) {
+      return 'estado-autorizado';
+    } else if (estado.includes('Entregado')) {
+      return 'estado-entregado';
+    } else if (estado.includes('Factura')) {
+      return 'estado-factura';
+    } else if (estado.includes('Cotizado')) {
+      return 'estado-cotizado';
+    }
+    return 'estado-pendiente';
   }
 }

@@ -77,17 +77,18 @@ export class SolicitudesService {
       .pipe(catchError(this.handleError));
   }
 
-  // Método auxiliar para convertir camelCase a snake_case
+  // En el método convertCamelToSnake, mejorar la conversión
   private convertCamelToSnake(obj: any): any {
     if (!obj || typeof obj !== 'object') return obj;
 
     const result: any = {};
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
-        const snakeKey = key.replace(
-          /[A-Z]/g,
-          (letter) => `_${letter.toLowerCase()}`
-        );
+        // Conversión mejorada de camelCase a snake_case
+        const snakeKey = key
+          .replace(/([A-Z])/g, '_$1')
+          .toLowerCase()
+          .replace(/^_/, '');
         result[snakeKey] = obj[key];
       }
     }
