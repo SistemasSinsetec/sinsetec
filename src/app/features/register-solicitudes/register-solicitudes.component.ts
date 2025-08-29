@@ -130,7 +130,7 @@ export class RegisterSolicitudesComponent {
       hora: '',
       contactoRecibe: '',
       tiempoEntrega: '',
-      descripcionArticulo: '',
+      descripcion: '', // Cambiado de descripcionArticulo
       cantidad: 1,
       precioUnitario: 0,
       totalPartida: 0,
@@ -192,36 +192,42 @@ export class RegisterSolicitudesComponent {
       Accept: 'application/json',
     });
 
-    // Preparar datos para enviar al backend
+    // Preparar datos CORRECTAMENTE para enviar al backend
     const solicitudData = {
-      // Campos de la tabla principal (solicitudes_servicios)
+      // Campos de la tabla principal
       cliente: this.solicitud.cliente,
       solicitante: this.solicitud.solicitante,
       representante: this.solicitud.representante || null,
       proveedor: this.solicitud.proveedor || null,
       empresa: this.solicitud.empresa || null,
-      partida: 1, // Valor por defecto
-      tipoTrabajo: this.partidas[0].tipoTrabajo, // Tomar de la primera partida
-      naturalezaTrabajo: this.partidas[0].naturalezaTrabajo, // Tomar de la primera partida
+      contacto: this.solicitud.contacto || null,
+      ubicacion: this.solicitud.ubicacion,
       descripcionServicio: this.solicitud.descripcionServicio || null,
-
-      // Campos de la tabla de detalles (solicitudes_detalles)
-      numeroPartida: this.partidas[0].numeroPartida || 1,
-      machineType: this.partidas[0].tipoMaquina || null,
-      machineModel: this.partidas[0].modeloMaquina || null,
-      machineSerial: this.partidas[0].numeroSerie || null,
-      machineID: this.partidas[0].idMaquina || null,
-      hora: this.partidas[0].hora || null,
-      ubicacion: this.solicitud.ubicacion || null,
-      datosContacto: this.solicitud.contacto || null,
-      deliveryTime: this.partidas[0].tiempoEntrega || null,
-      descripcionArticulo: this.partidas[0].descripcionArticulo || null,
-      cantidad: this.partidas[0].cantidad || 1,
-      precioUnitario: this.partidas[0].precioUnitario || 0.0,
-      totalPartida: this.partidas[0].totalPartida || 0.0,
+      iva: this.solicitud.iva,
       subtotal: this.calcularSubtotal(),
-      iva: this.calcularIVA(),
       totalGeneral: this.calcularTotalGeneral(),
+
+      // Campos de tipo de trabajo (tomados de la primera partida)
+      tipoTrabajo: this.partidas[0].tipoTrabajo,
+      naturalezaTrabajo: this.partidas[0].naturalezaTrabajo,
+
+      // ENVIAR TODAS LAS PARTIDAS COMO ARRAY
+      partidas: this.partidas.map((partida, index) => ({
+        numeroPartida: index + 1,
+        tipoTrabajo: partida.tipoTrabajo,
+        naturalezaTrabajo: partida.naturalezaTrabajo,
+        tipoMaquina: partida.tipoMaquina || null,
+        modeloMaquina: partida.modeloMaquina || null,
+        numeroSerie: partida.numeroSerie || null,
+        idMaquina: partida.idMaquina || null,
+        hora: partida.hora || null,
+        contactoRecibe: partida.contactoRecibe || null,
+        tiempoEntrega: partida.tiempoEntrega || null,
+        descripcionArticulo: partida.descripcion || null, // Cambiado de descripcionArticulo a descripcion
+        cantidad: partida.cantidad || 1,
+        precioUnitario: partida.precioUnitario || 0.0,
+        totalPartida: partida.totalPartida || 0.0,
+      })),
 
       // Datos adicionales
       documentId: this.documentId,
@@ -357,7 +363,7 @@ export class RegisterSolicitudesComponent {
         hora: '',
         contactoRecibe: '',
         tiempoEntrega: '',
-        descripcionArticulo: '',
+        descripcion: '', // Cambiado de descripcionArticulo
         cantidad: 1,
         precioUnitario: 0,
         totalPartida: 0,
