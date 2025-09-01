@@ -218,54 +218,94 @@ export class SolicitudesComponent implements OnInit {
     this.solicitudesService.getSolicitudes().subscribe({
       next: (response: any) => {
         if (response && response.success && Array.isArray(response.data)) {
-          this.solicitudes = response.data.map((item: any) => ({
-            ...item,
-            seleccionada: false,
-            fecha_solicitud: new Date(item.fecha_solicitud).toLocaleString(),
-            fecha_recibido: item.fecha_recibido
-              ? new Date(item.fecha_recibido).toLocaleString()
-              : null,
+          this.solicitudes = response.data.map((item: any) => {
+            // Determinar si viene de una consulta individual (con JOIN) o lista
+            const tieneDetallesCompletos = item.hasOwnProperty(
+              'detalle_tipo_trabajo'
+            );
 
-            // Mapeo de campos para compatibilidad con la interfaz
-            tipo_maquina: item.tipo_maquina || '',
-            modelo_maquina: item.modelo_maquina || '',
-            numero_serie: item.numero_serie || '',
-            id_maquina: item.id_maquina || '',
-            hora: item.hora || '',
-            ubicacion: item.ubicacion || '',
-            datos_contacto: item.contacto_recibe || '', // Ajuste aquí
-            tiempo_entrega: item.tiempo_entrega || '',
-            descripcion_articulo: item.descripcion_articulo || '',
-            cantidad: item.cantidad || 0,
-            precio_unitario: item.precio_unitario || 0,
-            total_partida: item.total_general || 0, // Ajuste aquí
-            subtotal: item.subtotal || 0,
-            iva: item.iva_percent || 0,
-            total_general: item.total_general || 0,
+            return {
+              ...item,
+              seleccionada: false,
+              fecha_solicitud: new Date(item.fecha_solicitud).toLocaleString(),
+              fecha_recibido: item.fecha_recibido
+                ? new Date(item.fecha_recibido).toLocaleString()
+                : null,
 
-            // Inicializar arrays vacíos
-            detallesPartida: {
-              tipoTrabajo: item.tipo_trabajo,
-              naturalezaTrabajo: item.naturaleza_trabajo,
-              tipoMaquina: item.tipo_maquina,
-              numeroSerie: item.numero_serie,
-              idMaquina: item.id_maquina,
-              modeloMaquina: item.modelo_maquina,
-              hora: item.hora,
-              contactoRecibe: item.contacto_recibe,
-              tiempoEntrega: item.tiempo_entrega,
-              ubicacion: item.ubicacion,
-            },
-            itemsFactura: [
-              {
-                descripcion: item.descripcion_articulo || '',
-                cantidad: item.cantidad || 0,
-                precioUnitario: item.precio_unitario || 0,
-                iva: item.iva_percent || 0,
-                total: item.total_general || 0,
+              // Campos de la tabla principal
+              tipo_maquina: item.tipo_maquina || '',
+              modelo_maquina: item.modelo_maquina || '',
+              numero_serie: item.numero_serie || '',
+              id_maquina: item.id_maquina || '',
+              contacto_recibe: item.contacto_recibe || '',
+              hora: item.hora || '',
+              ubicacion: item.ubicacion || '',
+              datos_contacto: item.datos_contacto || item.contacto_recibe || '',
+              tiempo_entrega: item.tiempo_entrega || '',
+              descripcion_articulo: item.descripcion_articulo || '',
+              cantidad: item.cantidad || 0,
+              precio_unitario: item.precio_unitario || 0,
+              total_partida: item.total_partida || item.total_general || 0,
+              subtotal: item.subtotal || 0,
+              iva: item.iva_percent || item.detalle_iva || 0,
+              total_general: item.total_general || 0,
+
+              // Detalles de partidas - unificar campos de ambas tablas
+              detallesPartida: {
+                tipoTrabajo: tieneDetallesCompletos
+                  ? item.detalle_tipo_trabajo
+                  : item.tipo_trabajo || 'N/A',
+                naturalezaTrabajo: tieneDetallesCompletos
+                  ? item.detalle_naturaleza_trabajo
+                  : item.naturaleza_trabajo || 'N/A',
+                tipoMaquina: tieneDetallesCompletos
+                  ? item.tipo_maquina_detalle
+                  : item.tipo_maquina || 'N/A',
+                numeroSerie: tieneDetallesCompletos
+                  ? item.serial_maquina_detalle
+                  : item.numero_serie || 'N/A',
+                idMaquina: tieneDetallesCompletos
+                  ? item.id_maquina_detalle
+                  : item.id_maquina || 'N/A',
+                modeloMaquina: tieneDetallesCompletos
+                  ? item.modelo_maquina_detalle
+                  : item.modelo_maquina || 'N/A',
+                hora: tieneDetallesCompletos
+                  ? item.detalle_hora
+                  : item.hora || 'N/A',
+                contactoRecibe: tieneDetallesCompletos
+                  ? item.datos_contacto
+                  : item.contacto_recibe || 'N/A',
+                tiempoEntrega: tieneDetallesCompletos
+                  ? item.detalle_tiempo_entrega
+                  : item.tiempo_entrega || 'N/A',
+                ubicacion: tieneDetallesCompletos
+                  ? item.detalle_ubicacion
+                  : item.ubicacion || 'N/A',
               },
-            ],
-          }));
+
+              // Items de facturación
+              itemsFactura: [
+                {
+                  descripcion: tieneDetallesCompletos
+                    ? item.detalle_descripcion
+                    : item.descripcion_articulo || '',
+                  cantidad: tieneDetallesCompletos
+                    ? item.detalle_cantidad
+                    : item.cantidad || 0,
+                  precioUnitario: tieneDetallesCompletos
+                    ? item.detalle_precio_unitario
+                    : item.precio_unitario || 0,
+                  iva: tieneDetallesCompletos
+                    ? item.detalle_iva
+                    : item.iva_percent || 0,
+                  total: tieneDetallesCompletos
+                    ? item.detalle_total_partida
+                    : item.total_general || 0,
+                },
+              ],
+            };
+          });
         } else {
           throw new Error('Formato de respuesta inesperado');
         }
@@ -282,46 +322,77 @@ export class SolicitudesComponent implements OnInit {
     });
   }
 
+  // También actualiza el método verDetalles()
   verDetalles(id: number): void {
     this.solicitudesService.getSolicitud(id).subscribe({
       next: (data: any) => {
-        this.solicitudDetalle = {
-          ...data,
-          fecha_solicitud: new Date(data.fecha_solicitud).toLocaleString(),
-          fecha_recibido: data.fecha_recibido
-            ? new Date(data.fecha_recibido).toLocaleString()
-            : null,
+        if (data && data.success) {
+          const item = data.data;
+          this.solicitudDetalle = {
+            ...item,
+            fecha_solicitud: new Date(item.fecha_solicitud).toLocaleString(),
+            fecha_recibido: item.fecha_recibido
+              ? new Date(item.fecha_recibido).toLocaleString()
+              : null,
 
-          // Mapeo de campos requeridos
-          tipo_maquina: data.tipo_maquina || data.tipo_maquina_detalle || '',
-          modelo_maquina:
-            data.modelo_maquina || data.modelo_maquina_detalle || '',
-          numero_serie: data.numero_serie || data.serial_maquina_detalle || '',
-          id_maquina: data.id_maquina || data.id_maquina_detalle || '',
+            // Campos de la tabla principal
+            tipo_maquina: item.tipo_maquina || '',
+            modelo_maquina: item.modelo_maquina || '',
+            numero_serie: item.numero_serie || '',
+            id_maquina: item.id_maquina || '',
+            contacto_recibe: item.contacto_recibe || '',
+            hora: item.hora || '',
+            ubicacion: item.ubicacion || '',
+            datos_contacto: item.datos_contacto || item.contacto_recibe || '',
+            tiempo_entrega: item.tiempo_entrega || '',
+            descripcion_articulo: item.descripcion_articulo || '',
+            cantidad: item.cantidad || 0,
+            precio_unitario: item.precio_unitario || 0,
+            total_partida: item.total_partida || item.total_general || 0,
+            subtotal: item.subtotal || 0,
+            iva: item.iva_percent || item.detalle_iva || 0,
+            total_general: item.total_general || 0,
 
-          // Campos de detalles
-          hora: data.hora || '',
-          ubicacion: data.ubicacion || '',
-          datos_contacto: data.datos_contacto || '',
-          tiempo_entrega: data.tiempo_entrega || '',
-          numero_partida: data.numero_partida || '',
-          tipo_maquina_detalle: data.tipo_maquina_detalle || '',
-          id_maquina_detalle: data.id_maquina_detalle || '',
-          modelo_maquina_detalle: data.modelo_maquina_detalle || '',
-          serial_maquina_detalle: data.serial_maquina_detalle || '',
-          descripcion_articulo: data.descripcion_articulo || '',
-          cantidad: data.cantidad || 0,
-          precio_unitario: data.precio_unitario || 0,
-          total_partida: data.total_partida || 0,
-          subtotal: data.subtotal || 0,
-          iva: data.iva || 0,
-          total_general: data.total_general || 0,
+            // Detalles de partidas
+            detallesPartida: {
+              tipoTrabajo:
+                item.detalle_tipo_trabajo || item.tipo_trabajo || 'N/A',
+              naturalezaTrabajo:
+                item.detalle_naturaleza_trabajo ||
+                item.naturaleza_trabajo ||
+                'N/A',
+              tipoMaquina:
+                item.tipo_maquina_detalle || item.tipo_maquina || 'N/A',
+              numeroSerie:
+                item.serial_maquina_detalle || item.numero_serie || 'N/A',
+              idMaquina: item.id_maquina_detalle || item.id_maquina || 'N/A',
+              modeloMaquina:
+                item.modelo_maquina_detalle || item.modelo_maquina || 'N/A',
+              hora: item.detalle_hora || item.hora || 'N/A',
+              contactoRecibe:
+                item.datos_contacto || item.contacto_recibe || 'N/A',
+              tiempoEntrega:
+                item.detalle_tiempo_entrega || item.tiempo_entrega || 'N/A',
+              ubicacion: item.detalle_ubicacion || item.ubicacion || 'N/A',
+            },
 
-          // Inicializar arrays vacíos
-          detallesPartida: data.detallesPartida || {},
-          itemsFactura: data.itemsFactura || [],
-        };
-        this.showViewModal = true;
+            // Items de facturación
+            itemsFactura: [
+              {
+                descripcion:
+                  item.detalle_descripcion || item.descripcion_articulo || '',
+                cantidad: item.detalle_cantidad || item.cantidad || 0,
+                precioUnitario:
+                  item.detalle_precio_unitario || item.precio_unitario || 0,
+                iva: item.detalle_iva || item.iva_percent || 0,
+                total: item.detalle_total_partida || item.total_general || 0,
+              },
+            ],
+          };
+          this.showViewModal = true;
+        } else {
+          throw new Error('Formato de respuesta inesperado');
+        }
       },
       error: (err: any) => {
         console.error('Error al obtener detalles:', err);
