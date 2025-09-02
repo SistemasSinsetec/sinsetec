@@ -10,6 +10,7 @@ import {
 } from '@angular/common/http';
 import { AuthService } from '../../auth/services/auth.service';
 import { map } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 declare const pdfMake: any;
 
@@ -50,7 +51,7 @@ export class RegisterSolicitudesComponent {
     { value: 'Otro', label: 'Otro' },
   ];
 
-  // Modelo del formulario COMPLETO (con todos los campos)
+  // Modelo del formulario
   solicitud = {
     cliente: '',
     solicitante: '',
@@ -74,7 +75,7 @@ export class RegisterSolicitudesComponent {
 
   constructor() {
     this.documentId = this.generateDocumentId();
-    this.addPartida(); // Agregar una partida inicial
+    this.addPartida();
   }
 
   generateDocumentId(): string {
@@ -103,14 +104,11 @@ export class RegisterSolicitudesComponent {
 
   validateStep2(): boolean {
     this.submittedStep2 = true;
-
-    // Validar que todas las partidas tengan los campos obligatorios
     for (const partida of this.partidas) {
       if (!partida.tipoTrabajo || !partida.naturalezaTrabajo) {
         return false;
       }
     }
-
     return this.partidas.length > 0;
   }
 
@@ -130,7 +128,7 @@ export class RegisterSolicitudesComponent {
       hora: '',
       contactoRecibe: '',
       tiempoEntrega: '',
-      descripcion: '', // Cambiado de descripcionArticulo
+      descripcion: '',
       cantidad: 1,
       precioUnitario: 0,
       totalPartida: 0,
@@ -141,12 +139,9 @@ export class RegisterSolicitudesComponent {
   eliminarPartida(index: number) {
     if (this.partidas.length > 1) {
       this.partidas.splice(index, 1);
-
-      // Renumerar las partidas restantes
       this.partidas.forEach((partida, i) => {
         partida.numeroPartida = i + 1;
       });
-
       this.calcularTotales();
     }
   }
@@ -170,7 +165,6 @@ export class RegisterSolicitudesComponent {
   }
 
   calcularTotales() {
-    // Recalcular totales de cada partida
     this.partidas.forEach((partida) => {
       partida.totalPartida = partida.cantidad * partida.precioUnitario;
     });
@@ -192,9 +186,8 @@ export class RegisterSolicitudesComponent {
       Accept: 'application/json',
     });
 
-    // Preparar datos CORRECTAMENTE para enviar al backend
+    // Preparar datos para enviar al backend
     const solicitudData = {
-      // Campos de la tabla principal
       cliente: this.solicitud.cliente,
       solicitante: this.solicitud.solicitante,
       representante: this.solicitud.representante || null,
@@ -206,12 +199,9 @@ export class RegisterSolicitudesComponent {
       iva: this.solicitud.iva,
       subtotal: this.calcularSubtotal(),
       totalGeneral: this.calcularTotalGeneral(),
-
-      // Campos de tipo de trabajo (tomados de la primera partida)
       tipoTrabajo: this.partidas[0].tipoTrabajo,
       naturalezaTrabajo: this.partidas[0].naturalezaTrabajo,
 
-      // ENVIAR TODAS LAS PARTIDAS COMO ARRAY
       partidas: this.partidas.map((partida, index) => ({
         numeroPartida: index + 1,
         tipoTrabajo: partida.tipoTrabajo,
@@ -223,19 +213,19 @@ export class RegisterSolicitudesComponent {
         hora: partida.hora || null,
         contactoRecibe: partida.contactoRecibe || null,
         tiempoEntrega: partida.tiempoEntrega || null,
-        descripcionArticulo: partida.descripcion || null, // Cambiado de descripcionArticulo a descripcion
+        descripcionArticulo: partida.descripcion || null,
         cantidad: partida.cantidad || 1,
         precioUnitario: partida.precioUnitario || 0.0,
         totalPartida: partida.totalPartida || 0.0,
       })),
 
-      // Datos adicionales
       documentId: this.documentId,
     };
 
-    const url = this.isDevelopment()
-      ? '/api/registro_solicitud.php'
-      : 'https://sinsetec.com.mx/api/registro_solicitud.php';
+    // URL CORREGIDA - usa environment.apiUrl
+    const url = environment.production
+      ? 'https://apps.sinsetec.com.mx/api.php/registro_solicitud.php'
+      : 'http://localhost:2898/sinsetec-php/registro_solicitud.php';
 
     this.http
       .post(url, solicitudData, { headers, responseType: 'text' })
@@ -271,7 +261,7 @@ export class RegisterSolicitudesComponent {
   }
 
   private isDevelopment(): boolean {
-    return window.location.href.includes('localhost');
+    return !environment.production;
   }
 
   private handleSuccess(response: any) {
@@ -363,7 +353,7 @@ export class RegisterSolicitudesComponent {
         hora: '',
         contactoRecibe: '',
         tiempoEntrega: '',
-        descripcion: '', // Cambiado de descripcionArticulo
+        descripcion: '',
         cantidad: 1,
         precioUnitario: 0,
         totalPartida: 0,

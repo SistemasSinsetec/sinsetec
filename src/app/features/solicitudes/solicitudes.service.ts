@@ -12,7 +12,9 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class SolicitudesService {
-  private apiUrl = environment.apiUrl;
+  // URL se construirá dinámicamente según el environment
+  private baseUrl = environment.apiUrl;
+
   private headers = new HttpHeaders({
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -22,7 +24,7 @@ export class SolicitudesService {
 
   getSolicitudes(): Observable<any[]> {
     return this.http
-      .get<any[]>(`${this.apiUrl}/solicitudes.php`, {
+      .get<any[]>(`${this.baseUrl}/solicitudes.php`, {
         headers: this.headers,
         responseType: 'json' as const,
       })
@@ -31,7 +33,7 @@ export class SolicitudesService {
 
   getSolicitud(id: number): Observable<any> {
     return this.http
-      .get<any>(`${this.apiUrl}/solicitudes.php?id=${id}`, {
+      .get<any>(`${this.baseUrl}/solicitudes.php?id=${id}`, {
         headers: this.headers,
         responseType: 'json' as const,
       })
@@ -40,18 +42,24 @@ export class SolicitudesService {
 
   crearSolicitud(solicitud: any): Observable<any> {
     const datosFormateados = this.convertCamelToSnake(solicitud);
+    // URL correcta para producción: https://apps.sinsetec.com.mx/api.php/registro_solicitud.php
+    // URL correcta para desarrollo: http://localhost:2898/sinsetec-php/registro_solicitud.php
     return this.http
-      .post(`${this.apiUrl}/solicitudes.php`, datosFormateados, {
+      .post(`${this.baseUrl}/registro_solicitud.php`, datosFormateados, {
         headers: this.headers,
         responseType: 'json' as const,
       })
       .pipe(catchError(this.handleError));
   }
 
+  getHeaders(): HttpHeaders | Record<string, string | string[]> | undefined {
+    return this.headers;
+  }
+
   actualizarSolicitud(id: number, solicitud: any): Observable<any> {
     const datosFormateados = this.convertCamelToSnake(solicitud);
     return this.http
-      .put(`${this.apiUrl}/solicitudes.php?id=${id}`, datosFormateados, {
+      .put(`${this.baseUrl}/solicitudes.php?id=${id}`, datosFormateados, {
         headers: this.headers,
         responseType: 'json' as const,
       })
@@ -60,7 +68,7 @@ export class SolicitudesService {
 
   eliminarSolicitud(id: number): Observable<any> {
     return this.http
-      .delete(`${this.apiUrl}/solicitudes.php?id=${id}`, {
+      .delete(`${this.baseUrl}/solicitudes.php?id=${id}`, {
         headers: this.headers,
         responseType: 'json' as const,
       })
@@ -70,14 +78,13 @@ export class SolicitudesService {
   actualizarEstado(id: number, datos: any): Observable<any> {
     const datosFormateados = this.convertCamelToSnake(datos);
     return this.http
-      .put(`${this.apiUrl}/solicitudes.php?id=${id}`, datosFormateados, {
+      .put(`${this.baseUrl}/solicitudes.php?id=${id}`, datosFormateados, {
         headers: this.headers,
         responseType: 'json' as const,
       })
       .pipe(catchError(this.handleError));
   }
 
-  // En el método convertCamelToSnake, mejorar la conversión
   private convertCamelToSnake(obj: any): any {
     if (!obj || typeof obj !== 'object') return obj;
 
