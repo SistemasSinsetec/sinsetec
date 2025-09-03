@@ -1,308 +1,182 @@
-<div class="app-container">
-  <!-- Barra de navegación -->
-  <div class="toolbar">
-    <div class="toolbar-left">
-      <a class="toolbar-title" routerLink="/home">Inicio</a>
-      <a class="toolbar-title active" routerLink="/register-solicitudes"
-        >Registro de Solicitudes</a
-      >
-      <a class="toolbar-title" routerLink="/solicitudes">Solicitudes</a>
-      <a class="toolbar-title" routerLink="/control-refacciones"
-        >Control de Refacciones</a
-      >
-      <a class="toolbar-title" routerLink="/refacciones">Refacciones</a>
-      <a class="toolbar-title" routerLink="/accesos-permisos"
-        >Accesos/Permisos</a
-      >
-    </div>
-    <div class="toolbar-right">
-      <div class="dropdown">
-        <span class="profile">
-          <i class="fas fa-user"></i> Perfil
-          <i class="fa fa-caret-down"></i>
-        </span>
-        <div class="dropdown-content">
-          <a (click)="logout()">Cerrar sesión</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Contenido principal -->
-  <div class="process-container">
-    <div class="process-wrapper">
-      <div class="process-header">
-        <div class="header-info">
-          <h1>
-            Solicitud de Servicio Técnico
-            <span class="document-badge">ID: {{ documentId }}</span>
-          </h1>
-          <p>
-            Complete los siguientes pasos para registrar una nueva solicitud
-          </p>
-        </div>
-
-        <div class="process-steps">
-          <div
-            class="step-indicator"
-            [class.active]="currentStep === 1"
-            [class.completed]="currentStep > 1"
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registro de Solicitudes - SINSETEC</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Barra de navegación -->
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <a class="toolbar-title" routerLink="/home">Inicio</a>
+          <a class="toolbar-title active" routerLink="/register-solicitudes"
+            >Registro de Solicitudes</a
           >
-            <div class="step-number">1</div>
-            <div class="step-label">Información General</div>
-          </div>
-          <div class="step-indicator" [class.active]="currentStep === 2">
-            <div class="step-number">2</div>
-            <div class="step-label">Partidas</div>
+          <a class="toolbar-title" routerLink="/solicitudes">Solicitudes</a>
+          <a class="toolbar-title" routerLink="/control-refacciones"
+            >Control de Refacciones</a
+          >
+          <a class="toolbar-title" routerLink="/refacciones">Refacciones</a>
+          <a class="toolbar-title" routerLink="/accesos-permisos"
+            >Accesos/Permisos</a
+          >
+        </div>
+        <div class="toolbar-right">
+          <div class="dropdown">
+            <span class="profile">
+              <i class="fas fa-user"></i> Perfil
+              <i class="fa fa-caret-down"></i>
+            </span>
+            <div class="dropdown-content">
+              <a (click)="logout()">Cerrar sesión</a>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="process-content">
-        <div class="process-sidebar">
-          <div class="sidebar-section">
-            <h3>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                style="width: 18px; height: 18px"
+      <!-- Contenido principal -->
+      <div class="process-container">
+        <div class="process-wrapper">
+          <div class="process-header">
+            <div class="header-info">
+              <h1>
+                Solicitud de Servicio Técnico
+                <span class="document-badge">ID: {{ documentId }}</span>
+              </h1>
+              <p>
+                Complete los siguientes pasos para registrar una nueva solicitud
+              </p>
+            </div>
+
+            <div class="process-steps">
+              <div
+                class="step-indicator"
+                [class.active]="currentStep === 1"
+                [class.completed]="currentStep > 1"
               >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-              Información Cliente
-            </h3>
-            <div class="info-item">
-              <div class="info-label">Cliente</div>
-              <div class="info-value">
-                {{ solicitud.cliente || "No especificado" }}
+                <div class="step-number">1</div>
+                <div class="step-label">Información General</div>
               </div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Solicitante</div>
-              <div class="info-value">
-                {{ solicitud.solicitante || "No especificado" }}
-              </div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Representante</div>
-              <div class="info-value">
-                {{ solicitud.representante || "No especificado" }}
-              </div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Contacto</div>
-              <div class="info-value">
-                {{ solicitud.contacto || "No especificado" }}
-              </div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Ubicación</div>
-              <div class="info-value">
-                {{ solicitud.ubicacion || "No especificado" }}
+              <div class="step-indicator" [class.active]="currentStep === 2">
+                <div class="step-number">2</div>
+                <div class="step-label">Partidas</div>
               </div>
             </div>
           </div>
 
-          <div class="sidebar-section" *ngIf="currentStep >= 1">
-            <h3>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                style="width: 18px; height: 18px"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="2" y1="12" x2="22" y2="12"></line>
-                <path
-                  d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-                ></path>
-              </svg>
-              Descripción
-            </h3>
-            <div class="info-item">
-              <div class="info-value description">
-                {{ solicitud.descripcionServicio || "No especificado" }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="process-main">
-          <!-- Paso 1: Información General (solo datos del cliente) -->
-          <div class="step-content" [class.active]="currentStep === 1">
-            <h2>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                style="width: 22px; height: 22px"
-              >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              Información General
-            </h2>
-
-            <div class="card-grid">
-              <div
-                class="input-card"
-                [class.invalid]="submittedStep1 && !solicitud.cliente"
-              >
-                <label>Cliente <span class="required">*</span></label>
-                <input type="text" [(ngModel)]="solicitud.cliente" required />
-                <div
-                  class="error-message"
-                  *ngIf="submittedStep1 && !solicitud.cliente"
-                >
-                  Campo obligatorio
-                </div>
-              </div>
-
-              <div
-                class="input-card"
-                [class.invalid]="submittedStep1 && !solicitud.solicitante"
-              >
-                <label>Solicitante <span class="required">*</span></label>
-                <input
-                  type="text"
-                  [(ngModel)]="solicitud.solicitante"
-                  required
-                />
-                <div
-                  class="error-message"
-                  *ngIf="submittedStep1 && !solicitud.solicitante"
-                >
-                  Campo obligatorio
-                </div>
-              </div>
-
-              <div
-                class="input-card"
-                [class.invalid]="submittedStep1 && !solicitud.representante"
-              >
-                <label>Representante <span class="required">*</span></label>
-                <input
-                  type="text"
-                  [(ngModel)]="solicitud.representante"
-                  required
-                />
-                <div
-                  class="error-message"
-                  *ngIf="submittedStep1 && !solicitud.representante"
-                >
-                  Campo obligatorio
-                </div>
-              </div>
-
-              <div class="input-card">
-                <label>Contacto</label>
-                <input type="text" [(ngModel)]="solicitud.contacto" />
-              </div>
-
-              <div
-                class="input-card"
-                [class.invalid]="submittedStep1 && !solicitud.ubicacion"
-              >
-                <label>Ubicación <span class="required">*</span></label>
-                <input type="text" [(ngModel)]="solicitud.ubicacion" required />
-                <div
-                  class="error-message"
-                  *ngIf="submittedStep1 && !solicitud.ubicacion"
-                >
-                  Campo obligatorio
-                </div>
-              </div>
-            </div>
-
-            <div class="input-card">
-              <label>Descripción</label>
-              <textarea
-                [(ngModel)]="solicitud.descripcionServicio"
-                rows="4"
-                placeholder="Describa el servicio requerido"
-              ></textarea>
-            </div>
-          </div>
-
-          <!-- Paso 2: Partidas con toda la información técnica -->
-          <div class="step-content" [class.active]="currentStep === 2">
-            <h2>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                style="width: 22px; height: 22px"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="9" y1="3" x2="9" y2="21"></line>
-                <line x1="15" y1="3" x2="15" y2="21"></line>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="3" y1="15" x2="21" y2="15"></line>
-              </svg>
-              Gestión de Partidas
-            </h2>
-
-            <div class="partida-control">
-              <div class="partida-badge">
-                Partida #{{ partidas.length }}
-                <button (click)="addPartida()">+</button>
-              </div>
-            </div>
-
-            <div
-              class="partidas-container"
-              *ngFor="let partida of partidas; let i = index"
-            >
-              <div class="partida-header">
-                <div class="partida-col">Partida {{ i + 1 }}</div>
-                <div class="partida-col acciones">
-                  <button
-                    class="btn-eliminar"
-                    (click)="eliminarPartida(i)"
-                    *ngIf="partidas.length > 1"
+          <div class="process-content">
+            <div class="process-sidebar">
+              <div class="sidebar-section">
+                <h3>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="width: 18px; height: 18px"
                   >
-                    <i class="fas fa-trash"></i> Eliminar
-                  </button>
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  Información Cliente
+                </h3>
+                <div class="info-item">
+                  <div class="info-label">Cliente</div>
+                  <div class="info-value">
+                    {{ solicitud.cliente || "No especificado" }}
+                  </div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Solicitante</div>
+                  <div class="info-value">
+                    {{ solicitud.solicitante || "No especificado" }}
+                  </div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Representante</div>
+                  <div class="info-value">
+                    {{ solicitud.representante || "No especificado" }}
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <div class="info-label">Ubicación</div>
+                  <div class="info-value">
+                    {{ solicitud.ubicacion || "No especificado" }}
+                  </div>
                 </div>
               </div>
 
-              <!-- SECCIÓN: Datos Técnicos dentro de cada partida -->
-              <div class="input-card partida-data">
-                <h3 class="section-subtitle">Datos Técnicos</h3>
+              <div class="sidebar-section" *ngIf="currentStep >= 1">
+                <h3>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="width: 18px; height: 18px"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path
+                      d="M12 2a15.3 极5.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 极 0 0 1 4-10z"
+                    ></path>
+                  </svg>
+                  Comentarios
+                </h3>
+                <div class="info-item">
+                  <div class="info-value description">
+                    {{ solicitud.descripcionServicio || "No especificado" }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="process-main">
+              <!-- Paso 1: Información General (solo datos del cliente) -->
+              <div class="step-content" [class.active]="currentStep === 1">
+                <h2>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="width: 22px; height: 22px"
+                  >
+                    <path d="M17 21v-2a4 4 0 0 极-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  Información General
+                </h2>
+
                 <div class="card-grid">
                   <div
                     class="input-card"
-                    [class.invalid]="submittedStep2 && !partida.tipoTrabajo"
+                    [class.invalid]="submittedStep1 && !solicitud.cliente"
                   >
-                    <label
-                      >Tipo de trabajo <span class="required">*</span></label
-                    >
+                    <label>Cliente <span class="required">*</span></label>
                     <input
                       type="text"
-                      [(ngModel)]="partida.tipoTrabajo"
-                      placeholder="Seleccione o escriba el tipo de trabajo"
-                      list="tiposTrabajoList"
+                      [(ngModel)]="solicitud.cliente"
                       required
                     />
                     <div
                       class="error-message"
-                      *ngIf="submittedStep2 && !partida.tipoTrabajo"
+                      *ngIf="submittedStep1 && !solicitud.cliente"
                     >
                       Campo obligatorio
                     </div>
@@ -310,24 +184,38 @@
 
                   <div
                     class="input-card"
-                    [class.invalid]="
-                      submittedStep2 && !partida.naturalezaTrabajo
-                    "
+                    [class.invalid]="submittedStep1 && !solicitud.solicitante"
+                  >
+                    <label>Solicitante <span class="required">*</span></label>
+                    <input
+                      type="text"
+                      [(ngModel)]="solicitud.solicitante"
+                      required
+                    />
+                    <div
+                      class="error-message"
+                      *ngIf="submittedStep1 && !solicitud.solicitante"
+                    >
+                      Campo obligatorio
+                    </div>
+                  </div>
+
+                  <div
+                    class="input-card"
+                    [class.invalid]="submittedStep1 && !solicitud.representante"
                   >
                     <label
-                      >Naturaleza del trabajo
+                      >Representante SINSETEC
                       <span class="required">*</span></label
                     >
                     <input
                       type="text"
-                      [(ngModel)]="partida.naturalezaTrabajo"
-                      placeholder="Seleccione o escriba la naturaleza"
-                      list="naturalezasTrabajoList"
+                      [(ngModel)]="solicitud.representante"
                       required
                     />
                     <div
                       class="error-message"
-                      *ngIf="submittedStep2 && !partida.naturalezaTrabajo"
+                      *ngIf="submittedStep1 && !solicitud.representante"
                     >
                       Campo obligatorio
                     </div>
@@ -335,208 +223,420 @@
 
                   <div
                     class="input-card"
-                    [class.invalid]="submittedStep2 && !partida.tipoMaquina"
+                    [class.invalid]="submittedStep1 && !solicitud.ubicacion"
                   >
-                    <label
-                      >Tipo de máquina <span class="required">*</span></label
-                    >
+                    <label>Ubicación <span class="required">*</span></label>
                     <input
                       type="text"
-                      [(ngModel)]="partida.tipoMaquina"
-                      placeholder="Seleccione o escriba el tipo de máquina"
-                      list="tiposMaquinaList"
+                      [(ngModel)]="solicitud.ubicacion"
                       required
                     />
                     <div
                       class="error-message"
-                      *ngIf="submittedStep2 && !partida.tipoMaquina"
+                      *ngIf="submittedStep1 && !solicitud.ubicacion"
                     >
                       Campo obligatorio
                     </div>
                   </div>
+                </div>
 
-                  <div class="input-card">
-                    <label>ID de Máquina</label>
-                    <input type="text" [(ngModel)]="partida.idMaquina" />
-                  </div>
-
-                  <div class="input-card">
-                    <label>Modelo de Máquina</label>
-                    <input type="text" [(ngModel)]="partida.modeloMaquina" />
-                  </div>
-
-                  <div class="input-card">
-                    <label>Número de Serie</label>
-                    <input type="text" [(ngModel)]="partida.numeroSerie" />
-                  </div>
+                <div class="input-card">
+                  <label>Comentario</label>
+                  <textarea
+                    [(ngModel)]="solicitud.descripcionServicio"
+                    rows="4"
+                    placeholder="Describa el servicio requerido"
+                  ></textarea>
                 </div>
               </div>
 
-              <!-- SECCIÓN: Información de Contacto y Tiempo de Entrega dentro de cada partida -->
-              <div class="input-card partida-data">
-                <h3 class="section-subtitle">Información de Entrega</h3>
-                <div class="card-grid">
-                  <div
-                    class="input-card"
-                    [class.invalid]="submittedStep2 && !partida.hora"
+              <!-- Paso 2: Partidas con toda la información técnica -->
+              <div class="step-content" [class.active]="currentStep === 2">
+                <h2>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="width: 22px; height: 22px"
                   >
-                    <label>Hora <span class="required">*</span></label>
-                    <input type="time" [(ngModel)]="partida.hora" required />
-                    <div
-                      class="error-message"
-                      *ngIf="submittedStep2 && !partida.hora"
-                    >
-                      Campo obligatorio
+                    <rect
+                      x="3"
+                      y="3"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                    <line x1="15" y1="3" x2="15" y2="21"></line>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="3" y1="15" x2="21" y2="15"></line>
+                  </svg>
+                  Gestión de Partidas
+                </h2>
+
+                <div class="partida-control">
+                  <div class="partida-badge">
+                    Partida #{{ partidas.length }}
+                    <button (click)="addPartida()">+</button>
+                  </div>
+                </div>
+
+                <div
+                  class="partidas-container"
+                  *ngFor="let partida of partidas; let i = index"
+                >
+                  <div class="partida-header">
+                    <div class="partida-col">Partida {{ i + 1 }}</div>
+                    <div class="partida-col acciones">
+                      <button
+                        class="btn-eliminar"
+                        (click)="eliminarPartida(i)"
+                        *ngIf="partidas.length > 1"
+                      >
+                        <i class="fas fa-trash"></i> Eliminar
+                      </button>
                     </div>
                   </div>
 
-                  <div class="input-card">
-                    <label>Contacto que recibe</label>
-                    <input type="text" [(ngModel)]="partida.contactoRecibe" />
+                  <!-- SECCIÓN: Datos Técnicos dentro de cada partida -->
+                  <div class="input-card partida-data">
+                    <h3 class="section-subtitle">Datos Técnicos</h3>
+                    <div class="card-grid">
+                      <div
+                        class="input-card"
+                        [class.invalid]="submittedStep2 && !partida.tipoTrabajo"
+                      >
+                        <label
+                          >Tipo de trabajo
+                          <span class="required">*</span></label
+                        >
+                        <input
+                          type="text"
+                          [(ngModel)]="partida.tipoTrabajo"
+                          placeholder="Seleccione o escriba el tipo de trabajo"
+                          list="tiposTrabajoList"
+                          required
+                        />
+                        <div
+                          class="error-message"
+                          *ngIf="submittedStep2 && !partida.tipoTrabajo"
+                        >
+                          Campo obligatorio
+                        </div>
+                      </div>
+
+                      <div
+                        class="input-card"
+                        [class.invalid]="
+                          submittedStep2 && !partida.naturalezaTrabajo
+                        "
+                      >
+                        <label
+                          >Naturaleza del trabajo
+                          <span class="required">*</span></label
+                        >
+                        <input
+                          type="text"
+                          [(ngModel)]="partida.naturalezaTrabajo"
+                          placeholder="Seleccione o escriba la naturaleza"
+                          list="naturalezasTrabajoList"
+                          required
+                        />
+                        <div
+                          class="error-message"
+                          *ngIf="submittedStep2 && !partida.naturalezaTrabajo"
+                        >
+                          Campo obligatorio
+                        </div>
+                      </div>
+
+                      <div
+                        class="input-card"
+                        [class.invalid]="submittedStep2 && !partida.tipoMaquina"
+                      >
+                        <label
+                          >Tipo de máquina
+                          <span class="required">*</span></label
+                        >
+                        <input
+                          type="text"
+                          [(ngModel)]="partida.tipoMaquina"
+                          placeholder="Seleccione o escriba el tipo de máquina"
+                          list="tiposMaquinaList"
+                          required
+                        />
+                        <div
+                          class="error-message"
+                          *ngIf="submittedStep2 && !partida.tipoMaquina"
+                        >
+                          Campo obligatorio
+                        </div>
+                      </div>
+
+                      <div class="input-card">
+                        <label>ID de Máquina</label>
+                        <input type="text" [(ngModel)]="partida.idMaquina" />
+                      </div>
+
+                      <div class="input-card">
+                        <label>Modelo de Máquina</label>
+                        <input
+                          type="text"
+                          [(ngModel)]="partida.modeloMaquina"
+                        />
+                      </div>
+
+                      <div class="input-card">
+                        <label>Número de Serie</label>
+                        <input type="text" [(ngModel)]="partida.numeroSerie" />
+                      </div>
+                    </div>
                   </div>
 
-                  <div class="input-card">
-                    <label>Tiempo de Entrega</label>
-                    <input type="text" [(ngModel)]="partida.tiempoEntrega" />
+                  <!-- SECCIÓN: Información de Entrega dentro de cada partida -->
+                  <div class="input-card partida-data">
+                    <h3 class="section-subtitle">Información de Entrega</h3>
+                    <div class="card-grid">
+                      <div
+                        class="input-card"
+                        [class.invalid]="submittedStep2 && !partida.fecha"
+                      >
+                        <label>Fecha<span class="required">*</span></label>
+                        <input
+                          type="date"
+                          [(ngModel)]="partida.fecha"
+                          required
+                        />
+                        <div
+                          class="error-message"
+                          *ngIf="submittedStep2 && !partida.fecha"
+                        >
+                          Campo obligatorio
+                        </div>
+                      </div>
+
+                      <div
+                        class="input-card"
+                        [class.invalid]="submittedStep2 && !partida.horaInicio"
+                      >
+                        <label
+                          >Hora de inicio <span class="required">*</span></label
+                        >
+                        <input
+                          type="time"
+                          [(ngModel)]="partida.horaInicio"
+                          required
+                        />
+                        <div
+                          class="error-message"
+                          *ngIf="submittedStep2 && !partida.horaInicio"
+                        >
+                          Campo obligatorio
+                        </div>
+                      </div>
+
+                      <div
+                        class="input-card"
+                        [class.invalid]="submittedStep2 && !partida.horaTermino"
+                      >
+                        <label
+                          >Hora de Termino
+                          <span class="required">*</span></label
+                        >
+                        <input
+                          type="time"
+                          [(ngModel)]="partida.horaTermino"
+                          required
+                        />
+                        <div
+                          class="error-message"
+                          *ngIf="submittedStep2 && !partida.horaTermino"
+                        >
+                          Campo obligatorio
+                        </div>
+                      </div>
+
+                      <div class="input-card">
+                        <label>Tiempo de Entrega (días)</label>
+                        <input
+                          type="number"
+                          [(ngModel)]="partida.tiempoEntrega"
+                          min="0"
+                        />
+                      </div>
+
+                      <div class="input-card full-width">
+                        <label>Contacto que recibe</label>
+                        <input
+                          type="text"
+                          [(ngModel)]="partida.contactoRecibe"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- SECCIÓN: Detalles de precio y cantidad con IVA y Comentario incluidos -->
+                  <div class="input-card partida-data">
+                    <h3 class="section-subtitle">Detalles de Precio</h3>
+                    <div class="partida-details-grid">
+                      <div
+                        class="input-card"
+                        [class.invalid]="submittedStep2 && !partida.cantidad"
+                      >
+                        <label>Cantidad <span class="required">*</span></label>
+                        <input
+                          type="number"
+                          [(ngModel)]="partida.cantidad"
+                          (change)="calcularTotales()"
+                          min="1"
+                          placeholder="Cantidad"
+                          required
+                        />
+                        <div
+                          class="error-message"
+                          *ngIf="submittedStep2 && !partida.cantidad"
+                        >
+                          Campo obligatorio
+                        </div>
+                      </div>
+
+                      <div
+                        class="input-card"
+                        [class.invalid]="
+                          submittedStep2 && !partida.precioUnitario
+                        "
+                      >
+                        <label
+                          >Precio Unitario
+                          <span class="required">*</span></label
+                        >
+                        <input
+                          type="number"
+                          [(ngModel)]="partida.precioUnitario"
+                          (change)="calcularTotales()"
+                          min="0"
+                          step="0.01"
+                          placeholder="Precio"
+                          required
+                        />
+                        <div
+                          class="error-message"
+                          *ngIf="submittedStep2 && !partida.precioUnitario"
+                        >
+                          Campo obligatorio
+                        </div>
+                      </div>
+
+                      <div class="input-card">
+                        <label>IVA (%)</label>
+                        <input
+                          type="text"
+                          [(ngModel)]="partida.iva"
+                          (change)="calcularTotales()"
+                          list="ivaOptionsList"
+                          placeholder="Seleccione o escriba el IVA"
+                        />
+                      </div>
+
+                      <!-- Comentario dentro de Detalles de Precio -->
+                      <div class="input-card full-width">
+                        <label>Comentario</label>
+                        <textarea
+                          [(ngModel)]="partida.comentario"
+                          rows="4"
+                          placeholder="Ingrese comentarios sobre la partida"
+                        ></textarea>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- SECCIÓN: Detalles de la partida -->
-              <div class="input-card partida-data">
-                <h3 class="section-subtitle">Detalles de la Partida</h3>
-                <div class="partida-details-grid">
-                  <!-- En la sección de detalles de la partida -->
-                  <div class="input-card">
-                    <label>Descripción <span class="required">*</span></label>
-                    <input
-                      type="text"
-                      [(ngModel)]="partida.descripcion"
-                      placeholder="Descripción del artículo/servicio"
-                      required
-                    />
+                <!-- Totales generales -->
+                <div class="partida-totales-container">
+                  <div class="partida-totales">
+                    <div class="total-label">Subtotal:</div>
+                    <div class="total-value">
+                      {{ calcularSubtotal() | currency }}
+                    </div>
                   </div>
 
-                  <div class="input-card">
-                    <label>Cantidad <span class="required">*</span></label>
-                    <input
-                      type="number"
-                      [(ngModel)]="partida.cantidad"
-                      (change)="calcularTotales()"
-                      min="1"
-                      placeholder="Cantidad"
-                      required
-                    />
+                  <div class="partida-totales">
+                    <div class="total-label">IVA:</div>
+                    <div class="total-value">
+                      {{ calcularIVA() | currency }}
+                    </div>
                   </div>
 
-                  <div class="input-card">
-                    <label
-                      >Precio Unitario <span class="required">*</span></label
-                    >
-                    <input
-                      type="number"
-                      [(ngModel)]="partida.precioUnitario"
-                      (change)="calcularTotales()"
-                      min="0"
-                      step="0.01"
-                      placeholder="Precio"
-                      required
-                    />
-                  </div>
-
-                  <div class="input-card">
-                    <label>Total</label>
-                    <div class="partida-total-display">
-                      {{ partida.total | currency }}
+                  <div class="partida-totales final">
+                    <div class="total-label">Total General:</div>
+                    <div class="total-value">
+                      {{ calcularTotalGeneral() | currency }}
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Totales generales -->
-            <div class="partida-totales-container">
-              <div class="partida-totales">
-                <div class="total-label">Subtotal:</div>
-                <div class="total-value">
-                  {{ calcularSubtotal() | currency }}
-                </div>
-              </div>
-
-              <div class="partida-iva">
-                <div class="iva-input">
-                  <label>IVA (%):</label>
-                  <input
-                    type="number"
-                    [(ngModel)]="solicitud.iva"
-                    (change)="calcularTotales()"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div class="iva-amount">
-                  {{ calcularIVA() | currency }}
-                </div>
-              </div>
-
-              <div class="partida-totales final">
-                <div class="total-label">Total General:</div>
-                <div class="total-value">
-                  {{ calcularTotalGeneral() | currency }}
-                </div>
+              <div class="process-actions">
+                <button
+                  *ngIf="currentStep > 1"
+                  (click)="prevStep()"
+                  class="btn-prev"
+                >
+                  Anterior
+                </button>
+                <button
+                  *ngIf="currentStep < totalSteps"
+                  (click)="nextStep()"
+                  class="btn-next"
+                >
+                  Siguiente
+                </button>
+                <button
+                  *ngIf="currentStep === totalSteps"
+                  (click)="onSubmit()"
+                  class="btn-submit"
+                >
+                  Guardar Solicitud
+                </button>
               </div>
             </div>
-          </div>
-
-          <div class="process-actions">
-            <button
-              *ngIf="currentStep > 1"
-              (click)="prevStep()"
-              class="btn-prev"
-            >
-              Anterior
-            </button>
-            <button
-              *ngIf="currentStep < totalSteps"
-              (click)="nextStep()"
-              class="btn-next"
-            >
-              Siguiente
-            </button>
-            <button
-              *ngIf="currentStep === totalSteps"
-              (click)="onSubmit()"
-              class="btn-submit"
-            >
-              Guardar Solicitud
-            </button>
           </div>
         </div>
       </div>
+
+      <!-- Datalists para las opciones -->
+      <datalist id="tiposTrabajoList">
+        <option *ngFor="let tipo of tiposTrabajo" [value]="tipo.value">
+          {{ tipo.label }}
+        </option>
+      </datalist>
+
+      <datalist id="naturalezasTrabajoList">
+        <option
+          *ngFor="let naturaleza of naturalezasTrabajo"
+          [value]="naturaleza.value"
+        >
+          {{ naturaleza.label }}
+        </option>
+      </datalist>
+
+      <datalist id="tiposMaquinaList">
+        <option *ngFor="let tipo of tiposMaquina" [value]="tipo.value">
+          {{ tipo.label }}
+        </option>
+      </datalist>
+
+      <!-- Datalist para opciones de IVA -->
+      <datalist id="ivaOptionsList">
+        <option value="16%">16%</option>
+        <option value="8%">8%</option>
+        <option value="null/-">null/-</option>
+        <option value="exento">Exento</option>
+      </datalist>
     </div>
-  </div>
-
-  <!-- Datalists para las opciones -->
-  <datalist id="tiposTrabajoList">
-    <option *ngFor="let tipo of tiposTrabajo" [value]="tipo.value">
-      {{ tipo.label }}
-    </option>
-  </datalist>
-
-  <datalist id="naturalezasTrabajoList">
-    <option
-      *ngFor="let naturaleza of naturalezasTrabajo"
-      [value]="naturaleza.value"
-    >
-      {{ naturaleza.label }}
-    </option>
-  </datalist>
-
-  <datalist id="tiposMaquinaList">
-    <option *ngFor="let tipo of tiposMaquina" [value]="tipo.value">
-      {{ tipo.label }}
-    </option>
-  </datalist>
-</div>
+  </body>
+</html>

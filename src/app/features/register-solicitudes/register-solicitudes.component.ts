@@ -51,6 +51,13 @@ export class RegisterSolicitudesComponent {
     { value: 'Otro', label: 'Otro' },
   ];
 
+  opcionesIVA = [
+    { value: '16%', label: '极%' },
+    { value: '8%', label: '8%' },
+    { value: 'null/-', label: 'null/-' },
+    { value: 'exento', label: 'Exento' },
+  ];
+
   // Modelo del formulario
   solicitud = {
     cliente: '',
@@ -61,7 +68,6 @@ export class RegisterSolicitudesComponent {
     contacto: '',
     ubicacion: '',
     descripcionServicio: '',
-    iva: 16.0,
   };
 
   // Control del formulario
@@ -99,17 +105,34 @@ export class RegisterSolicitudesComponent {
 
   validateStep1(): boolean {
     this.submittedStep1 = true;
-    return !!this.solicitud.cliente && !!this.solicitud.solicitante;
+    return (
+      !!this.solicitud.cliente &&
+      !!this.solicitud.solicitante &&
+      !!this.solicitud.representante &&
+      !!this.solicitud.ubicacion
+    );
   }
 
   validateStep2(): boolean {
     this.submittedStep2 = true;
+    let isValid = true;
+
     for (const partida of this.partidas) {
-      if (!partida.tipoTrabajo || !partida.naturalezaTrabajo) {
-        return false;
+      if (
+        !partida.tipoTrabajo ||
+        !partida.naturalezaTrabajo ||
+        !partida.tipoMaquina ||
+        !partida.fecha ||
+        !partida.horaInicio ||
+        !partida.horaTermino ||
+        !partida.cantidad ||
+        !partida.precioUnitario
+      ) {
+        isValid = false;
       }
     }
-    return this.partidas.length > 0;
+
+    return isValid && this.partidas.length > 0;
   }
 
   validateAllSteps(): boolean {
@@ -125,12 +148,15 @@ export class RegisterSolicitudesComponent {
       modeloMaquina: '',
       numeroSerie: '',
       idMaquina: '',
-      hora: '',
-      contactoRecibe: '',
+      fecha: '',
+      horaInicio: '',
+      horaTermino: '',
       tiempoEntrega: '',
-      descripcion: '',
+      contactoRecibe: '',
+      comentario: '',
       cantidad: 1,
       precioUnitario: 0,
+      iva: '16%', // Valor por defecto
       totalPartida: 0,
     });
     this.calcularTotales();
@@ -148,14 +174,23 @@ export class RegisterSolicitudesComponent {
 
   calcularSubtotal(): number {
     return this.partidas.reduce(
-      (total, partida) => total + partida.totalPartida,
+      (total, partida) => total + partida.cantidad * partida.precioUnitario,
       0
     );
   }
 
   calcularIVA(): number {
-    const subtotal = this.calcularSubtotal();
-    return subtotal * (this.solicitud.iva / 100);
+    let totalIVA = 0;
+    for (const partida of this.partidas) {
+      const totalPartida = partida.cantidad * partida.precioUnitario;
+      if (partida.iva && partida.iva !== 'null/-' && partida.iva !== 'exento') {
+        const ivaPercentage = parseFloat(partida.iva.replace('%', ''));
+        if (!isNaN(ivaPercentage)) {
+          totalIVA += totalPartida * (ivaPercentage / 100);
+        }
+      }
+    }
+    return totalIVA;
   }
 
   calcularTotalGeneral(): number {
@@ -165,9 +200,16 @@ export class RegisterSolicitudesComponent {
   }
 
   calcularTotales() {
-    this.partidas.forEach((partida) => {
-      partida.totalPartida = partida.cantidad * partida.precioUnitario;
-    });
+    // Los cálculos se realizan en tiempo real en los métodos anteriores
+  }
+
+  parsearIVA(ivaValue: string): number {
+    if (!ivaValue || ivaValue === 'null/-' || ivaValue === 'exento') {
+      return 0;
+    }
+
+    const porcentaje = parseFloat(ivaValue.replace('%', ''));
+    return isNaN(porcentaje) ? 0 : porcentaje;
   }
 
   onSubmit() {
@@ -196,8 +238,8 @@ export class RegisterSolicitudesComponent {
       contacto: this.solicitud.contacto || null,
       ubicacion: this.solicitud.ubicacion,
       descripcionServicio: this.solicitud.descripcionServicio || null,
-      iva: this.solicitud.iva,
       subtotal: this.calcularSubtotal(),
+      iva: this.calcularIVA(),
       totalGeneral: this.calcularTotalGeneral(),
       tipoTrabajo: this.partidas[0].tipoTrabajo,
       naturalezaTrabajo: this.partidas[0].naturalezaTrabajo,
@@ -210,13 +252,16 @@ export class RegisterSolicitudesComponent {
         modeloMaquina: partida.modeloMaquina || null,
         numeroSerie: partida.numeroSerie || null,
         idMaquina: partida.idMaquina || null,
-        hora: partida.hora || null,
-        contactoRecibe: partida.contactoRecibe || null,
+        fecha: partida.fecha,
+        horaInicio: partida.horaInicio,
+        horaTermino: partida.horaTermino,
         tiempoEntrega: partida.tiempoEntrega || null,
-        descripcionArticulo: partida.descripcion || null,
+        contactoRecibe: partida.contactoRecibe || null,
+        comentario: partida.comentario || null,
         cantidad: partida.cantidad || 1,
         precioUnitario: partida.precioUnitario || 0.0,
-        totalPartida: partida.totalPartida || 0.0,
+        iva: partida.iva || '16%',
+        totalPartida: partida.cantidad * partida.precioUnitario || 0.0,
       })),
 
       documentId: this.documentId,
@@ -338,7 +383,6 @@ export class RegisterSolicitudesComponent {
       contacto: '',
       ubicacion: '',
       descripcionServicio: '',
-      iva: 16.0,
     };
 
     this.partidas = [
@@ -350,12 +394,15 @@ export class RegisterSolicitudesComponent {
         modeloMaquina: '',
         numeroSerie: '',
         idMaquina: '',
-        hora: '',
-        contactoRecibe: '',
+        fecha: '',
+        horaInicio: '',
+        horaTermino: '',
         tiempoEntrega: '',
-        descripcion: '',
+        contactoRecibe: '',
+        comentario: '',
         cantidad: 1,
         precioUnitario: 0,
+        iva: '16%',
         totalPartida: 0,
       },
     ];
