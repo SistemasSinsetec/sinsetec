@@ -12,8 +12,6 @@ import { AuthService } from '../../auth/services/auth.service';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
-declare const pdfMake: any;
-
 @Component({
   selector: 'app-register-solicitudes',
   standalone: true,
@@ -52,7 +50,7 @@ export class RegisterSolicitudesComponent {
   ];
 
   opcionesIVA = [
-    { value: '16%', label: '极%' },
+    { value: '16%', label: '16%' },
     { value: '8%', label: '8%' },
     { value: 'null/-', label: 'null/-' },
     { value: 'exento', label: 'Exento' },
@@ -268,9 +266,7 @@ export class RegisterSolicitudesComponent {
     };
 
     // URL CORREGIDA - usa environment.apiUrl
-    const url = environment.production
-      ? 'https://apps.sinsetec.com.mx/api.php/registro_solicitud.php'
-      : 'http://localhost:2898/sinsetec-php/registro_solicitud.php';
+    const url = `${environment.apiUrl}/registro_solicitud.php`;
 
     this.http
       .post(url, solicitudData, { headers, responseType: 'text' })
@@ -303,10 +299,6 @@ export class RegisterSolicitudesComponent {
           this.handleError(err);
         },
       });
-  }
-
-  private isDevelopment(): boolean {
-    return !environment.production;
   }
 
   private handleSuccess(response: any) {
