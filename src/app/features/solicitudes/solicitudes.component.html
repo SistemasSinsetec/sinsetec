@@ -296,21 +296,9 @@
           <span class="detail-value">{{ solicitudDetalle.solicitante }}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Empresa:</span>
-          <span class="detail-value">{{
-            solicitudDetalle.empresa || "N/A"
-          }}</span>
-        </div>
-        <div class="detail-row">
           <span class="detail-label">Representante:</span>
           <span class="detail-value">{{
             solicitudDetalle.representante || "N/A"
-          }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Proveedor:</span>
-          <span class="detail-value">{{
-            solicitudDetalle.proveedor || "N/A"
           }}</span>
         </div>
         <div class="detail-row">
@@ -329,7 +317,7 @@
         </div>
 
         <div class="detail-row full-width">
-          <span class="detail-label">ComentariO:</span>
+          <span class="detail-label">Comentario:</span>
           <span class="detail-value">{{ solicitudDetalle.comentario }}</span>
         </div>
         <div class="detail-row">
@@ -586,26 +574,10 @@
             />
           </div>
           <div class="form-row">
-            <label>Empresa:</label>
-            <input
-              type="text"
-              [value]="solicitudDetalle.empresa || 'N/A'"
-              readonly
-            />
-          </div>
-          <div class="form-row">
             <label>Representante:</label>
             <input
               type="text"
               [value]="solicitudDetalle.representante || 'N/A'"
-              readonly
-            />
-          </div>
-          <div class="form-row">
-            <label>Proveedor:</label>
-            <input
-              type="text"
-              [value]="solicitudDetalle.proveedor || 'N/A'"
               readonly
             />
           </div>
@@ -644,7 +616,7 @@
 
           <!-- Campos editables -->
           <div class="form-row full-width">
-            <label for="edit-comentario">Comentario y Observaciones:</label>
+            <label for="edit-comentario">Comentario:</label>
             <textarea
               id="edit-comentario"
               [(ngModel)]="solicitudDetalle.comentario"
