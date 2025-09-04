@@ -42,8 +42,6 @@ export class SolicitudesService {
 
   crearSolicitud(solicitud: any): Observable<any> {
     const datosFormateados = this.convertCamelToSnake(solicitud);
-    // URL correcta para producción: https://apps.sinsetec.com.mx/api.php/registro_solicitud.php
-    // URL correcta para desarrollo: http://localhost:2898/sinsetec-php/registro_solicitud.php
     return this.http
       .post(`${this.baseUrl}/registro_solicitud.php`, datosFormateados, {
         headers: this.headers,
