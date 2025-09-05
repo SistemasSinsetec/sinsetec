@@ -340,9 +340,9 @@
         <div class="detail-row full-width">
           <h4
             style="
-              margin: 20px 0 10px 0;
+              margin: 10px 0 5px 0;
               border-bottom: 1px solid #ddd;
-              padding-bottom: 5px;
+              padding-bottom: 3px;
             "
           >
             Gestión de Partidas
@@ -355,92 +355,128 @@
             else noDetalles
           "
         >
-          <div *ngFor="let detalle of solicitudDetalle.detalles">
-            <div class="detail-row">
-              <span class="detail-label">Número de Partida:</span>
-              <span class="detail-value">{{
-                detalle.numero_partida || "N/A"
-              }}</span>
+          <div
+            *ngFor="let detalle of solicitudDetalle.detalles"
+            class="partidas-grid-compact"
+          >
+            <!-- FILA 1 -->
+            <div class="partida-fila">
+              <div class="detail-row-compact">
+                <span class="detail-label">Número de Partida:</span>
+                <span class="detail-value">{{
+                  detalle.numero_partida || "N/A"
+                }}</span>
+              </div>
+              <div class="detail-row-compact">
+                <span class="detail-label">Tipo de máquina:</span>
+                <span class="detail-value">{{
+                  detalle.tipo_maquina_detalle || "N/A"
+                }}</span>
+              </div>
+              <div class="detail-row-compact">
+                <span class="detail-label">Descripción:</span>
+                <span class="detail-value">N/A</span>
+              </div>
             </div>
-            <div class="detail-row">
-              <span class="detail-label">Tipo de trabajo:</span>
-              <span class="detail-value">{{
-                detalle.tipo_trabajo || "N/A"
-              }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Naturaleza:</span>
-              <span class="detail-value">{{
-                detalle.naturaleza_trabajo || "N/A"
-              }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Tipo de máquina:</span>
-              <span class="detail-value">{{
-                detalle.tipo_maquina_detalle || "N/A"
-              }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Número de serie:</span>
-              <span class="detail-value">{{
-                detalle.serial_maquina_detalle || "N/A"
-              }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">ID de máquina:</span>
-              <span class="detail-value">{{
-                detalle.id_maquina_detalle || "N/A"
-              }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Modelo de máquina:</span>
-              <span class="detail-value">{{
-                detalle.modelo_maquina_detalle || "N/A"
-              }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Horas:</span>
-              <span class="detail-value"
-                >{{ detalle.hora_inicio || "N/A" }} -
-                {{ detalle.hora_termino || "N/A" }}</span
-              >
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Contacto que recibe:</span>
-              <span class="detail-value">{{
-                detalle.datos_contacto || "N/A"
-              }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Tiempo de entrega:</span>
-              <span class="detail-value">{{
-                detalle.tiempo_entrega || "N/A"
-              }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Ubicación:</span>
-              <span class="detail-value">{{ detalle.ubicacion || "N/A" }}</span>
-            </div>
-            <hr style="margin: 15px 0; border-color: #ddd" />
-          </div>
-        </div>
 
-        <!-- Información de precios -->
-        <div class="detail-row">
-          <span class="detail-label">Descripción:</span>
-          <span class="detail-value">{{
-            solicitudDetalle.descripcion_articulo || "N/A"
-          }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Cantidad:</span>
-          <span class="detail-value">{{ solicitudDetalle.cantidad }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Precio Unitario:</span>
-          <span class="detail-value">{{
-            solicitudDetalle.precio_unitario | currency
-          }}</span>
+            <!-- FILA 2 -->
+            <div class="partida-fila">
+              <div class="detail-row-compact">
+                <span class="detail-label">Descripción:</span>
+                <span class="detail-value">N/A</span>
+              </div>
+              <div class="detail-row-compact">
+                <span class="detail-label">Número de serie:</span>
+                <span class="detail-value">{{
+                  detalle.serial_maquina_detalle || "N/A"
+                }}</span>
+              </div>
+              <div class="detail-row-compact" style="visibility: hidden">
+                <span class="detail-label"></span>
+                <span class="detail-value"></span>
+              </div>
+            </div>
+
+            <!-- FILA 3 -->
+            <div class="partida-fila">
+              <div class="detail-row-compact">
+                <span class="detail-label">Tipo de trabajo:</span>
+                <span class="detail-value">{{
+                  detalle.tipo_trabajo || "N/A"
+                }}</span>
+              </div>
+              <div class="detail-row-compact">
+                <span class="detail-label">ID de máquina:</span>
+                <span class="detail-value">{{
+                  detalle.id_maquina_detalle || "N/A"
+                }}</span>
+              </div>
+              <div class="detail-row-compact" style="visibility: hidden">
+                <span class="detail-label"></span>
+                <span class="detail-value"></span>
+              </div>
+            </div>
+
+            <!-- FILA 4 -->
+            <div class="partida-fila">
+              <div class="detail-row-compact">
+                <span class="detail-label">Naturaleza:</span>
+                <span class="detail-value">{{
+                  detalle.naturaleza_trabajo || "N/A"
+                }}</span>
+              </div>
+              <div class="detail-row-compact">
+                <span class="detail-label">Modelo de máquina:</span>
+                <span class="detail-value">{{
+                  detalle.modelo_maquina_detalle || "N/A"
+                }}</span>
+              </div>
+              <div class="detail-row-compact" style="visibility: hidden">
+                <span class="detail-label"></span>
+                <span class="detail-value"></span>
+              </div>
+            </div>
+
+            <!-- CAMPOS INDIVIDUALES -->
+            <div class="partida-fila-full">
+              <div class="detail-row-compact">
+                <span class="detail-label">Horas:</span>
+                <span class="detail-value"
+                  >{{ detalle.hora_inicio || "N/A" }} -
+                  {{ detalle.hora_termino || "N/A" }}</span
+                >
+              </div>
+            </div>
+
+            <div class="partida-fila-full">
+              <div class="detail-row-compact">
+                <span class="detail-label">Contacto que recibe:</span>
+                <span class="detail-value">{{
+                  detalle.datos_contacto || "N/A"
+                }}</span>
+              </div>
+            </div>
+
+            <div class="partida-fila-full">
+              <div class="detail-row-compact">
+                <span class="detail-label">Tiempo de entrega:</span>
+                <span class="detail-value">{{
+                  detalle.tiempo_entrega || "N/A"
+                }}</span>
+              </div>
+            </div>
+
+            <div class="partida-fila-full">
+              <div class="detail-row-compact">
+                <span class="detail-label">Ubicación:</span>
+                <span class="detail-value">{{
+                  detalle.ubicacion || "N/A"
+                }}</span>
+              </div>
+            </div>
+
+            <hr style="margin: 8px 0; border-color: #ddd" />
+          </div>
         </div>
 
         <ng-template #noDetalles>
