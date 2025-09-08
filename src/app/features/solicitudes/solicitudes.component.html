@@ -442,7 +442,7 @@
               </div>
             </div>
 
-            <hr style="margin: 8px 0; border-color: #ddd" />
+            <!-- <hr style="margin: 8px 0; border-color: #ddd" /> -->
           </div>
         </div>
         <ng-template #noDetalles>
@@ -557,139 +557,331 @@
     </div>
     <div class="modal-body">
       <form *ngIf="solicitudDetalle" (ngSubmit)="guardarEdicion()">
-        <div class="form-grid">
-          <!-- Campos de solo lectura -->
-          <div class="form-row">
-            <label>ID:</label>
-            <input type="text" [value]="solicitudDetalle.id" readonly />
-          </div>
-          <div class="form-row">
-            <label>Cliente:</label>
-            <input type="text" [value]="solicitudDetalle.cliente" readonly />
-          </div>
-          <div class="form-row">
-            <label>Solicitante:</label>
-            <input
-              type="text"
-              [value]="solicitudDetalle.solicitante"
-              readonly
-            />
-          </div>
-          <div class="form-row">
-            <label>Representante:</label>
-            <input
-              type="text"
-              [value]="solicitudDetalle.representante || 'N/A'"
-              readonly
-            />
-          </div>
+        <!-- Campos de solo lectura -->
+        <div class="readonly-fields">
           <div class="form-row">
             <label>Fecha de Solicitud:</label>
-            <input
-              type="text"
-              [value]="solicitudDetalle.fecha_solicitud"
-              readonly
-            />
+            <span class="readonly-value">{{
+              solicitudDetalle.fecha_solicitud
+            }}</span>
           </div>
           <div class="form-row">
             <label>Estado:</label>
-            <input type="text" [value]="solicitudDetalle.estado" readonly />
+            <span class="readonly-value">{{ solicitudDetalle.estado }}</span>
           </div>
-          <div class="form-row">
-            <label>Partida:</label>
-            <input type="text" [value]="solicitudDetalle.partida" readonly />
-          </div>
-          <div class="form-row">
-            <label>Tipo de Trabajo:</label>
-            <input
-              type="text"
-              [value]="solicitudDetalle.tipo_trabajo"
-              readonly
-            />
-          </div>
-          <div class="form-row">
-            <label>Naturaleza del Trabajo:</label>
-            <input
-              type="text"
-              [value]="solicitudDetalle.naturaleza_trabajo"
-              readonly
-            />
-          </div>
+        </div>
 
-          <!-- Campos editables -->
+        <!-- Información General -->
+        <div class="section-header">
+          <h4>Información General</h4>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-row">
+            <label for="edit-cliente">Cliente:</label>
+            <input
+              id="edit-cliente"
+              type="text"
+              [(ngModel)]="solicitudDetalle.cliente"
+              name="cliente"
+            />
+          </div>
+          <div class="form-row">
+            <label for="edit-solicitante">Solicitante:</label>
+            <input
+              id="edit-solicitante"
+              type="text"
+              [(ngModel)]="solicitudDetalle.solicitante"
+              name="solicitante"
+            />
+          </div>
+          <div class="form-row">
+            <label for="edit-representante">Representante de Sinsetec:</label>
+            <input
+              id="edit-representante"
+              type="text"
+              [(ngModel)]="solicitudDetalle.representante"
+              name="representante"
+            />
+          </div>
           <div class="form-row full-width">
-            <label for="edit-comentario">Comentario:</label>
+            <label for="edit-comentario-general">Comentario:</label>
             <textarea
-              id="edit-comentario"
+              id="edit-comentario-general"
               [(ngModel)]="solicitudDetalle.comentario"
               name="comentario"
+              rows="3"
             ></textarea>
           </div>
+        </div>
 
-          <!-- Campos de precios editables -->
-          <div class="form-row">
-            <label for="edit-descripcion">Descripción:</label>
-            <input
-              id="edit-descripcion"
-              type="text"
-              [(ngModel)]="solicitudDetalle.descripcion_articulo"
-              name="descripcion_articulo"
-            />
+        <!-- Gestión de Partidas -->
+        <div class="section-header">
+          <h4>Gestión de Partidas</h4>
+        </div>
+
+        <div
+          *ngFor="let detalle of solicitudDetalle.detalles; let i = index"
+          class="partida-section"
+        >
+          <div class="partida-header">
+            <h5>Partida {{ i + 1 }}</h5>
           </div>
-          <div class="form-row">
-            <label for="edit-cantidad">Cantidad:</label>
-            <input
-              id="edit-cantidad"
-              type="number"
-              [(ngModel)]="solicitudDetalle.cantidad"
-              name="cantidad"
-              min="1"
-            />
+
+          <div class="form-grid">
+            <!-- Primera fila -->
+            <div class="form-row">
+              <label [for]="'edit-tipo-trabajo-' + i">Tipo de trabajo:</label>
+              <input
+                [id]="'edit-tipo-trabajo-' + i"
+                type="text"
+                [(ngModel)]="detalle.tipo_trabajo"
+                [name]="'tipo_trabajo_' + i"
+              />
+            </div>
+            <div class="form-row">
+              <label [for]="'edit-naturaleza-' + i"
+                >Naturaleza de trabajo:</label
+              >
+              <input
+                [id]="'edit-naturaleza-' + i"
+                type="text"
+                [(ngModel)]="detalle.naturaleza_trabajo"
+                [name]="'naturaleza_trabajo_' + i"
+              />
+            </div>
+
+            <!-- Segunda fila -->
+            <div class="form-row">
+              <label [for]="'edit-tipo-maquina-' + i">Tipo de máquina:</label>
+              <input
+                [id]="'edit-tipo-maquina-' + i"
+                type="text"
+                [(ngModel)]="detalle.tipo_maquina_detalle"
+                [name]="'tipo_maquina_detalle_' + i"
+              />
+            </div>
+            <div class="form-row">
+              <label [for]="'edit-modelo-maquina-' + i"
+                >Modelo de máquina:</label
+              >
+              <input
+                [id]="'edit-modelo-maquina-' + i"
+                type="text"
+                [(ngModel)]="detalle.modelo_maquina_detalle"
+                [name]="'modelo_maquina_detalle_' + i"
+              />
+            </div>
+
+            <!-- Tercera fila -->
+            <div class="form-row">
+              <label [for]="'edit-id-maquina-' + i">ID de máquina:</label>
+              <input
+                [id]="'edit-id-maquina-' + i"
+                type="text"
+                [(ngModel)]="detalle.id_maquina_detalle"
+                [name]="'id_maquina_detalle_' + i"
+              />
+            </div>
+            <div class="form-row">
+              <label [for]="'edit-serie-' + i">Número de serie:</label>
+              <input
+                [id]="'edit-serie-' + i"
+                type="text"
+                [(ngModel)]="detalle.serial_maquina_detalle"
+                [name]="'serial_maquina_detalle_' + i"
+              />
+            </div>
+
+            <!-- Cuarta fila -->
+            <div class="form-row">
+              <label [for]="'edit-fecha-' + i">Fecha:</label>
+              <input
+                [id]="'edit-fecha-' + i"
+                type="date"
+                [(ngModel)]="detalle.fecha"
+                [name]="'fecha_' + i"
+              />
+            </div>
+            <div class="form-row">
+              <label [for]="'edit-tiempo-entrega-' + i"
+                >Tiempo de entrega:</label
+              >
+              <input
+                [id]="'edit-tiempo-entrega-' + i"
+                type="text"
+                [(ngModel)]="detalle.tiempo_entrega"
+                [name]="'tiempo_entrega_' + i"
+              />
+            </div>
+
+            <!-- Quinta fila -->
+            <div class="form-row">
+              <label [for]="'edit-hora-inicial-' + i">Hora inicial:</label>
+              <input
+                [id]="'edit-hora-inicial-' + i"
+                type="time"
+                [(ngModel)]="detalle.hora_inicio"
+                [name]="'hora_inicio_' + i"
+              />
+            </div>
+            <div class="form-row">
+              <label [for]="'edit-hora-terminal-' + i">Hora terminal:</label>
+              <input
+                [id]="'edit-hora-terminal-' + i"
+                type="time"
+                [(ngModel)]="detalle.hora_termino"
+                [name]="'hora_termino_' + i"
+              />
+            </div>
+
+            <!-- Sexta fila - Campos de ancho completo -->
+            <div class="form-row full-width">
+              <label [for]="'edit-contacto-recibe-' + i"
+                >Contacto que recibe:</label
+              >
+              <input
+                [id]="'edit-contacto-recibe-' + i"
+                type="text"
+                [(ngModel)]="detalle.datos_contacto"
+                [name]="'datos_contacto_' + i"
+              />
+            </div>
+            <div class="form-row full-width">
+              <label [for]="'edit-ubicacion-' + i">Ubicación:</label>
+              <input
+                [id]="'edit-ubicacion-' + i"
+                type="text"
+                [(ngModel)]="detalle.ubicacion"
+                [name]="'ubicacion_' + i"
+              />
+            </div>
+
+            <!-- Precios por partida -->
+            <div class="form-row full-width">
+              <h5 class="precios-header">
+                Información de Precios - Partida {{ i + 1 }}
+              </h5>
+            </div>
+
+            <div class="form-row">
+              <label [for]="'edit-descripcion-' + i">Descripción:</label>
+              <input
+                [id]="'edit-descripcion-' + i"
+                type="text"
+                [(ngModel)]="detalle.descripcion_articulo"
+                [name]="'descripcion_articulo_' + i"
+              />
+            </div>
+            <div class="form-row">
+              <label [for]="'edit-cantidad-' + i">Cantidad:</label>
+              <input
+                [id]="'edit-cantidad-' + i"
+                type="number"
+                [(ngModel)]="detalle.cantidad"
+                [name]="'cantidad_' + i"
+                min="1"
+                (change)="
+                  calcularTotalesPartida(detalle);
+                  actualizarTotalesFacturacion()
+                "
+              />
+            </div>
+            <div class="form-row">
+              <label [for]="'edit-precio-unitario-' + i"
+                >Precio Unitario:</label
+              >
+              <input
+                [id]="'edit-precio-unitario-' + i"
+                type="number"
+                [(ngModel)]="detalle.precio_unitario"
+                [name]="'precio_unitario_' + i"
+                min="0"
+                step="0.01"
+                (change)="
+                  calcularTotalesPartida(detalle);
+                  actualizarTotalesFacturacion()
+                "
+              />
+            </div>
+            <div class="form-row">
+              <label [for]="'edit-iva-' + i">IVA %:</label>
+              <input
+                [id]="'edit-iva-' + i"
+                type="number"
+                [(ngModel)]="detalle.iva"
+                [name]="'iva_' + i"
+                min="0"
+                max="100"
+                (change)="
+                  calcularTotalesPartida(detalle);
+                  actualizarTotalesFacturacion()
+                "
+              />
+            </div>
+            <div class="form-row">
+              <label [for]="'edit-total-partida-' + i">Total Partida:</label>
+              <input
+                [id]="'edit-total-partida-' + i"
+                type="number"
+                [value]="detalle.total_partida"
+                [name]="'total_partida_' + i"
+                readonly
+                class="readonly-input"
+              />
+            </div>
           </div>
-          <div class="form-row">
-            <label for="edit-precio-unitario">Precio Unitario:</label>
-            <input
-              id="edit-precio-unitario"
-              type="number"
-              [(ngModel)]="solicitudDetalle.precio_unitario"
-              name="precio_unitario"
-              min="0"
-              step="0.01"
-            />
-          </div>
+
+          <hr class="partida-divider" />
+        </div>
+
+        <!-- Información de Facturación -->
+        <div class="section-header">
+          <h4>Información de Facturación</h4>
+        </div>
+
+        <div class="form-grid">
           <div class="form-row">
             <label for="edit-subtotal">Subtotal:</label>
             <input
               id="edit-subtotal"
               type="number"
-              [value]="solicitudDetalle.subtotal"
+              [value]="calcularSubtotalGeneral()"
               name="subtotal"
               readonly
+              class="readonly-input"
             />
           </div>
           <div class="form-row">
-            <label for="edit-iva">IVA %:</label>
+            <label for="edit-iva-total">IVA Total:</label>
             <input
-              id="edit-iva"
+              id="edit-iva-total"
               type="number"
-              [(ngModel)]="solicitudDetalle.iva_percent"
-              name="iva_percent"
-              min="0"
-              max="100"
+              [value]="calcularIVATotal()"
+              name="iva_total"
+              readonly
+              class="readonly-input"
             />
           </div>
           <div class="form-row">
-            <label for="edit-total">Total General:</label>
+            <label for="edit-total-general">Total General:</label>
             <input
-              id="edit-total"
+              id="edit-total-general"
               type="number"
-              [value]="solicitudDetalle.total_general"
+              [value]="calcularTotalGeneral()"
               name="total_general"
               readonly
+              class="readonly-input total-display"
             />
           </div>
+        </div>
 
-          <!-- Información de Entrega -->
+        <!-- Información de Entrega -->
+        <div class="section-header">
+          <h4>Información de Entrega</h4>
+        </div>
+
+        <div class="form-grid">
           <div class="form-row">
             <label for="edit-recibido-por">Recibido por:</label>
             <input

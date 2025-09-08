@@ -31,7 +31,6 @@ interface SolicitudDetalles {
   total_general: number;
 }
 
-// Interfaz para detallesPartida con firma de índice
 interface DetallesPartida {
   tipoTrabajo?: string;
   naturalezaTrabajo?: string;
@@ -43,7 +42,7 @@ interface DetallesPartida {
   contactoRecibe?: string;
   tiempoEntrega?: string;
   ubicacion?: string;
-  [key: string]: any; // Firma de índice para permitir cualquier propiedad
+  [key: string]: any;
 }
 
 interface Solicitud {
@@ -86,12 +85,13 @@ interface Solicitud {
     ubicacion: string;
     datos_contacto: string;
     tiempo_entrega: string;
+    comentario_partida: string;
     descripcion_articulo: string;
     cantidad: number;
     precio_unitario: number;
+    iva: number;
     total_partida: number;
     subtotal: number;
-    iva: number;
     total_general: number;
   }>;
 
@@ -109,10 +109,10 @@ interface Solicitud {
 export class SolicitudesComponent implements OnInit {
   convertirFechaParaInput(fecha: string | null): string {
     if (!fecha) return '';
-    // Convierte la fecha al formato YYYY-MM-DDTHH:MM para input datetime-local
     const date = new Date(fecha);
     return date.toISOString().slice(0, 16);
   }
+
   Math = Math;
 
   solicitudes: Solicitud[] = [];
@@ -157,7 +157,68 @@ export class SolicitudesComponent implements OnInit {
     this.cargarSolicitudes();
   }
 
-  // Métodos para facturación
+  // Métodos para cálculos de partidas
+  calcularTotalesPartida(detalle: any): void {
+    const cantidad = detalle.cantidad || 0;
+    const precioUnitario = detalle.precio_unitario || 0;
+    const ivaPercent = detalle.iva || 0;
+
+    // Calcular subtotal (sin IVA)
+    detalle.subtotal = cantidad * precioUnitario;
+
+    // Calcular total de la partida (con IVA)
+    detalle.total_partida = detalle.subtotal * (1 + ivaPercent / 100);
+
+    // Forzar la actualización de la UI
+    this.actualizarTotalesFacturacion();
+  }
+
+  calcularSubtotalGeneral(): number {
+    if (!this.solicitudDetalle || !this.solicitudDetalle.detalles) return 0;
+
+    return this.solicitudDetalle.detalles.reduce(
+      (total: number, detalle: any) => {
+        return total + (detalle.subtotal || 0);
+      },
+      0
+    );
+  }
+
+  calcularIVATotal(): number {
+    if (!this.solicitudDetalle || !this.solicitudDetalle.detalles) return 0;
+
+    return this.solicitudDetalle.detalles.reduce(
+      (total: number, detalle: any) => {
+        const subtotal = detalle.subtotal || 0;
+        const ivaPercent = detalle.iva || 0;
+        return total + subtotal * (ivaPercent / 100);
+      },
+      0
+    );
+  }
+
+  calcularTotalGeneral(): number {
+    return this.calcularSubtotalGeneral() + this.calcularIVATotal();
+  }
+
+  // Método para forzar la actualización de la UI
+  actualizarTotalesFacturacion(): void {
+    // Esto fuerza a Angular a detectar cambios y actualizar los bindings
+    if (this.solicitudDetalle) {
+      this.solicitudDetalle = { ...this.solicitudDetalle };
+    }
+  }
+
+  // Método para inicializar cálculos al cargar la edición
+  inicializarCalculosDetalles(): void {
+    if (this.solicitudDetalle && this.solicitudDetalle.detalles) {
+      this.solicitudDetalle.detalles.forEach((detalle: any) => {
+        this.calcularTotalesPartida(detalle);
+      });
+    }
+  }
+
+  // Métodos para facturación (compatibilidad con vista)
   calcularSubtotal(): number {
     if (!this.solicitudDetalle) return 0;
     return this.solicitudDetalle.subtotal || 0;
@@ -170,12 +231,11 @@ export class SolicitudesComponent implements OnInit {
     return subtotal * (ivaPercent / 100);
   }
 
-  calcularTotalGeneral(): number {
+  calcularTotal(): number {
     if (!this.solicitudDetalle) return 0;
     return this.solicitudDetalle.total_general || 0;
   }
 
-  // En el método cargarSolicitudes(), actualiza el mapeo de campos:
   cargarSolicitudes(): void {
     this.isLoading = true;
     this.errorMessage = '';
@@ -184,8 +244,6 @@ export class SolicitudesComponent implements OnInit {
       next: (response: any) => {
         if (response && response.success && Array.isArray(response.data)) {
           this.solicitudes = response.data.map((item: any) => {
-            // Para la lista principal, usar información de la tabla principal
-            // y tipo_trabajo de la primera partida si existe
             const tipoTrabajo =
               item.detalles && item.detalles.length > 0
                 ? item.detalles[0].tipo_trabajo
@@ -225,7 +283,6 @@ export class SolicitudesComponent implements OnInit {
     });
   }
 
-  // También actualiza el método verDetalles()
   verDetalles(id: number): void {
     this.solicitudesService.getSolicitud(id).subscribe({
       next: (data: any) => {
@@ -276,12 +333,38 @@ export class SolicitudesComponent implements OnInit {
       next: (data: any) => {
         if (data && data.success) {
           const item = data.data;
+
+          // Asegurar que cada detalle tenga todos los campos necesarios
+          const detalles = (item.detalles || []).map((detalle: any) => ({
+            ...detalle,
+            tipo_trabajo: detalle.tipo_trabajo || '',
+            naturaleza_trabajo: detalle.naturaleza_trabajo || '',
+            tipo_maquina_detalle: detalle.tipo_maquina_detalle || '',
+            id_maquina_detalle: detalle.id_maquina_detalle || '',
+            serial_maquina_detalle: detalle.serial_maquina_detalle || '',
+            modelo_maquina_detalle: detalle.modelo_maquina_detalle || '',
+            fecha: detalle.fecha || '',
+            hora_inicio: detalle.hora_inicio || '',
+            hora_termino: detalle.hora_termino || '',
+            tiempo_entrega: detalle.tiempo_entrega || '',
+            datos_contacto: detalle.datos_contacto || '',
+            ubicacion: detalle.ubicacion || '',
+            comentario_partida: detalle.comentario_partida || '',
+            cantidad: detalle.cantidad || 0,
+            precio_unitario: detalle.precio_unitario || 0,
+            iva: detalle.iva || 0,
+            total_partida: detalle.total_partida || 0,
+            subtotal: detalle.subtotal || 0,
+            total_general: detalle.total_general || 0,
+          }));
+
           this.solicitudDetalle = {
             ...item,
             fecha_solicitud: new Date(item.fecha_solicitud).toLocaleString(),
             fecha_recibido: item.fecha_recibido
               ? new Date(item.fecha_recibido).toLocaleString()
               : null,
+            detalles: detalles,
 
             // Campos de precios de la tabla principal
             descripcion_articulo: item.descripcion_articulo || '',
@@ -290,20 +373,10 @@ export class SolicitudesComponent implements OnInit {
             subtotal: item.subtotal || 0,
             iva_percent: item.iva_percent || 0,
             total_general: item.total_general || 0,
-
-            // Detalles de partidas
-            detalles: item.detalles || [],
-
-            // Para compatibilidad con el template
-            tipo_trabajo:
-              item.detalles && item.detalles.length > 0
-                ? item.detalles[0].tipo_trabajo
-                : item.tipo_trabajo || 'N/A',
-            naturaleza_trabajo:
-              item.detalles && item.detalles.length > 0
-                ? item.detalles[0].naturaleza_trabajo
-                : item.naturaleza_trabajo || 'N/A',
           };
+
+          // Inicializar cálculos
+          this.inicializarCalculosDetalles();
           this.showEditModal = true;
         } else {
           throw new Error('Formato de respuesta inesperado');
@@ -326,20 +399,39 @@ export class SolicitudesComponent implements OnInit {
         cliente: this.solicitudDetalle.cliente,
         solicitante: this.solicitudDetalle.solicitante,
         representante: this.solicitudDetalle.representante,
-        proveedor: this.solicitudDetalle.proveedor,
-        empresa: this.solicitudDetalle.empresa,
         comentario: this.solicitudDetalle.comentario,
         estado: this.solicitudDetalle.estado,
         recibido_por: this.solicitudDetalle.recibido_por,
         fecha_recibido: this.solicitudDetalle.fecha_recibido,
 
-        // Campos de precios
-        descripcion_articulo: this.solicitudDetalle.descripcion_articulo,
-        cantidad: this.solicitudDetalle.cantidad,
-        precio_unitario: this.solicitudDetalle.precio_unitario,
-        subtotal: this.solicitudDetalle.subtotal,
-        iva_percent: this.solicitudDetalle.iva_percent,
-        total_general: this.solicitudDetalle.total_general,
+        // Campos de precios generales
+        subtotal: this.calcularSubtotalGeneral(),
+        iva_total: this.calcularIVATotal(),
+        total_general: this.calcularTotalGeneral(),
+
+        // Detalles de partidas
+        detalles: this.solicitudDetalle.detalles?.map((detalle: any) => ({
+          id: detalle.id,
+          tipo_trabajo: detalle.tipo_trabajo,
+          naturaleza_trabajo: detalle.naturaleza_trabajo,
+          tipo_maquina_detalle: detalle.tipo_maquina_detalle,
+          modelo_maquina_detalle: detalle.modelo_maquina_detalle,
+          id_maquina_detalle: detalle.id_maquina_detalle,
+          serial_maquina_detalle: detalle.serial_maquina_detalle,
+          fecha: detalle.fecha,
+          hora_inicio: detalle.hora_inicio,
+          hora_termino: detalle.hora_termino,
+          tiempo_entrega: detalle.tiempo_entrega,
+          datos_contacto: detalle.datos_contacto,
+          ubicacion: detalle.ubicacion,
+          comentario_partida: detalle.comentario_partida,
+          cantidad: detalle.cantidad,
+          precio_unitario: detalle.precio_unitario,
+          iva: detalle.iva,
+          total_partida: detalle.total_partida,
+          subtotal: detalle.subtotal,
+          total_general: detalle.total_general,
+        })),
       };
 
       this.solicitudesService
@@ -569,7 +661,6 @@ export class SolicitudesComponent implements OnInit {
       });
   }
 
-  // En solicitudes.component.ts, añadir esta función:
   obtenerClaseEstado(estado: string) {
     if (!estado) return 'estado-pendiente';
 
