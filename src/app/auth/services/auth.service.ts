@@ -5,7 +5,7 @@ import {
   HttpErrorResponse,
   HttpHeaders,
 } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { environment } from 'src/environments/environment';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
@@ -13,7 +13,8 @@ interface User {
   id: number;
   username: string;
   email: string;
-  created_at?: string;
+  role?: string;
+  department?: string;
 }
 
 interface LoginResponse {
@@ -63,7 +64,6 @@ export class AuthService {
       })
       .pipe(
         tap((response) => {
-          console.log('Respuesta del servidor:', response);
           if (response.success && response.token && response.user) {
             this.setAuthData(response.token, response.user);
           }
@@ -73,7 +73,6 @@ export class AuthService {
   }
 
   register(userData: any): Observable<any> {
-    // Eliminar confirmPassword y preparar datos
     const { confirmPassword, ...cleanData } = userData;
 
     return this.http
@@ -82,28 +81,17 @@ export class AuthService {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         }),
-        withCredentials: false, // Cambiar a true solo si usas cookies/sesión
+        withCredentials: false,
       })
       .pipe(
         catchError((error: HttpErrorResponse) => {
-          console.error('Error completo:', error);
-
           let errorMsg = 'Error en el servidor';
           if (error.status === 0) {
-            errorMsg =
-              'No se pudo conectar al servidor. Verifica tu conexión o que el servidor esté funcionando.';
-          } else if (error.error instanceof ErrorEvent) {
-            errorMsg = `Error del cliente: ${error.error.message}`;
+            errorMsg = 'No se pudo conectar al servidor';
           } else if (error.error?.message) {
             errorMsg = error.error.message;
-          } else if (error.message) {
-            errorMsg = error.message;
           }
-
-          return throwError(() => ({
-            message: errorMsg,
-            details: error,
-          }));
+          return throwError(() => ({ message: errorMsg }));
         })
       );
   }
@@ -122,20 +110,13 @@ export class AuthService {
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'Ocurrió un error durante el inicio de sesión';
-
     if (error.status === 0) {
       errorMessage = 'Error de conexión: No se pudo contactar al servidor';
-    } else if (error.status === 400) {
-      errorMessage = 'Datos inválidos proporcionados';
     } else if (error.status === 401) {
       errorMessage = 'Credenciales incorrectas';
     } else if (error.error?.message) {
       errorMessage = error.error.message;
-    } else if (error.message) {
-      errorMessage = error.message;
     }
-
-    console.error('Error en AuthService:', error);
     return throwError(() => new Error(errorMessage));
   }
 
@@ -153,6 +134,8 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    console.log('Token obtenido del localStorage:', token);
+    return token;
   }
 }

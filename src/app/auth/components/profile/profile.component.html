@@ -1,0 +1,138 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <h1>Perfil de Usuario</h1>
+    <button *ngIf="!isEditing" class="btn-edit" (click)="toggleEdit()">
+      <i class="fas fa-edit"></i> Editar Perfil
+    </button>
+    <button *ngIf="isEditing" class="btn-cancel" (click)="toggleEdit()">
+      <i class="fas fa-times"></i> Cancelar
+    </button>
+  </div>
+
+  <div
+    *ngIf="message"
+    class="alert"
+    [class.alert-success]="messageType === 'success'"
+    [class.alert-error]="messageType === 'error'"
+  >
+    {{ message }}
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <i class="fas fa-spinner fa-spin"></i> Cargando...
+  </div>
+
+  <div *ngIf="!isLoading" class="profile-content">
+    <div class="profile-card">
+      <div class="profile-info">
+        <div class="info-group">
+          <label>Nombre de usuario:</label>
+          <span *ngIf="!isEditing">{{ userProfile.username || "N/A" }}</span>
+          <input
+            *ngIf="isEditing"
+            type="text"
+            [(ngModel)]="userProfile.username"
+            class="form-input"
+          />
+        </div>
+
+        <div class="info-group">
+          <label>Correo electrónico:</label>
+          <span *ngIf="!isEditing">{{ userProfile.email || "N/A" }}</span>
+          <input
+            *ngIf="isEditing"
+            type="email"
+            [(ngModel)]="userProfile.email"
+            class="form-input"
+          />
+        </div>
+
+        <div class="info-group">
+          <label>Fecha de creación:</label>
+          <span>{{ formatDate(userProfile.created_at) }}</span>
+        </div>
+
+        <div class="info-group">
+          <label>Última actualización:</label>
+          <span>{{ formatDate(userProfile.updated_at) }}</span>
+        </div>
+
+        <div
+          *ngIf="userProfile.intentos_falifdos !== undefined"
+          class="info-group"
+        >
+          <label>Intentos fallidos:</label>
+          <span>{{ userProfile.intentos_falifdos }}</span>
+        </div>
+
+        <div *ngIf="userProfile.bloqueado_unfil" class="info-group">
+          <label>Bloqueado hasta:</label>
+          <span>{{ formatDate(userProfile.bloqueado_unfil) }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="isEditing" class="profile-actions">
+        <button
+          class="btn-save"
+          (click)="updateProfile()"
+          [disabled]="isLoading"
+        >
+          <i class="fas fa-save"></i> Guardar Cambios
+        </button>
+      </div>
+    </div>
+
+    <div class="password-section">
+      <button class="btn-toggle-password" (click)="togglePasswordSection()">
+        <i class="fas fa-key"></i>
+        {{
+          showPasswordSection
+            ? "Ocultar cambio de contraseña"
+            : "Cambiar contraseña"
+        }}
+      </button>
+
+      <div *ngIf="showPasswordSection" class="password-form">
+        <h3>Cambiar Contraseña</h3>
+
+        <div class="form-group">
+          <label>Contraseña actual:</label>
+          <input
+            type="password"
+            [(ngModel)]="passwordData.currentPassword"
+            class="form-input"
+            placeholder="Ingresa tu contraseña actual"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Nueva contraseña:</label>
+          <input
+            type="password"
+            [(ngModel)]="passwordData.newPassword"
+            class="form-input"
+            placeholder="Ingresa tu nueva contraseña"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Confirmar nueva contraseña:</label>
+          <input
+            type="password"
+            [(ngModel)]="passwordData.confirmPassword"
+            class="form-input"
+            placeholder="Confirma tu nueva contraseña"
+          />
+        </div>
+
+        <button
+          class="btn-change-password"
+          (click)="changePassword()"
+          [disabled]="isLoading"
+        >
+          <i class="fas fa-sync-alt"></i> Cambiar Contraseña
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

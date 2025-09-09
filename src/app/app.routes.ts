@@ -55,7 +55,7 @@ export const APP_ROUTES: Routes = [
     loadComponent: () =>
       import(
         './features/register-refacciones/register-refacciones.component'
-      ).then((m) => m.RegisterRefaccionesComponent), // Nombre coincide con la clase exportada
+      ).then((m) => m.RegisterRefaccionesComponent),
     canActivate: [AuthGuard],
   },
   {
@@ -66,7 +66,6 @@ export const APP_ROUTES: Routes = [
       ),
     canActivate: [AuthGuard],
   },
-
   {
     path: 'accesos-permisos',
     loadComponent: () =>
@@ -75,6 +74,14 @@ export const APP_ROUTES: Routes = [
       ),
     canActivate: [AuthGuard],
   },
-
+  // RUTA CORREGIDA PARA EL PERFIL DE USUARIO
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./auth/components/profile/profile.component').then(
+        (m) => m.ProfileComponent
+      ),
+    canActivate: [AuthGuard],
+  },
   { path: '**', redirectTo: 'login' },
 ];
