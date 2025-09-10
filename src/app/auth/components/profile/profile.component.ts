@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router'; // ← RouterModule añadido
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from './profile.service';
 
@@ -9,7 +10,7 @@ import { ProfileService } from './profile.service';
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule], // ← RouterModule añadido aquí
 })
 export class ProfileComponent implements OnInit {
   userProfile: any = {
@@ -36,7 +37,8 @@ export class ProfileComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private router: Router // ← Router inyectado
   ) {}
 
   ngOnInit(): void {
@@ -45,6 +47,35 @@ export class ProfileComponent implements OnInit {
 
   logout() {
     this.authService.logout();
+  }
+
+  // Métodos de navegación para el menú
+  goToHome() {
+    this.router.navigate(['/home']);
+  }
+
+  goToSolicitudes() {
+    this.router.navigate(['/solicitudes']);
+  }
+
+  goToRegisterSolicitudes() {
+    this.router.navigate(['/register-solicitudes']);
+  }
+
+  goToRefacciones() {
+    this.router.navigate(['/refacciones']);
+  }
+
+  goToControlRefacciones() {
+    this.router.navigate(['/control-refacciones']);
+  }
+
+  goToAccesosPermisos() {
+    this.router.navigate(['/accesos-permisos']);
+  }
+
+  goToProfile() {
+    this.router.navigate(['/profile']);
   }
 
   loadUserProfile(): void {
