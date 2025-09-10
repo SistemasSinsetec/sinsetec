@@ -1,115 +1,97 @@
 import { Injectable } from '@angular/core';
-import {
-  HttpClient,
-  HttpHeaders,
-  HttpErrorResponse,
-} from '@angular/common/http';
-import { Observable, throwError, of } from 'rxjs';
-import { catchError, tap, delay } from 'rxjs/operators';
-import { environment } from '../../../../environments/environment';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { AuthService } from 'src/app/auth/services/auth.service';
+import { environment } from 'src/environments/environment';
+
+interface ProfileResponse {
+  success: boolean;
+  message?: string;
+  user?: any;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProfileService {
-  private apiUrl = `${environment.apiUrl}/usuarios`;
-  private useMockData = true;
+  private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
+    const token = this.authService.getToken();
     return new HttpHeaders({
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
     });
   }
 
-  getUserProfile(userId: number): Observable<any> {
-    if (this.useMockData) {
-      return of({
-        success: true,
-        user: {
-          id: userId,
-          username: 'usuario_ejemplo',
-          email: 'ejemplo@email.com',
-          created_at: '2023-01-01T00:00:00Z',
-          updated_at: new Date().toISOString(),
-          intentos_falifdos: 0,
-          bloqueado_unfil: null,
-          perfil: {
-            nombre_completo: 'Usuario de Ejemplo',
-            telefono: '+1234567890',
-            direccion: 'Dirección de ejemplo 123',
-            fecha_nacimiento: '1990-01-01',
-            genero: 'masculino',
-            avatar: null,
-            biografia: 'Esta es una biografía de ejemplo',
-            website: 'https://ejemplo.com',
-            redes_sociales: { twitter: '@ejemplo', facebook: 'ejemplo' },
-            preferencias: { tema: 'claro', notificaciones: true },
-          },
-        },
-      }).pipe(delay(800));
-    }
-
-    const url = `${this.apiUrl}/set_profile.php?id=${userId}`;
-    console.log('Solicitando perfil desde:', url);
-
-    return this.http.get(url, { headers: this.getHeaders() }).pipe(
-      tap((response) => console.log('Respuesta del servidor:', response)),
-      catchError(this.handleError)
-    );
-  }
-
-  updateUserProfile(userId: number, userData: any): Observable<any> {
-    if (this.useMockData) {
-      return of({
-        success: true,
-        message: 'Perfil actualizado correctamente',
-        user: userData,
-      }).pipe(delay(800));
-    }
+  getUserProfile(userId: number): Observable<ProfileResponse> {
+    const params = new HttpParams().set('id', userId.toString());
 
     return this.http
-      .put(`${this.apiUrl}/update_profile.php?id=${userId}`, userData, {
+      .get<ProfileResponse>(`${this.apiUrl}/profile.php`, {
+        headers: this.getHeaders(),
+        params: params,
+      })
+      .pipe(catchError(this.handleError));
+  }
+
+  // En profile.service.ts
+  updateUserProfile(
+    userId: number,
+    profileData: any
+  ): Observable<ProfileResponse> {
+    const data = {
+      id: userId,
+      username: profileData.username,
+      email: profileData.email,
+      nombre_completo: profileData.nombre_completo,
+      telefono: profileData.telefono,
+      direccion: profileData.direccion,
+      fecha_nacimiento: profileData.fecha_nacimiento,
+      biografia: profileData.biografia,
+    };
+
+    return this.http
+      .put<ProfileResponse>(`${this.apiUrl}/profile.php`, data, {
         headers: this.getHeaders(),
       })
       .pipe(catchError(this.handleError));
   }
 
-  changePassword(userId: number, passwordData: any): Observable<any> {
-    if (this.useMockData) {
-      return of({
-        success: true,
-        message: 'Contraseña cambiada correctamente',
-      }).pipe(delay(800));
-    }
+  changePassword(
+    userId: number,
+    passwordData: any
+  ): Observable<ProfileResponse> {
+    const data = {
+      id: userId,
+      currentPassword: passwordData.currentPassword,
+      newPassword: passwordData.newPassword,
+    };
 
     return this.http
-      .post(`${this.apiUrl}/change_password.php?id=${userId}`, passwordData, {
+      .post<ProfileResponse>(`${this.apiUrl}/change-password.php`, data, {
         headers: this.getHeaders(),
       })
       .pipe(catchError(this.handleError));
   }
 
-  private handleError(error: HttpErrorResponse) {
-    console.error('Error completo:', error);
+  private handleError(error: any): Observable<never> {
+    let errorMessage = 'Error en el servidor';
 
-    let errorMessage = 'Ocurrió un error inesperado';
-
-    if (error.status === 404) {
-      errorMessage =
-        'Endpoint no encontrado. Verifica la configuración del servidor.';
-    } else if (error.status === 401) {
-      errorMessage = 'No autorizado. Token inválido o expirado.';
+    if (error.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error.message) {
+      errorMessage = error.message;
     } else if (error.status === 0) {
-      errorMessage =
-        'Error de conexión. Verifica que el servidor esté funcionando.';
-    } else if (error.error instanceof ErrorEvent) {
-      errorMessage = `Error del cliente: ${error.error.message}`;
-    } else {
-      errorMessage = `Error ${error.status}: ${error.message}`;
+      errorMessage = 'No se pudo conectar al servidor';
+    } else if (error.status === 401) {
+      errorMessage = 'No autorizado - Por favor inicia sesión nuevamente';
+    } else if (error.status === 404) {
+      errorMessage = 'Recurso no encontrado';
     }
 
     return throwError(() => new Error(errorMessage));

@@ -6,8 +6,8 @@ import {
   HttpHeaders,
 } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 
 interface User {
   id: number;
@@ -15,6 +15,17 @@ interface User {
   email: string;
   role?: string;
   department?: string;
+  created_at?: string;
+  updated_at?: string;
+  intentos_fallidos?: number;
+  bloqueado_until?: string | null;
+  // Nuevos campos del perfil
+  nombre_completo?: string;
+  telefono?: string;
+  direccion?: string;
+  fecha_nacimiento?: string;
+  foto_perfil?: string;
+  biografia?: string;
 }
 
 interface LoginResponse {
@@ -44,6 +55,7 @@ export class AuthService {
         const user = JSON.parse(userData);
         this.currentUserSubject.next(user);
       } catch (e) {
+        console.error('Error parsing user data from storage:', e);
         this.clearAuthData();
       }
     }
@@ -134,8 +146,29 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    const token = localStorage.getItem('token');
-    console.log('Token obtenido del localStorage:', token);
-    return token;
+    return localStorage.getItem('token');
+  }
+
+  // Nuevo método para verificar si el token es válido
+  validateToken(): Observable<boolean> {
+    const token = this.getToken();
+    if (!token) {
+      return throwError(() => new Error('No token available'));
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    // Puedes crear un endpoint simple para validar tokens
+    return this.http
+      .get<{ valid: boolean }>(`${environment.apiUrl}/validate-token.php`, {
+        headers,
+      })
+      .pipe(
+        map((response) => response.valid),
+        catchError(() => of(false))
+      );
   }
 }

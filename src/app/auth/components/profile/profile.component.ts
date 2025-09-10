@@ -89,15 +89,36 @@ export class ProfileComponent implements OnInit {
     const currentUser = this.authService.currentUserValue;
 
     if (currentUser && currentUser.id) {
+      // Preparar todos los datos del perfil para enviar
+      console.log('Datos a enviar:', {
+        username: this.userProfile.username,
+        email: this.userProfile.email,
+        nombre_completo: this.userProfile.nombre_completo,
+        telefono: this.userProfile.telefono,
+        direccion: this.userProfile.direccion,
+        fecha_nacimiento: this.userProfile.fecha_nacimiento,
+        biografia: this.userProfile.biografia,
+      });
+
       this.profileService
         .updateUserProfile(currentUser.id, this.userProfile)
         .subscribe({
           next: (response) => {
+            console.log('Respuesta del servidor:', response);
             if (response.success) {
               this.showMessage('Perfil actualizado correctamente', 'success');
               this.isEditing = false;
-              // Actualizar los datos locales
-              this.userProfile = { ...this.userProfile, ...response.user };
+              // Actualizar los datos locales con TODOS los campos devueltos
+              this.userProfile = {
+                ...this.userProfile,
+                ...response.user,
+                // Asegurar que los campos que puedan ser null se muestren correctamente
+                nombre_completo: response.user.nombre_completo,
+                telefono: response.user.telefono,
+                direccion: response.user.direccion,
+                fecha_nacimiento: response.user.fecha_nacimiento,
+                biografia: response.user.biografia,
+              };
             } else {
               this.showMessage(
                 response.message || 'Error al actualizar',
