@@ -8,25 +8,7 @@ import {
 import { environment } from 'src/environments/environment';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  role?: string;
-  department?: string;
-  created_at?: string;
-  updated_at?: string;
-  intentos_fallidos?: number;
-  bloqueado_until?: string | null;
-  // Nuevos campos del perfil
-  nombre_completo?: string;
-  telefono?: string;
-  direccion?: string;
-  fecha_nacimiento?: string;
-  foto_perfil?: string;
-  biografia?: string;
-}
+import { User } from '../../features/accesos-permisos/user.model';
 
 interface LoginResponse {
   success: boolean;
@@ -149,7 +131,17 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
-  // Nuevo método para verificar si el token es válido
+  hasPermission(permissionName: string): boolean {
+    const user = this.currentUserValue;
+    if (!user || !user.roles) return false;
+
+    return user.roles.some((role: any) =>
+      role.permissions.some(
+        (permission: any) => permission.name === permissionName
+      )
+    );
+  }
+
   validateToken(): Observable<boolean> {
     const token = this.getToken();
     if (!token) {
@@ -161,7 +153,6 @@ export class AuthService {
       'Content-Type': 'application/json',
     });
 
-    // Puedes crear un endpoint simple para validar tokens
     return this.http
       .get<{ valid: boolean }>(`${environment.apiUrl}/validate-token.php`, {
         headers,

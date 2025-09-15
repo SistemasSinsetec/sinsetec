@@ -70,7 +70,7 @@ export const APP_ROUTES: Routes = [
     path: 'accesos-permisos',
     loadComponent: () =>
       import('./features/accesos-permisos/accesos-permisos.component').then(
-        (m) => m.AccesosPermisosComponent
+        (m) => m.AccessosPermisosComponent
       ),
     canActivate: [AuthGuard],
   },

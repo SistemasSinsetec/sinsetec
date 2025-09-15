@@ -1,194 +1,239 @@
-<div class="app-container">
-  <!-- Barra de navegación -->
-  <div class="toolbar">
-    <div class="toolbar-left">
-      <a class="toolbar-title" routerLink="/home">Inicio</a>
-      <a class="toolbar-title" routerLink="/register-solicitudes"
-        >Registro de Solicitudes</a
-      >
-      <a class="toolbar-title" routerLink="/solicitudes">Solicitudes</a>
-      <a class="toolbar-title" routerLink="/control-refacciones"
-        >Control de Refacciones</a
-      >
-      <a class="toolbar-title" routerLink="/refacciones">Refacciones</a>
-      <a class="toolbar-title active" routerLink="/accesos-permisos"
-        >Accesos/Permisos</a
-      >
-      <a class="toolbar-title" routerLink="/profile">Perfil</a>
-    </div>
-    <div class="toolbar-right">
-      <div class="dropdown">
-        <span class="profile">
-          <i class="fas fa-user"></i> Perfil
-          <i class="fa fa-caret-down"></i>
-        </span>
-        <div class="dropdown-content">
-          <a (click)="logout()">Cerrar sesión</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="refacciones-container">
-    <div class="header">
-      <div class="logo">
-        <h1>Accesos y Permisos</h1>
-        <p>
-          Gestión de permisos de usuarios - {{ empresaSeleccionada?.nombre }}
-        </p>
-      </div>
-      <div class="header-actions">
-        <!-- Selector de empresa -->
-        <div class="empresa-selector">
-          <label>Empresa:</label>
-          <select
-            [ngModel]="empresaSeleccionada"
-            (ngModelChange)="
-              empresaSeleccionada = $event; cambiarEmpresaSeleccionada()
-            "
-            [compareWith]="compareEmpresas"
-          >
-            <option *ngFor="let empresa of empresas" [ngValue]="empresa">
-              {{ empresa.nombre }}
-            </option>
-          </select>
-        </div>
-        <button class="btn-primary" (click)="mostrarFormularioRegistro = true">
-          <i class="fas fa-plus"></i> Nuevo Usuario
-        </button>
-        <button class="btn-secondary" (click)="abrirGestionGrupos()">
-          <i class="fas fa-users"></i> Grupos
-        </button>
-      </div>
-    </div>
-
-    <!-- Formulario de registro de nuevo usuario -->
-    <div *ngIf="mostrarFormularioRegistro" class="registro-form">
-      <h3>Registrar Nuevo Usuario</h3>
-      <div class="form-group">
-        <label>Nombre de usuario:</label>
-        <input
-          type="text"
-          [(ngModel)]="nuevoUsuario.username"
-          placeholder="Nombre de usuario"
-        />
-      </div>
-      <div class="form-group">
-        <label>Email:</label>
-        <input
-          type="email"
-          [(ngModel)]="nuevoUsuario.email"
-          placeholder="Correo electrónico"
-        />
-      </div>
-      <div class="form-group">
-        <label>Contraseña:</label>
-        <input
-          type="password"
-          [(ngModel)]="nuevoUsuario.password"
-          placeholder="Contraseña"
-        />
-      </div>
-      <div class="form-group">
-        <label>Empresa:</label>
-        <select [(ngModel)]="nuevoUsuario.empresa_id">
-          <option *ngFor="let empresa of empresas" [value]="empresa.id">
-            {{ empresa.nombre }}
-          </option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Rol:</label>
-        <select [(ngModel)]="nuevoUsuario.rol">
-          <option value="Usuario">Usuario</option>
-          <option value="Usuario Avanzado">Usuario Avanzado</option>
-          <option value="Supervisor">Supervisor</option>
-          <option value="Administrador">Administrador</option>
-        </select>
-      </div>
-      <div class="form-buttons">
-        <button
-          class="btn-secondary"
-          (click)="mostrarFormularioRegistro = false"
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Permisos - SINSETEC</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <a class="toolbar-title" routerLink="/home">Inicio</a>
+        <a class="toolbar-title" routerLink="/register-solicitudes"
+          >Registro de Solicitudes</a
         >
-          Cancelar
-        </button>
-        <button class="btn-primary" (click)="registrarNuevoUsuario()">
-          Registrar
-        </button>
+        <a class="toolbar-title" routerLink="/solicitudes">Solicitudes</a>
+        <a class="toolbar-title" routerLink="/control-refacciones"
+          >Control de Refacciones</a
+        >
+        <a class="toolbar-title" routerLink="/refacciones">Refacciones</a>
+        <a class="toolbar-title active" routerLink="/accesos-permisos"
+          >Accesos/Permisos</a
+        >
+        <a class="toolbar-title" routerLink="/profile">Perfil</a>
       </div>
-    </div>
-
-    <!-- Loading -->
-    <div *ngIf="isLoading" class="loading">
-      <i class="fas fa-spinner fa-spin"></i> Cargando...
-    </div>
-
-    <!-- Gestión de Grupos Modal -->
-    <div *ngIf="mostrarGestionGrupos" class="modal-overlay">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Gestión de Grupos</h3>
-          <button class="close-btn" (click)="cerrarGestionGrupos()">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="grupos-list">
-            <h4>Grupos Disponibles ({{ grupos.length }})</h4>
-            <div *ngFor="let grupo of grupos" class="grupo-item">
-              <div class="grupo-info">
-                <h5>{{ grupo.name }}</h5>
-                <p>{{ grupo.description }}</p>
-                <small
-                  >Nivel: {{ grupo.nivel_permiso }} -
-                  {{ getRolFromNivelPermiso(grupo.nivel_permiso) }}</small
-                >
-              </div>
-              <div class="grupo-actions">
-                <button
-                  class="btn-sm btn-primary"
-                  (click)="abrirPermisosGrupo(grupo)"
-                >
-                  <i class="fas fa-key"></i> Permisos
-                </button>
-              </div>
-            </div>
+      <div class="toolbar-right">
+        <div class="dropdown">
+          <span class="profile">
+            <i class="fas fa-user"></i> Perfil
+            <i class="fa fa-caret-down"></i>
+          </span>
+          <div class="dropdown-content">
+            <a (click)="logout()">Cerrar sesión</a>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Permisos de Grupo Modal -->
-    <div
-      *ngIf="mostrarPermisosGrupo && grupoSeleccionado"
-      class="modal-overlay"
-    >
-      <div class="modal-content large">
-        <div class="modal-header">
-          <h3>Permisos del Grupo: {{ grupoSeleccionado.name }}</h3>
-          <button class="close-btn" (click)="cerrarPermisosGrupo()">×</button>
+    <div class="permisos-container">
+      <div class="header">
+        <h1><i class="fas fa-user-lock"></i> Sistema de Gestión de Permisos</h1>
+        <p>Administra los permisos de usuarios, empresas y grupos</p>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-button active" data-tab="usuarios">Usuarios</button>
+        <button class="tab-button" data-tab="empresas">Empresas</button>
+        <button class="tab-button" data-tab="grupos">Grupos</button>
+        <button class="tab-button" data-tab="permisos">Permisos</button>
+      </div>
+
+      <div class="tab-content active" id="usuarios">
+        <div class="card">
+          <div class="card-header">
+            <h2>Gestión de Usuarios</h2>
+            <button class="btn-primary">
+              <i class="fas fa-plus"></i> Nuevo Usuario
+            </button>
+          </div>
+
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Buscar usuario..." />
+          </div>
+
+          <!-- Contenido de usuarios se cargará dinámicamente -->
         </div>
-        <div class="modal-body">
+      </div>
+
+      <div class="tab-content" id="empresas">
+        <div class="card">
+          <div class="card-header">
+            <h2>Gestión de Empresas</h2>
+            <button class="btn-primary">
+              <i class="fas fa-plus"></i> Nueva Empresa
+            </button>
+          </div>
+
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Buscar empresa..." />
+          </div>
+
+          <!-- Contenido de empresas se cargará dinámicamente -->
+        </div>
+      </div>
+
+      <div class="tab-content" id="grupos">
+        <div class="card">
+          <div class="card-header">
+            <h2>Gestión de Grupos</h2>
+            <button class="btn-primary">
+              <i class="fas fa-plus"></i> Nuevo Grupo
+            </button>
+          </div>
+
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Buscar grupo..." />
+          </div>
+
+          <!-- Contenido de grupos se cargará dinámicamente -->
+        </div>
+      </div>
+
+      <div class="tab-content" id="permisos">
+        <div class="card">
+          <div class="card-header">
+            <h2>Gestión de Permisos</h2>
+            <button class="btn-primary">
+              <i class="fas fa-save"></i> Guardar Cambios
+            </button>
+          </div>
+
           <div class="permisos-grid">
-            <div *ngFor="let permiso of permisosGrupo" class="permiso-item">
-              <div class="permiso-info">
-                <strong>{{ permiso.permiso_name || permiso.name }}</strong>
-                <p>{{ permiso.permiso_description || permiso.description }}</p>
-                <small class="permiso-clave">{{
-                  permiso.permiso_code || permiso.code
-                }}</small>
-                <div class="permiso-details">
-                  <span class="permiso-flag" [class.active]="permiso.can_view"
-                    >Ver: {{ permiso.can_view ? "✓" : "✗" }}</span
-                  >
-                  <span class="permiso-flag" [class.active]="permiso.can_create"
-                    >Crear: {{ permiso.can_create ? "✓" : "✗" }}</span
-                  >
-                  <span class="permiso-flag" [class.active]="permiso.can_edit"
-                    >Editar: {{ permiso.can_edit ? "✓" : "✗" }}</span
-                  >
-                  <span class="permiso-flag" [class.active]="permiso.can_delete"
-                    >Eliminar: {{ permiso.can_delete ? "✓" : "✗" }}</span
-                  >
+            <div class="permisos-sidebar">
+              <h3>Seleccionar Rol</h3>
+              <div class="rol-list">
+                <div class="rol-item active">Administradores</div>
+                <div class="rol-item">Supervisores</div>
+                <div class="rol-item">Técnicos</div>
+                <div class="rol-item">Usuarios</div>
+              </div>
+            </div>
+
+            <div class="permisos-main">
+              <h3>Permisos para: Administradores</h3>
+              <div class="modulo-permisos">
+                <div class="modulo-header">
+                  <h4><i class="fas fa-cogs"></i> Módulo de Sistema</h4>
+                  <label class="switch">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <div class="permisos-list">
+                  <div class="permiso-item">
+                    <span>Gestión de usuarios</span>
+                    <label class="switch">
+                      <input type="checkbox" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="permiso-item">
+                    <span>Asignación de permisos</span>
+                    <label class="switch">
+                      <input type="checkbox" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="permiso-item">
+                    <span>Ver registros del sistema</span>
+                    <label class="switch">
+                      <input type="checkbox" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modulo-permisos">
+                <div class="modulo-header">
+                  <h4><i class="fas fa-tools"></i> Módulo de Solicitudes</h4>
+                  <label class="switch">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <div class="permisos-list">
+                  <div class="permiso-item">
+                    <span>Crear solicitudes</span>
+                    <label class="switch">
+                      <input type="checkbox" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="permiso-item">
+                    <span>Editar solicitudes</span>
+                    <label class="switch">
+                      <input type="checkbox" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="permiso-item">
+                    <span>Eliminar solicitudes</span>
+                    <label class="switch">
+                      <input type="checkbox" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="permiso-item">
+                    <span>Aprobar solicitudes</span>
+                    <label class="switch">
+                      <input type="checkbox" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modulo-permisos">
+                <div class="modulo-header">
+                  <h4><i class="fas fa-box"></i> Módulo de Refacciones</h4>
+                  <label class="switch">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <div class="permisos-list">
+                  <div class="permiso-item">
+                    <span>Ver refacciones</span>
+                    <label class="switch">
+                      <input type="checkbox" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="permiso-item">
+                    <span>Gestionar inventario</span>
+                    <label class="switch">
+                      <input type="checkbox" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="permiso-item">
+                    <span>Registrar entradas/salidas</span>
+                    <label class="switch">
+                      <input type="checkbox" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -197,189 +242,28 @@
       </div>
     </div>
 
-    <!-- Asignar Grupos Modal -->
-    <div
-      *ngIf="mostrarAsignarGrupos && usuarioSeleccionado"
-      class="modal-overlay"
-    >
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Asignar Grupos a {{ usuarioSeleccionado.nombre }}</h3>
-          <button class="close-btn" (click)="mostrarAsignarGrupos = false">
-            ×
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="grupos-seleccion">
-            <h4>Seleccione los grupos:</h4>
-            <div *ngFor="let grupo of gruposDisponibles" class="grupo-checkbox">
-              <label>
-                <input
-                  type="checkbox"
-                  [checked]="gruposSeleccionados.includes(grupo.id)"
-                  (change)="toggleGrupoSeleccionado(grupo.id)"
-                />
-                {{ grupo.name }}
-              </label>
-              <label
-                class="radio-primary"
-                *ngIf="gruposSeleccionados.includes(grupo.id)"
-              >
-                <input
-                  type="radio"
-                  name="grupoPrimario"
-                  [value]="grupo.id"
-                  [checked]="grupoPrimario === grupo.id"
-                  (change)="grupoPrimario = grupo.id"
-                />
-                Grupo Principal
-              </label>
-            </div>
-          </div>
-          <div class="modal-actions">
-            <button
-              class="btn-secondary"
-              (click)="mostrarAsignarGrupos = false"
-            >
-              Cancelar
-            </button>
-            <button class="btn-primary" (click)="asignarGruposUsuario()">
-              Guardar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <script>
+      // Funcionalidad básica de pestañas
+      document.addEventListener("DOMContentLoaded", function () {
+        const tabButtons = document.querySelectorAll(".tab-button");
+        const tabContents = document.querySelectorAll(".tab-content");
 
-    <!-- Contenido principal -->
-    <div *ngIf="!isLoading" class="permisos-content">
-      <!-- Buscador -->
-      <div class="search-control">
-        <input
-          type="text"
-          [(ngModel)]="buscadorUsuario"
-          placeholder="Buscar usuario por nombre, email o grupos..."
-          class="search-input"
-        />
-        <i class="fas fa-search search-icon"></i>
-      </div>
+        tabButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const tabId = button.getAttribute("data-tab");
 
-      <!-- Lista de usuarios -->
-      <div class="usuarios-list">
-        <h3>
-          Usuarios de {{ empresaSeleccionada?.nombre }} ({{ usuarios.length }})
-        </h3>
-        <div *ngIf="usuarios.length === 0" class="empty-state">
-          <i class="fas fa-users"></i>
-          <p>No hay usuarios registrados en esta empresa</p>
-        </div>
+            // Remover clase active de todos los botones y contenidos
+            tabButtons.forEach((btn) => btn.classList.remove("active"));
+            tabContents.forEach((content) =>
+              content.classList.remove("active")
+            );
 
-        <div class="usuarios-grid">
-          <div
-            *ngFor="let usuario of usuariosFiltrados"
-            class="usuario-card"
-            [class.selected]="usuarioSeleccionado?.id === usuario.id"
-          >
-            <div class="usuario-info" (click)="seleccionarUsuario(usuario)">
-              <h4>{{ usuario.nombre }}</h4>
-              <p>{{ usuario.email }}</p>
-              <div class="usuario-details">
-                <span class="rol-badge">{{
-                  getRolFromNivelPermiso(usuario.nivel_permiso || 4)
-                }}</span>
-                <span class="grupo-badge">{{
-                  getGruposUsuarioTexto(usuario)
-                }}</span>
-                <span class="status-badge" [class.active]="usuario.activo">
-                  {{ usuario.activo ? "Activo" : "Inactivo" }}
-                </span>
-              </div>
-            </div>
-            <div class="usuario-actions">
-              <button
-                class="btn-sm"
-                [class.btn-danger]="usuario.activo"
-                [class.btn-success]="!usuario.activo"
-                (click)="toggleEstadoUsuario(usuario); $event.stopPropagation()"
-              >
-                {{ usuario.activo ? "Desactivar" : "Activar" }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Información del usuario seleccionado -->
-      <div *ngIf="usuarioSeleccionado" class="usuario-detalle">
-        <div class="permisos-header">
-          <h3>{{ usuarioSeleccionado.nombre }}</h3>
-          <div class="header-actions">
-            <span
-              class="user-status"
-              [class.active]="usuarioSeleccionado.activo"
-            >
-              {{ usuarioSeleccionado.activo ? "✓ Activo" : "✗ Inactivo" }}
-            </span>
-            <button class="btn-sm btn-primary" (click)="abrirAsignarGrupos()">
-              <i class="fas fa-users"></i> Gestionar Grupos
-            </button>
-          </div>
-        </div>
-
-        <div *ngIf="!usuarioSeleccionado.activo" class="warning-message">
-          <i class="fas fa-exclamation-triangle"></i>
-          <p>
-            El usuario está inactivo. No puede recibir permisos hasta que sea
-            activado.
-          </p>
-        </div>
-
-        <div class="grupos-usuario">
-          <h4>Grupos del Usuario</h4>
-          <div *ngIf="gruposUsuario.length === 0" class="empty-state small">
-            <p>El usuario no pertenece a ningún grupo</p>
-          </div>
-          <div
-            *ngFor="let grupo of gruposUsuario"
-            class="grupo-badge large"
-            [class.primary]="grupo.is_primary"
-          >
-            {{ grupo.name }}
-            <span *ngIf="grupo.is_primary" class="primary-indicator"
-              >(Principal)</span
-            >
-          </div>
-        </div>
-
-        <div class="permisos-info">
-          <h4>Permisos del Usuario</h4>
-          <p>
-            Los permisos se gestionan a través de los grupos. El usuario hereda
-            los permisos de todos los grupos a los que pertenece.
-          </p>
-
-          <div class="permisos-grid compact">
-            <div
-              *ngFor="let permiso of todosLosPermisos"
-              class="permiso-item compact"
-            >
-              <div class="permiso-info">
-                <strong>{{ permiso.name }}</strong>
-                <p>{{ permiso.description }}</p>
-                <small class="permiso-clave">{{ permiso.code }}</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        *ngIf="!usuarioSeleccionado && !isLoading && usuarios.length > 0"
-        class="no-selection"
-      >
-        <i class="fas fa-user-slash"></i>
-        <p>Selecciona un usuario para ver sus grupos y permisos</p>
-      </div>
-    </div>
-  </div>
-</div>
+            // Agregar clase active al botón clickeado y al contenido correspondiente
+            button.classList.add("active");
+            document.getElementById(tabId).classList.add("active");
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
