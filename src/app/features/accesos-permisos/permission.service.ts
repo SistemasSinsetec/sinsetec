@@ -248,18 +248,25 @@ export class PermissionService {
     );
   }
 
-  // Manejo de errores
+  // Manejo de errores - CORREGIDO
   private handleError(error: any): Observable<never> {
     let errorMessage = 'Ocurrió un error';
+
     if (error.error instanceof ErrorEvent) {
       errorMessage = error.error.message;
     } else if (error.status === 401) {
-      errorMessage = 'No autorizado';
+      errorMessage = 'No autorizado - Sesión expirada';
+      // Solo limpiar datos, NO redirigir aquí
+      localStorage.removeItem('token');
+      localStorage.removeItem('currentUser');
+      // La redirección debe manejarse en el componente
     } else if (error.status === 403) {
       errorMessage = 'Permisos insuficientes';
     } else if (error.error?.message) {
       errorMessage = error.error.message;
     }
+
+    console.error('Error en PermissionService:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
 }
