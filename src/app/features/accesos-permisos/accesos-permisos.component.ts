@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router'; // Añadir Router
 import { Permission, Role, Group } from './permission.model';
 import { PermissionService } from './permission.service';
 import { AuthService } from '../../auth/services/auth.service';
@@ -32,7 +33,8 @@ export class AccessosPermisosComponent implements OnInit {
 
   constructor(
     private permissionService: PermissionService,
-    public authService: AuthService
+    public authService: AuthService,
+    private router: Router // Inyectar Router
   ) {}
 
   ngOnInit(): void {
@@ -43,16 +45,38 @@ export class AccessosPermisosComponent implements OnInit {
     this.permissionService.permissions$.subscribe(
       (permissions: Permission[]) => {
         this.permissions = permissions;
+      },
+      (error) => {
+        this.handlePermissionError(error);
       }
     );
 
-    this.permissionService.roles$.subscribe((roles: Role[]) => {
-      this.roles = roles;
-    });
+    this.permissionService.roles$.subscribe(
+      (roles: Role[]) => {
+        this.roles = roles;
+      },
+      (error) => {
+        this.handlePermissionError(error);
+      }
+    );
 
-    this.permissionService.groups$.subscribe((groups: Group[]) => {
-      this.groups = groups;
-    });
+    this.permissionService.groups$.subscribe(
+      (groups: Group[]) => {
+        this.groups = groups;
+      },
+      (error) => {
+        this.handlePermissionError(error);
+      }
+    );
+  }
+
+  private handlePermissionError(error: any): void {
+    console.error('Error loading permissions data:', error);
+
+    if (error.message.includes('Sesión expirada')) {
+      // Verificar si realmente la sesión expiró o si es un error de permisos
+      this.permissionService.checkSessionValidity();
+    }
   }
 
   get filteredPermissions(): Permission[] {

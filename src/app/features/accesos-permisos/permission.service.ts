@@ -4,6 +4,7 @@ import { environment } from 'src/environments/environment';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Permission, Role, Group } from './permission.model';
+import { Router } from '@angular/router'; // Añadir Router
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +18,10 @@ export class PermissionService {
   public roles$ = this.rolesSubject.asObservable();
   public groups$ = this.groupsSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private router: Router // Inyectar Router
+  ) {
     this.loadInitialData();
   }
 
@@ -256,10 +260,8 @@ export class PermissionService {
       errorMessage = error.error.message;
     } else if (error.status === 401) {
       errorMessage = 'No autorizado - Sesión expirada';
-      // Solo limpiar datos, NO redirigir aquí
-      localStorage.removeItem('token');
-      localStorage.removeItem('currentUser');
-      // La redirección debe manejarse en el componente
+      // NO limpiar datos aquí, solo mostrar el error
+      // La redirección se manejará en el componente o interceptor
     } else if (error.status === 403) {
       errorMessage = 'Permisos insuficientes';
     } else if (error.error?.message) {
@@ -268,5 +270,16 @@ export class PermissionService {
 
     console.error('Error en PermissionService:', errorMessage);
     return throwError(() => new Error(errorMessage));
+  }
+
+  // Método para verificar si hay una sesión válida
+  public checkSessionValidity(): void {
+    const token = localStorage.getItem('token');
+    const currentUser = localStorage.getItem('currentUser');
+
+    if (!token || !currentUser) {
+      // Solo redirigir si realmente no hay sesión
+      this.router.navigate(['/login']);
+    }
   }
 }
