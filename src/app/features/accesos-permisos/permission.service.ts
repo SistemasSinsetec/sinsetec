@@ -236,6 +236,22 @@ export class PermissionService {
       );
   }
 
+  // Asignar rol a usuario
+  assignRoleToUser(usuario_id: number, rol_id: number): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/asignar_rol.php`, {
+      usuario_id,
+      rol_id,
+    });
+  }
+
+  // Asignar grupo a usuario
+  assignGroupToUser(usuario_id: number, grupo_id: number): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/asignar_grupo.php`, {
+      usuario_id,
+      grupo_id,
+    });
+  }
+
   // =====================
   // HELPER
   // =====================
