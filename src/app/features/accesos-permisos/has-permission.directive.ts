@@ -21,7 +21,8 @@ export class HasPermissionDirective implements OnDestroy {
     private viewContainer: ViewContainerRef,
     private authService: AuthService
   ) {
-    this.userSubscription = this.authService.currentUser.subscribe(() => {
+    // CORRECCIÓN: Cambiar currentUser por currentUser$
+    this.userSubscription = this.authService.currentUser$.subscribe(() => {
       this.updateView();
     });
   }

@@ -65,7 +65,8 @@ export class RegisterComponent {
     const { confirmPassword, ...userData } = this.registerForm.value;
 
     this.authService.register(userData).subscribe({
-      next: (response) => {
+      // CORRECCIÓN: Agregar tipo al parámetro response
+      next: (response: any) => {
         if (response?.success) {
           this.toastr.success(
             `Registro exitoso. Bienvenido ${userData.username}`
@@ -77,7 +78,8 @@ export class RegisterComponent {
           );
         }
       },
-      error: (err) => {
+      // CORRECCIÓN: Agregar tipo al parámetro err
+      error: (err: any) => {
         const errorMessage =
           err?.message ||
           err?.error?.message ||

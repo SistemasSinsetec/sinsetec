@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router'; // ← RouterModule añadido
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from './profile.service';
 
@@ -10,7 +10,7 @@ import { ProfileService } from './profile.service';
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule], // ← RouterModule añadido aquí
+  imports: [CommonModule, FormsModule, RouterModule],
 })
 export class ProfileComponent implements OnInit {
   userProfile: any = {
@@ -18,8 +18,8 @@ export class ProfileComponent implements OnInit {
     email: '',
     created_at: '',
     updated_at: '',
-    intentos_falifdos: 0,
-    bloqueado_unfil: null,
+    intentos_fallidos: 0,
+    bloqueado_hasta: null,
   };
 
   isEditing = false;
@@ -38,7 +38,7 @@ export class ProfileComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private profileService: ProfileService,
-    private router: Router // ← Router inyectado
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -80,7 +80,7 @@ export class ProfileComponent implements OnInit {
 
   loadUserProfile(): void {
     this.isLoading = true;
-    const currentUser = this.authService.currentUserValue;
+    const currentUser = this.authService.getCurrentUser(); // CORREGIDO
 
     if (currentUser && currentUser.id) {
       this.profileService.getUserProfile(currentUser.id).subscribe({
@@ -117,20 +117,9 @@ export class ProfileComponent implements OnInit {
     }
 
     this.isLoading = true;
-    const currentUser = this.authService.currentUserValue;
+    const currentUser = this.authService.getCurrentUser(); // CORREGIDO
 
     if (currentUser && currentUser.id) {
-      // Preparar todos los datos del perfil para enviar
-      console.log('Datos a enviar:', {
-        username: this.userProfile.username,
-        email: this.userProfile.email,
-        nombre_completo: this.userProfile.nombre_completo,
-        telefono: this.userProfile.telefono,
-        direccion: this.userProfile.direccion,
-        fecha_nacimiento: this.userProfile.fecha_nacimiento,
-        biografia: this.userProfile.biografia,
-      });
-
       this.profileService
         .updateUserProfile(currentUser.id, this.userProfile)
         .subscribe({
@@ -139,11 +128,9 @@ export class ProfileComponent implements OnInit {
             if (response.success) {
               this.showMessage('Perfil actualizado correctamente', 'success');
               this.isEditing = false;
-              // Actualizar los datos locales con TODOS los campos devueltos
               this.userProfile = {
                 ...this.userProfile,
                 ...response.user,
-                // Asegurar que los campos que puedan ser null se muestren correctamente
                 nombre_completo: response.user.nombre_completo,
                 telefono: response.user.telefono,
                 direccion: response.user.direccion,
@@ -191,7 +178,7 @@ export class ProfileComponent implements OnInit {
     }
 
     this.isLoading = true;
-    const currentUser = this.authService.currentUserValue;
+    const currentUser = this.authService.getCurrentUser(); // CORREGIDO
 
     if (currentUser && currentUser.id) {
       this.profileService

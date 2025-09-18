@@ -1,22 +1,24 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { provideToastr } from 'ngx-toastr';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+  HTTP_INTERCEPTORS,
+} from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
+
 import { APP_ROUTES } from './app.routes';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { authInterceptor } from './interceptors/auth.interceptor'; // Ajusta la ruta
+import { AuthInterceptor } from './auth/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(APP_ROUTES),
-    provideHttpClient(withInterceptors([authInterceptor])), // ← Interceptor añadido
-    provideToastr({
-      timeOut: 3000,
-      positionClass: 'toast-top-right',
-      preventDuplicates: true,
-    }),
+    provideHttpClient(withInterceptorsFromDi()),
     provideAnimations(),
-    provideAnimationsAsync(),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true,
+    },
   ],
 };

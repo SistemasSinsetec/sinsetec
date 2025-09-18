@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router'; // Añadir Router
+import { Router } from '@angular/router';
 import { Permission, Role, Group } from './permission.model';
 import { PermissionService } from './permission.service';
 import { AuthService } from '../../auth/services/auth.service';
@@ -34,7 +34,7 @@ export class AccessosPermisosComponent implements OnInit {
   constructor(
     private permissionService: PermissionService,
     public authService: AuthService,
-    private router: Router // Inyectar Router
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -74,7 +74,6 @@ export class AccessosPermisosComponent implements OnInit {
     console.error('Error loading permissions data:', error);
 
     if (error.message.includes('Sesión expirada')) {
-      // Verificar si realmente la sesión expiró o si es un error de permisos
       this.permissionService.checkSessionValidity();
     }
   }
@@ -83,9 +82,9 @@ export class AccessosPermisosComponent implements OnInit {
     const searchTerm = this.searchPermission.toLowerCase();
     return this.permissions.filter(
       (p) =>
-        p.name.toLowerCase().includes(searchTerm) ||
-        (p.description && p.description.toLowerCase().includes(searchTerm)) ||
-        (p.category && p.category.toLowerCase().includes(searchTerm))
+        p.nombre.toLowerCase().includes(searchTerm) ||
+        (p.descripcion && p.descripcion.toLowerCase().includes(searchTerm)) ||
+        (p.categoria && p.categoria.toLowerCase().includes(searchTerm))
     );
   }
 
@@ -93,8 +92,8 @@ export class AccessosPermisosComponent implements OnInit {
     const searchTerm = this.searchRole.toLowerCase();
     return this.roles.filter(
       (r) =>
-        r.name.toLowerCase().includes(searchTerm) ||
-        (r.description && r.description.toLowerCase().includes(searchTerm))
+        r.nombre.toLowerCase().includes(searchTerm) ||
+        (r.descripcion && r.descripcion.toLowerCase().includes(searchTerm))
     );
   }
 
@@ -102,8 +101,8 @@ export class AccessosPermisosComponent implements OnInit {
     const searchTerm = this.searchGroup.toLowerCase();
     return this.groups.filter(
       (g) =>
-        g.name.toLowerCase().includes(searchTerm) ||
-        (g.description && g.description.toLowerCase().includes(searchTerm))
+        g.nombre.toLowerCase().includes(searchTerm) ||
+        (g.descripcion && g.descripcion.toLowerCase().includes(searchTerm))
     );
   }
 
@@ -111,9 +110,9 @@ export class AccessosPermisosComponent implements OnInit {
     if (this.authService.hasPermission('permission_create')) {
       this.selectedPermission = {
         id: 0,
-        name: '',
-        description: '',
-        category: '',
+        nombre: '',
+        descripcion: '',
+        categoria: '',
       };
       this.isEditingPermission = true;
     }
@@ -153,9 +152,9 @@ export class AccessosPermisosComponent implements OnInit {
     if (this.authService.hasPermission('role_create')) {
       this.selectedRole = {
         id: 0,
-        name: '',
-        description: '',
-        permissions: [],
+        nombre: '',
+        descripcion: '',
+        permisos: [],
       };
       this.isEditingRole = true;
     }
@@ -170,21 +169,22 @@ export class AccessosPermisosComponent implements OnInit {
 
   isPermissionInRole(permission: Permission): boolean {
     return (
-      this.selectedRole?.permissions.some((p) => p.id === permission.id) ||
-      false
+      this.selectedRole?.permisos.some(
+        (p: Permission) => p.id === permission.id
+      ) || false
     );
   }
 
   togglePermission(permission: Permission): void {
     if (!this.selectedRole) return;
 
-    const index = this.selectedRole.permissions.findIndex(
-      (p) => p.id === permission.id
+    const index = this.selectedRole.permisos.findIndex(
+      (p: Permission) => p.id === permission.id
     );
     if (index >= 0) {
-      this.selectedRole.permissions.splice(index, 1);
+      this.selectedRole.permisos.splice(index, 1);
     } else {
-      this.selectedRole.permissions.push(permission);
+      this.selectedRole.permisos.push(permission);
     }
   }
 
@@ -215,10 +215,10 @@ export class AccessosPermisosComponent implements OnInit {
     if (this.authService.hasPermission('group_create')) {
       this.selectedGroup = {
         id: 0,
-        name: '',
-        description: '',
+        nombre: '',
+        descripcion: '',
         roles: [],
-        users: [],
+        usuarios: [],
       };
       this.isEditingGroup = true;
     }
@@ -232,13 +232,17 @@ export class AccessosPermisosComponent implements OnInit {
   }
 
   isRoleInGroup(role: Role): boolean {
-    return this.selectedGroup?.roles.some((r) => r.id === role.id) || false;
+    return (
+      this.selectedGroup?.roles.some((r: Role) => r.id === role.id) || false
+    );
   }
 
   toggleRole(role: Role): void {
     if (!this.selectedGroup) return;
 
-    const index = this.selectedGroup.roles.findIndex((r) => r.id === role.id);
+    const index = this.selectedGroup.roles.findIndex(
+      (r: Role) => r.id === role.id
+    );
     if (index >= 0) {
       this.selectedGroup.roles.splice(index, 1);
     } else {
@@ -279,7 +283,6 @@ export class AccessosPermisosComponent implements OnInit {
   }
 
   logout(): void {
-    // Implementar lógica de cierre de sesión
     this.authService.logout();
   }
 }

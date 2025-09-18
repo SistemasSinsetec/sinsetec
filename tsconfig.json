@@ -46,6 +46,7 @@
     "src/app/auth/services/database.service.ts",
     "src/app/features/home/home.module.ts",
     "src/app/features/register-refacciones/truncate.pipe.ts",
+    "src/app/interceptors/auth.interceptor.ts",
     "src/app/interceptors/auth.interceptor.ts"
   ]
 }

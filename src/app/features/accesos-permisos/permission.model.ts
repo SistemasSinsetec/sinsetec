@@ -1,27 +1,21 @@
 export interface Permission {
   id: number;
-  name: string;
-  description: string;
-  category: string;
-  created_at?: string;
-  updated_at?: string;
+  nombre: string;
+  descripcion: string;
+  categoria: string;
 }
 
 export interface Role {
   id: number;
-  name: string;
-  description?: string;
-  permissions: Permission[];
-  created_at?: string;
-  updated_at?: string;
+  nombre: string;
+  descripcion?: string;
+  permisos: Permission[];
 }
 
 export interface Group {
   id: number;
-  name: string;
-  description: string;
+  nombre: string;
+  descripcion: string;
   roles: Role[];
-  users: number[];
-  created_at?: string;
-  updated_at?: string;
+  usuarios: any[];
 }

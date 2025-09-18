@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { Permission, Role, Group } from './permission.model';
-import { Router } from '@angular/router'; // Añadir Router
+import { Router } from '@angular/router';
+import { AuthService } from '../../auth/services/auth.service';
 
 @Injectable({
   providedIn: 'root',
@@ -20,13 +21,14 @@ export class PermissionService {
 
   constructor(
     private http: HttpClient,
-    private router: Router // Inyectar Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.loadInitialData();
   }
 
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
+    const token = this.authService.getToken();
     return new HttpHeaders({
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token || ''}`,
@@ -39,21 +41,91 @@ export class PermissionService {
     this.loadGroups();
   }
 
-  // Métodos para Permisos
   private loadPermissions(): void {
     this.http
       .get<{ success: boolean; data: Permission[] }>(
         `${environment.apiUrl}/permisos.php`,
         { headers: this.getHeaders() }
       )
-      .pipe(catchError(this.handleError))
-      .subscribe((response) => {
-        if (response.success) {
-          this.permissionsSubject.next(response.data);
-        }
+      .pipe(catchError((error) => this.handleError(error)))
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.permissionsSubject.next(response.data);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading permissions:', error);
+        },
       });
   }
 
+  private loadRoles(): void {
+    this.http
+      .get<{ success: boolean; data: Role[] }>(
+        `${environment.apiUrl}/roles.php`,
+        { headers: this.getHeaders() }
+      )
+      .pipe(catchError((error) => this.handleError(error)))
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.rolesSubject.next(response.data);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading roles:', error);
+        },
+      });
+  }
+
+  private loadGroups(): void {
+    this.http
+      .get<{ success: boolean; data: Group[] }>(
+        `${environment.apiUrl}/grupos.php`,
+        { headers: this.getHeaders() }
+      )
+      .pipe(catchError((error) => this.handleError(error)))
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.groupsSubject.next(response.data);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading groups:', error);
+        },
+      });
+  }
+
+  private handleError(error: any): Observable<never> {
+    let errorMessage = 'Ocurrió un error';
+
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = error.error.message;
+    } else if (error.status === 401) {
+      errorMessage = 'No autorizado - Sesión expirada';
+      // Solo muestra el error, no redirige (el interceptor ya lo hace)
+    } else if (error.status === 403) {
+      errorMessage = 'Permisos insuficientes';
+    } else if (error.error?.message) {
+      errorMessage = error.error.message;
+    }
+
+    console.error('Error en PermissionService:', errorMessage);
+    return throwError(() => new Error(errorMessage));
+  }
+
+  checkSessionValidity(): void {
+    this.authService.validateToken().subscribe((isValid) => {
+      if (!isValid) {
+        this.authService.logout();
+        this.router.navigate(['/login']);
+      }
+    });
+  }
+
+  // Resto de métodos mantienen igual...
   createPermission(permission: Omit<Permission, 'id'>): Observable<boolean> {
     return this.http
       .post<{ success: boolean; message: string }>(
@@ -68,7 +140,7 @@ export class PermissionService {
           }
           return response.success;
         }),
-        catchError(this.handleError)
+        catchError((error) => this.handleError(error))
       );
   }
 
@@ -86,7 +158,7 @@ export class PermissionService {
           }
           return response.success;
         }),
-        catchError(this.handleError)
+        catchError((error) => this.handleError(error))
       );
   }
 
@@ -103,23 +175,8 @@ export class PermissionService {
           }
           return response.success;
         }),
-        catchError(this.handleError)
+        catchError((error) => this.handleError(error))
       );
-  }
-
-  // Métodos para Roles
-  private loadRoles(): void {
-    this.http
-      .get<{ success: boolean; data: Role[] }>(
-        `${environment.apiUrl}/roles.php`,
-        { headers: this.getHeaders() }
-      )
-      .pipe(catchError(this.handleError))
-      .subscribe((response) => {
-        if (response.success) {
-          this.rolesSubject.next(response.data);
-        }
-      });
   }
 
   createRole(role: Omit<Role, 'id'>): Observable<boolean> {
@@ -136,7 +193,7 @@ export class PermissionService {
           }
           return response.success;
         }),
-        catchError(this.handleError)
+        catchError((error) => this.handleError(error))
       );
   }
 
@@ -154,7 +211,7 @@ export class PermissionService {
           }
           return response.success;
         }),
-        catchError(this.handleError)
+        catchError((error) => this.handleError(error))
       );
   }
 
@@ -171,23 +228,8 @@ export class PermissionService {
           }
           return response.success;
         }),
-        catchError(this.handleError)
+        catchError((error) => this.handleError(error))
       );
-  }
-
-  // Métodos para Grupos
-  private loadGroups(): void {
-    this.http
-      .get<{ success: boolean; data: Group[] }>(
-        `${environment.apiUrl}/grupos.php`,
-        { headers: this.getHeaders() }
-      )
-      .pipe(catchError(this.handleError))
-      .subscribe((response) => {
-        if (response.success) {
-          this.groupsSubject.next(response.data);
-        }
-      });
   }
 
   createGroup(group: Omit<Group, 'id'>): Observable<boolean> {
@@ -204,7 +246,7 @@ export class PermissionService {
           }
           return response.success;
         }),
-        catchError(this.handleError)
+        catchError((error) => this.handleError(error))
       );
   }
 
@@ -222,7 +264,7 @@ export class PermissionService {
           }
           return response.success;
         }),
-        catchError(this.handleError)
+        catchError((error) => this.handleError(error))
       );
   }
 
@@ -239,47 +281,17 @@ export class PermissionService {
           }
           return response.success;
         }),
-        catchError(this.handleError)
+        catchError((error) => this.handleError(error))
       );
   }
 
-  // Verificación de permisos
+  // En el método userHasPermission, cambia:
   userHasPermission(user: any, permissionName: string): boolean {
     if (!user || !user.roles) return false;
-
     return user.roles.some((role: Role) =>
-      role.permissions.some((permission) => permission.name === permissionName)
+      role.permisos.some(
+        (permission: Permission) => permission.nombre === permissionName
+      )
     );
-  }
-
-  // Manejo de errores - CORREGIDO
-  private handleError(error: any): Observable<never> {
-    let errorMessage = 'Ocurrió un error';
-
-    if (error.error instanceof ErrorEvent) {
-      errorMessage = error.error.message;
-    } else if (error.status === 401) {
-      errorMessage = 'No autorizado - Sesión expirada';
-      // NO limpiar datos aquí, solo mostrar el error
-      // La redirección se manejará en el componente o interceptor
-    } else if (error.status === 403) {
-      errorMessage = 'Permisos insuficientes';
-    } else if (error.error?.message) {
-      errorMessage = error.error.message;
-    }
-
-    console.error('Error en PermissionService:', errorMessage);
-    return throwError(() => new Error(errorMessage));
-  }
-
-  // Método para verificar si hay una sesión válida
-  public checkSessionValidity(): void {
-    const token = localStorage.getItem('token');
-    const currentUser = localStorage.getItem('currentUser');
-
-    if (!token || !currentUser) {
-      // Solo redirigir si realmente no hay sesión
-      this.router.navigate(['/login']);
-    }
   }
 }
