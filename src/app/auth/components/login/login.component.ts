@@ -2,20 +2,9 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { PermissionService } from '../../../features/accesos-permisos/permission.service';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
-
-interface LoginResponse {
-  success: boolean;
-  message?: string;
-  user?: {
-    username: string;
-    email: string;
-    id: number;
-  };
-  token?: string;
-}
 
 @Component({
   selector: 'app-login',
@@ -27,6 +16,7 @@ interface LoginResponse {
 export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private permissionService = inject(PermissionService); // ✅ nuevo
   private router = inject(Router);
   private toastr = inject(ToastrService);
 
@@ -35,77 +25,34 @@ export class LoginComponent {
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
-    rememberMe: [false],
   });
 
   onSubmit(): void {
-    if (this.loginForm.invalid) {
-      this.markFormGroupTouched();
-      this.toastr.warning('Por favor complete todos los campos correctamente');
-      return;
-    }
+    if (this.loginForm.invalid) return;
 
     this.isLoading = true;
     const { email, password } = this.loginForm.value;
 
-    this.authService
-      .login({
-        email: email as string,
-        password: password as string,
-      })
-      .subscribe({
-        next: (response) => {
-          this.isLoading = false;
-          if (response.success) {
-            this.toastr.success(`Bienvenido ${response.user?.username}`);
-            this.router.navigate(['/home']);
-          } else {
-            this.toastr.error(response.message || 'Error al iniciar sesión');
-          }
-        },
-        error: (err) => {
-          this.isLoading = false;
-          this.handleLoginError(err);
-        },
-      });
-  }
+    this.authService.login({ email: email!, password: password! }).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        if (response.success) {
+          this.toastr.success(`Bienvenido ${response.user?.username}`);
 
-  private handleLoginError(err: any): void {
-    console.error('Error en login:', err);
+          // 🔥 cargar permisos, roles y grupos solo después del login
+          this.permissionService.initializeAfterLogin();
 
-    if (err instanceof HttpErrorResponse) {
-      switch (err.status) {
-        case 0:
-          this.toastr.error(
-            'No se pudo conectar al servidor. Verifica tu conexión.'
-          );
-          break;
-        case 400:
-          this.toastr.error('Datos inválidos. Verifica la información.');
-          break;
-        case 401:
-          this.toastr.error(
-            'Credenciales incorrectas. Verifica tu email y contraseña.'
-          );
-          break;
-        case 500:
-          this.toastr.error('Error interno del servidor. Intenta más tarde.');
-          break;
-        default:
-          this.toastr.error(err.message || 'Error desconocido');
-      }
-    } else {
-      this.toastr.error(err.message || 'Error de conexión');
-    }
-  }
-
-  private markFormGroupTouched(): void {
-    Object.keys(this.loginForm.controls).forEach((key) => {
-      const control = this.loginForm.get(key);
-      control?.markAsTouched();
+          this.router.navigate(['/home']);
+        } else {
+          this.toastr.error(response.message || 'Error al iniciar sesión');
+        }
+      },
+      error: () => {
+        this.isLoading = false;
+        this.toastr.error('Error en el inicio de sesión');
+      },
     });
   }
-
   navigateToForgotPassword(): void {
     this.router.navigate(['/forgot-password']);
   }

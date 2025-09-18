@@ -1,5 +1,6 @@
+// src/app/features/accesos-permisos/permission.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -24,28 +25,23 @@ export class PermissionService {
     private router: Router,
     private authService: AuthService
   ) {
-    this.loadInitialData();
+    // ❌ Ya no llamamos a loadInitialData aquí
   }
 
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token || ''}`,
-    });
-  }
-
-  public loadInitialData(): void {
+  // ✅ Se ejecuta después de login exitoso
+  public initializeAfterLogin(): void {
     this.loadPermissions();
     this.loadRoles();
     this.loadGroups();
   }
 
+  // =====================
+  // LOADERS
+  // =====================
   private loadPermissions(): void {
     this.http
       .get<{ success: boolean; data: Permission[] }>(
-        `${environment.apiUrl}/permisos.php`,
-        { headers: this.getHeaders() }
+        `${environment.apiUrl}/permisos.php`
       )
       .pipe(catchError((error) => this.handleError(error)))
       .subscribe({
@@ -54,17 +50,13 @@ export class PermissionService {
             this.permissionsSubject.next(response.data);
           }
         },
-        error: (error) => {
-          console.error('Error loading permissions:', error);
-        },
       });
   }
 
   private loadRoles(): void {
     this.http
       .get<{ success: boolean; data: Role[] }>(
-        `${environment.apiUrl}/roles.php`,
-        { headers: this.getHeaders() }
+        `${environment.apiUrl}/roles.php`
       )
       .pipe(catchError((error) => this.handleError(error)))
       .subscribe({
@@ -73,17 +65,13 @@ export class PermissionService {
             this.rolesSubject.next(response.data);
           }
         },
-        error: (error) => {
-          console.error('Error loading roles:', error);
-        },
       });
   }
 
   private loadGroups(): void {
     this.http
       .get<{ success: boolean; data: Group[] }>(
-        `${environment.apiUrl}/grupos.php`,
-        { headers: this.getHeaders() }
+        `${environment.apiUrl}/grupos.php`
       )
       .pipe(catchError((error) => this.handleError(error)))
       .subscribe({
@@ -92,30 +80,12 @@ export class PermissionService {
             this.groupsSubject.next(response.data);
           }
         },
-        error: (error) => {
-          console.error('Error loading groups:', error);
-        },
       });
   }
 
-  private handleError(error: any): Observable<never> {
-    let errorMessage = 'Ocurrió un error';
-
-    if (error.error instanceof ErrorEvent) {
-      errorMessage = error.error.message;
-    } else if (error.status === 401) {
-      errorMessage = 'No autorizado - Sesión expirada';
-      // Solo muestra el error, no redirige (el interceptor ya lo hace)
-    } else if (error.status === 403) {
-      errorMessage = 'Permisos insuficientes';
-    } else if (error.error?.message) {
-      errorMessage = error.error.message;
-    }
-
-    console.error('Error en PermissionService:', errorMessage);
-    return throwError(() => new Error(errorMessage));
-  }
-
+  // =====================
+  // SESSION CHECK
+  // =====================
   checkSessionValidity(): void {
     this.authService.validateToken().subscribe((isValid) => {
       if (!isValid) {
@@ -125,19 +95,18 @@ export class PermissionService {
     });
   }
 
-  // Resto de métodos mantienen igual...
+  // =====================
+  // PERMISSIONS CRUD
+  // =====================
   createPermission(permission: Omit<Permission, 'id'>): Observable<boolean> {
     return this.http
       .post<{ success: boolean; message: string }>(
         `${environment.apiUrl}/permisos.php`,
-        permission,
-        { headers: this.getHeaders() }
+        permission
       )
       .pipe(
         map((response) => {
-          if (response.success) {
-            this.loadPermissions();
-          }
+          if (response.success) this.loadPermissions();
           return response.success;
         }),
         catchError((error) => this.handleError(error))
@@ -148,14 +117,11 @@ export class PermissionService {
     return this.http
       .put<{ success: boolean; message: string }>(
         `${environment.apiUrl}/permisos.php`,
-        permission,
-        { headers: this.getHeaders() }
+        permission
       )
       .pipe(
         map((response) => {
-          if (response.success) {
-            this.loadPermissions();
-          }
+          if (response.success) this.loadPermissions();
           return response.success;
         }),
         catchError((error) => this.handleError(error))
@@ -165,32 +131,29 @@ export class PermissionService {
   deletePermission(id: number): Observable<boolean> {
     return this.http
       .delete<{ success: boolean; message: string }>(
-        `${environment.apiUrl}/permisos.php?id=${id}`,
-        { headers: this.getHeaders() }
+        `${environment.apiUrl}/permisos.php?id=${id}`
       )
       .pipe(
         map((response) => {
-          if (response.success) {
-            this.loadPermissions();
-          }
+          if (response.success) this.loadPermissions();
           return response.success;
         }),
         catchError((error) => this.handleError(error))
       );
   }
 
+  // =====================
+  // ROLES CRUD
+  // =====================
   createRole(role: Omit<Role, 'id'>): Observable<boolean> {
     return this.http
       .post<{ success: boolean; message: string }>(
         `${environment.apiUrl}/roles.php`,
-        role,
-        { headers: this.getHeaders() }
+        role
       )
       .pipe(
         map((response) => {
-          if (response.success) {
-            this.loadRoles();
-          }
+          if (response.success) this.loadRoles();
           return response.success;
         }),
         catchError((error) => this.handleError(error))
@@ -201,14 +164,11 @@ export class PermissionService {
     return this.http
       .put<{ success: boolean; message: string }>(
         `${environment.apiUrl}/roles.php`,
-        role,
-        { headers: this.getHeaders() }
+        role
       )
       .pipe(
         map((response) => {
-          if (response.success) {
-            this.loadRoles();
-          }
+          if (response.success) this.loadRoles();
           return response.success;
         }),
         catchError((error) => this.handleError(error))
@@ -218,32 +178,29 @@ export class PermissionService {
   deleteRole(id: number): Observable<boolean> {
     return this.http
       .delete<{ success: boolean; message: string }>(
-        `${environment.apiUrl}/roles.php?id=${id}`,
-        { headers: this.getHeaders() }
+        `${environment.apiUrl}/roles.php?id=${id}`
       )
       .pipe(
         map((response) => {
-          if (response.success) {
-            this.loadRoles();
-          }
+          if (response.success) this.loadRoles();
           return response.success;
         }),
         catchError((error) => this.handleError(error))
       );
   }
 
+  // =====================
+  // GROUPS CRUD
+  // =====================
   createGroup(group: Omit<Group, 'id'>): Observable<boolean> {
     return this.http
       .post<{ success: boolean; message: string }>(
         `${environment.apiUrl}/grupos.php`,
-        group,
-        { headers: this.getHeaders() }
+        group
       )
       .pipe(
         map((response) => {
-          if (response.success) {
-            this.loadGroups();
-          }
+          if (response.success) this.loadGroups();
           return response.success;
         }),
         catchError((error) => this.handleError(error))
@@ -254,14 +211,11 @@ export class PermissionService {
     return this.http
       .put<{ success: boolean; message: string }>(
         `${environment.apiUrl}/grupos.php`,
-        group,
-        { headers: this.getHeaders() }
+        group
       )
       .pipe(
         map((response) => {
-          if (response.success) {
-            this.loadGroups();
-          }
+          if (response.success) this.loadGroups();
           return response.success;
         }),
         catchError((error) => this.handleError(error))
@@ -271,21 +225,36 @@ export class PermissionService {
   deleteGroup(id: number): Observable<boolean> {
     return this.http
       .delete<{ success: boolean; message: string }>(
-        `${environment.apiUrl}/grupos.php?id=${id}`,
-        { headers: this.getHeaders() }
+        `${environment.apiUrl}/grupos.php?id=${id}`
       )
       .pipe(
         map((response) => {
-          if (response.success) {
-            this.loadGroups();
-          }
+          if (response.success) this.loadGroups();
           return response.success;
         }),
         catchError((error) => this.handleError(error))
       );
   }
 
-  // En el método userHasPermission, cambia:
+  // =====================
+  // HELPER
+  // =====================
+  private handleError(error: any): Observable<never> {
+    let errorMessage = 'Ocurrió un error';
+    if (error.status === 401) {
+      errorMessage = 'No autorizado - Sesión expirada';
+    } else if (error.status === 403) {
+      errorMessage = 'Permisos insuficientes';
+    } else if (error.error?.message) {
+      errorMessage = error.error.message;
+    }
+    console.error('Error en PermissionService:', errorMessage);
+    return throwError(() => new Error(errorMessage));
+  }
+
+  // =====================
+  // UTILS
+  // =====================
   userHasPermission(user: any, permissionName: string): boolean {
     if (!user || !user.roles) return false;
     return user.roles.some((role: Role) =>
