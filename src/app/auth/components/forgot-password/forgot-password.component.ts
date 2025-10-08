@@ -35,21 +35,33 @@ export class ForgotPasswordComponent {
   });
 
   ngOnInit() {
+    //ngOnInit.-> se ejecuta cuando se carga el componente
     // Verificar si viene token en la URL (modo reset)
     const urlParams = new URLSearchParams(window.location.search);
+    //urlParams.-> se utiliza para obtener los parámetros de la URL
+    //window.location.search.-> se utiliza para obtener la URL actual
+    //URLSearchParams.-> se utiliza para obtener los parámetros de la URL
     this.token = urlParams.get('token') || '';
+    //this.- se utiliza para acceder a las propiedades y métodos del componente
+    //tokrn.- se utiliza para almacenar el token obtenido de la URL
 
     if (this.token) {
       this.isResetMode = true;
+      // Si viene token, se activa el modo reset
     }
   }
 
   // Solicitar enlace de recuperación
   onRequestSubmit() {
+    //onRequestSubmit.-> se ejecuta cuando se envía el formulario
     if (this.requestForm.invalid) return;
-
-    this.isLoading = true;
+    //this da acceso a requestform que da acceso al fomrulario y verifca si es valido y da un return si no lo es
+    //requestform.-> se utiliza para acceder al formulario de solicitud
+    //invalid.-> se utiliza para verificar si el formulario es inválido
+    this.isLoading = true; //acede a isLoading para indicar si el componente esta cargando que es igual a verdad
+    //isLoading.-> se utiliza para indicar si el componente esta cargando
     const email = this.requestForm.value.email;
+    //consulta el email del formuelario de solicitud y valua el email
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',

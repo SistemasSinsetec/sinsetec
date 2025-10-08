@@ -92,6 +92,9 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
   register(userData: any): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/register.php`, userData);
+    return this.http.post<any>(
+      `${environment.apiUrl}/insert_usuario.php`,
+      userData
+    );
   }
 }

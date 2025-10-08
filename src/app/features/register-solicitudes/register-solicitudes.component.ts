@@ -50,8 +50,8 @@ export class RegisterSolicitudesComponent {
   ];
 
   opcionesIVA = [
-    { value: '16%', label: '16%' },
     { value: '8%', label: '8%' },
+    { value: '16%', label: '16%' },
     { value: 'null/-', label: 'null/-' },
     { value: 'exento', label: 'Exento' },
   ];
