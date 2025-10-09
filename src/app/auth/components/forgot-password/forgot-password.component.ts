@@ -64,6 +64,9 @@ export class ForgotPasswordComponent {
     //consulta el email del formuelario de solicitud y valua el email
 
     const headers = new HttpHeaders({
+      //headers.-> se utiliza para configurar los encabezados de la solicitud
+      //HTTPHeaders.-> se utiliza para configurar los encabezados de la solicitud
+      //se consulta los encabezados de la solicitud que es igual a new objeto que es HTTTPHeaders
       'Content-Type': 'application/json',
       Accept: 'application/json',
     });

@@ -1,7 +1,9 @@
 //environment.ts
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:2898/api',
+  //apiUrl: 'http://localhost:2898/api',
+  //apiUrl: 'https://apps.sinsetec.com.mx/api.php',
+  apiUrl: '/api',
 };
 /*
  * For easier debugging in development mode, you can import the following file
